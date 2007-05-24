@@ -1,0 +1,6 @@
+Revision history for Perl extension Apache2::ASP.
+
+0.01  Wed May 23 13:51:46 2007
+	- original version; created by h2xs 1.23 with options
+		-AXn Apache2::ASP
+
