@@ -1,5 +1,24 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.05  2007-05-25
+	- Condensed Apache2::ASP::Session and Apache2::ASP::Session::Instance
+	- Updated documentation and tests for Session change.
+	- Updated version number to 0.05 across all modules.
+
+0.04  2007-05-25
+	- Updated Apache2::ASP's handling of Handlers.
+	- Updated documentation and tests.
+
+0.03  2007-05-25
+	- Added Apache2::ASP::Handler.
+	- Updated documentation.
+	- Updated tests to include Apache2::ASP::Handler.
+	- Updated Makefile.PL to account for all prerequisites.
+	- Lowered the minimum versions for several prerequisites.
+
+0.02  2007-05-24
+	- Added documentation.
+
 0.01  Wed May 23 13:51:46 2007
 	- original version; created by h2xs 1.23 with options
 		-AXn Apache2::ASP

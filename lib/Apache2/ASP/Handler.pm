@@ -1,7 +1,7 @@
 
 package Apache2::ASP::Handler;
 
-our $VERSION = 0.03;
+our $VERSION = 0.05;
 
 use strict;
 use warnings 'all';

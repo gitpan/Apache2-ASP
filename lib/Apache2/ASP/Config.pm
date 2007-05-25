@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use XML::Simple;
 
-our $VERSION = 0.03;
+our $VERSION = 0.05;
 
 
 #==============================================================================

@@ -6,7 +6,7 @@ use warnings 'all';
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
 
-our $VERSION = 0.03;
+our $VERSION = 0.05;
 
 #==============================================================================
 sub new

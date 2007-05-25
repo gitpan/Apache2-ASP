@@ -6,10 +6,9 @@ use DBI;
 use Digest::MD5 'md5_hex';
 use Storable qw( freeze thaw );
 use Apache2::ASP::Config;
-use Apache2::ASP::Session::Instance;
 use HTTP::Date 'time2iso';
 
-our $VERSION = 0.03;
+our $VERSION = 0.05;
 
 #==============================================================================
 sub new
@@ -27,7 +26,7 @@ sub new
     $sth->finish();
     my $data = thaw($rec->{session_data});
     
-    return bless( $data, 'Apache2::ASP::Session::Instance' );
+    return bless( $data, 'Apache2::ASP::Session' );
   }
   else
   {
@@ -66,6 +65,57 @@ sub new
   }# end if()
 }# end new()
 
+
+#==============================================================================
+sub save
+{
+  my $s = shift;
+  
+  my $dbh = DBI->connect_cached( @{$ENV{APACHE2_ASP_DSN}} )
+    or die "Cannot connect to database: $DBI::errstr";
+  my $sth = $dbh->prepare_cached(q{
+    UPDATE asp_sessions SET
+      session_data = ?,
+      modified_on = ?
+    WHERE session_id = ?
+  });
+  my %obj = map { $_ => $s->{$_} } keys(%$s);
+  $sth->execute(
+    freeze(\%obj),
+    time2iso(),
+    $obj{SessionID}
+  );
+  $sth->finish();
+  return $s;
+}# end save()
+
+
+#==============================================================================
+sub Lock { 1 }
+
+
+#==============================================================================
+sub Unlock { 1 }
+
+
+#==============================================================================
+sub Abandon
+{
+  my $s = shift;
+  
+  delete $s->{$_} foreach grep { $_ ne 'SessionID' } keys(%$s);
+  $s->save;
+}# end Abandon()
+
+
+#==============================================================================
+sub DESTROY
+{
+  my $s = shift;
+  $s->save();
+  undef($s);
+}# end DESTROY()
+
 1;# return true:
 
 __END__
@@ -74,13 +124,18 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP::Session - Factory for Session objects.
+Apache2::ASP::Session - Database-persisted Session data for Apache2::ASP
 
 =head1 DESCRIPTION
 
-C<Apache2::ASP::Session> is a factory for C<Apache2::ASP::Session::Instance> objects.
+In the C<Apache2::ASP> web programming environment, the global C<$Session> object
+is an instance of C<Apache2::ASP::Session>.
 
-This module is used internally by C<Apache2::ASP> only and should not be used directly.
+Storing data in the C<$Session> object makes that data available to future requests
+from the same client while that C<$Session> is still active.
+
+Because the data is persisted within an SQL database, you can take advantage of
+load-balanced servers without the need for "session affinity" at the network level.
 
 =head1 DATABASE STRUCTURE
 

@@ -6,7 +6,7 @@ use warnings 'all';
 
 use vars qw($Request $Response $Session $Application $Server $Form);
 
-our $VERSION = 0.03;
+our $VERSION = 0.05;
 
 
 #==============================================================================
