@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use strict;
 use warnings 'all';
@@ -337,38 +337,68 @@ Apache2::ASP - ASP for a mod_perl2 environment.
 Apache2::ASP is a new implementation of the ASP web programming for the mod_perl2 
 environment.  Its aim is high performance, stability, scalability and ease of use.
 
-Like other ASP web programming environments, Apache2::ASP offers the following
-top-level objects:
+If you have used L<Apache::ASP> already then you are already familiar with the basic
+idea of ASP under Apache.
+
+=head1 INTRODUCTION
+
+=head2 What is Apache2::ASP?
+
+Apache2::ASP is a web programming environment that helps simplify 
+web programming with Perl under mod_perl2.  Apache2::ASP allows 
+you to easily embed Perl into web pages using the "<%" and "%>"
+tags that are familiar to anyone who has used ASP or JSP in the past.
+
+=head2 What does Apache2::ASP offer?
+
+Apache2::ASP offers programmers the ability to program web pages without
+spending time on details like session state management, file uploads
+or template systems.
+
+=head1 ASP OBJECTS
+
+Like other ASP web programming environments, Apache2::ASP provides the
+following global objects:
 
 =head2 $Request
 
-This object is a wrapper around the information passed to your code from the client.
+Represents the incoming HTTP request.  Has methods to handle form data,
+file uploads, read cookies, etc.
 
-It also handles cookies and uploads.
+Learn more by reading the L<Apache2::ASP::Request> documentation.
 
 =head2 $Response
 
-This object handles sending data and responses back to the client.
+Represents the outbound HTTP communication to the client.  Has methods to
+send content, redirect, set cookies, etc.
 
-=head2 $Server
-
-A wrapper around the Apache webserver.
+Learn more by reading the L<Apache2::ASP::Response> documentation.
 
 =head2 $Session
 
-Sessions are stored in a database.  Currently MySQL and SQLite are supported.
+Represents data that should persist beyond the lifetime of a single request.
+For example, the user's logged in state, user id, etc.
+
+The contents of the C<$Session> object are stored within an SQL database.
+
+Learn more by reading the L<Apache2::ASP::Session> documentation.
+
+=head2 $Server
+
+Represents the webserver itself and offers several utility methods that don't
+fit anywhere else.
+
+Learn more by reading the L<Apache2::ASP::Server> documentation.
 
 =head2 $Application
 
-The Application object is also stored in a database.  Currently MySQL and SQLite are supported.
+Represents data that should be shared and persisted throughout the entire 
+web application.  For example, database connection strings, the number of active
+users, etc.
 
-By storing data in the Application object you can share data with all processes and requests
-across the entire web application.
+The contents of the C<$Application> object are stored within an SQL database.
 
-=head2 $Form
-
-Apache2::ASP also provides the C<$Form> object - just a hashref of all the POST 
-and GET data in one spot.  This makes web pages easier to program.
+Learn more by reading the L<Apache2::ASP::Application> documentation.
 
 =head1 INSTALLATION
 
@@ -470,6 +500,20 @@ If everything was configured correctly, the output would look like:
   Hello from ASP (10)
 
 If you get an error instead, check out your error log to find out why.
+
+=head2 Directory Structure
+
+You might be wondering, "What does the directory structure for an Apache2::ASP website look like?"
+
+Well, it looks like this:
+
+  .
+  |-- conf
+  |   |-- apache2-asp-config.xml
+  |   `-- httpd.conf
+  `-- www
+      |-- GlobalASA.pm
+      `-- index.asp
 
 =head1 AUTHOR
 

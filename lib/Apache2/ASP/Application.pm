@@ -7,7 +7,7 @@ use Storable qw( freeze thaw );
 use DBI;
 use Apache2::ASP::Config;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 
 #==============================================================================

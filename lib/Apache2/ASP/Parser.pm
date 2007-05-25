@@ -4,7 +4,7 @@ package Apache2::ASP::Parser;
 use strict;
 use warnings 'all';
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 
 #==============================================================================
