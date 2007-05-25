@@ -1,12 +1,12 @@
 
 package Apache2::ASP::GlobalASA;
 
+our $VERSION = 0.07;
+
 use strict;
 use warnings 'all';
 
 use vars qw($Request $Response $Session $Application $Server $Form);
-
-our $VERSION = 0.06;
 
 
 #==============================================================================

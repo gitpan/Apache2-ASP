@@ -1,13 +1,13 @@
 
-
 package Apache2::ASP::MockRequest;
-# Used for TrapInclude:
+
+our $VERSION = 0.07;
 
 use strict;
 use warnings;
 
-our $VERSION = 0.06;
 
+#==============================================================================
 sub new
 {
   my ($s, %args) = @_;

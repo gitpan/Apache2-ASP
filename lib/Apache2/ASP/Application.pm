@@ -1,13 +1,13 @@
 
 package Apache2::ASP::Application;
 
+our $VERSION = 0.07;
+
 use strict;
 use warnings;
 use Storable qw( freeze thaw );
 use DBI;
 use Apache2::ASP::Config;
-
-our $VERSION = 0.06;
 
 
 #==============================================================================

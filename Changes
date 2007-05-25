@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.07  2007-05-25
+	- Updated documentation for Apache2::ASP::Handler
+
 0.06  2007-05-25
 	- Previous releases did not include the test suite.
 

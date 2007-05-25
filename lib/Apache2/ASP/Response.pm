@@ -1,12 +1,13 @@
 
 package Apache2::ASP::Response;
 
+our $VERSION = 0.07;
+
 use strict;
 use warnings 'all';
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
 
-our $VERSION = 0.06;
 
 #==============================================================================
 sub new

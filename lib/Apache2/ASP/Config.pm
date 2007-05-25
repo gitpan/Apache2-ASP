@@ -1,11 +1,11 @@
 
 package Apache2::ASP::Config;
 
+our $VERSION = 0.07;
+
 use strict;
 use warnings;
 use XML::Simple;
-
-our $VERSION = 0.06;
 
 
 #==============================================================================

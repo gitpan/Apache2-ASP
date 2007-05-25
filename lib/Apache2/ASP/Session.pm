@@ -1,6 +1,8 @@
 
 package Apache2::ASP::Session;
 
+our $VERSION = 0.07;
+
 use strict;
 use DBI;
 use Digest::MD5 'md5_hex';
@@ -8,7 +10,6 @@ use Storable qw( freeze thaw );
 use Apache2::ASP::Config;
 use HTTP::Date 'time2iso';
 
-our $VERSION = 0.06;
 
 #==============================================================================
 sub new

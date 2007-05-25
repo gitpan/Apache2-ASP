@@ -1,12 +1,12 @@
 
 package Apache2::ASP::Server;
 
+our $VERSION = 0.07;
+
 use strict;
 use warnings;
 use Apache2::Directive;
 use Mail::Sendmail;
-
-our $VERSION = 0.06;
 
 
 #==============================================================================

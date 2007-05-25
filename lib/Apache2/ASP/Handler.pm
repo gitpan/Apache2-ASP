@@ -1,7 +1,7 @@
 
 package Apache2::ASP::Handler;
 
-our $VERSION = 0.06;
+our $VERSION = 0.07;
 
 use strict;
 use warnings 'all';
@@ -40,13 +40,16 @@ Apache2::ASP::Handler - Base class for all Apache2::ASP handlers
   
   1;# return true:
 
+Access C<MyHandler> via the URL C</handlers/MyHandler> on your website.
+
 =head1 DESCRIPTION
 
-Apache2::ASP::Handler offers an "in-between" environment in which there 
+Apache2::ASP::Handler offers an "in-between" ASP environment in which there 
 is no Perl embedded within HTML (via <% and %> tags) but you still get
-the ASP objects (C<$Reqest>, C<$Response>, C<$Session>, C<$Server> and C<$Application>).
+the ASP objects (C<$Request>, C<$Response>, C<$Session>, C<$Server> and C<$Application>).
 
-In ASP.Net, an Apache2::ASP Handler is nearly analogous to an *.ashx generic handler.
+Handlers are useful for things like form processing when no HTML content is
+sent back to the client (because the client is redirected to another ASP instead).
 
 =head1 AUTHOR
 
