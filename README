@@ -103,11 +103,17 @@ INSTALLATION
       PerlModule Apache2::Connection
       PerlModule Apache2::SubRequest
   
-      # All *.asp files are handled by Apache2::ASP
+      # All *.asp files are handled by Apache2::ASP:
       <Files ~ (\.asp$)>
         SetHandler      perl-script
         PerlHandler     Apache2::ASP
       </Files>
+  
+      # All requests to /handlers/* will be handled by their respective handler:
+      <Location /handlers>
+        SetHandler          perl-script
+        PerlResponseHandler Apache2::ASP
+      </Location>
 
     Then, in "/path/to/your/website/conf" add the file
     "apache2-asp-config.xml". It will contain data like this:
@@ -187,6 +193,9 @@ INSTALLATION
       |-- conf
       |   |-- apache2-asp-config.xml
       |   `-- httpd.conf
+      |--handlers
+      |  |--MyHandler.pm
+      |  `--MyOtherHandler.pm
       `-- www
           |-- GlobalASA.pm
           `-- index.asp

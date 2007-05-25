@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 use strict;
 use warnings 'all';
@@ -114,6 +114,11 @@ sub _handle_handler_request
   
   # Get a reference to the main entrypoint for the handler:
   eval "use $handler_pkg";
+  if( $@ )
+  {
+    # Handle the execution error:
+    return $s->_handle_error( $@ );
+  }# end if()
   return 401 unless $handler_pkg->isa('Apache2::ASP::Handler');
   my $coderef = $handler_pkg->can('run');
 
@@ -122,14 +127,24 @@ sub _handle_handler_request
   if( $@ )
   {
     # Handle the execution error:
-    $s->_handle_error( $@ );
+    return $s->_handle_error( $@ );
   }# end if()
   
   # Follow the GlobalASA rules:
   $GlobalASA->Script_OnEnd()
     unless $@;
   $Response->Flush;
-}# end _handle_controller_request()
+  
+  my $status = $Response->{ApacheStatus};
+  $Session->DESTROY;
+  $Server->DESTROY;
+  $Application->DESTROY;
+  $Response->Flush;
+  $Response->DESTROY;
+  $Request->DESTROY;
+  
+  return 0;
+}# end _handle_handler_request()
 
 
 #==============================================================================
@@ -306,10 +321,26 @@ sub _setup_globalASA
       push @INC, $docroot;
       require GlobalASA;
     }# end if()
+    
+    no strict 'refs';
+    ${"GlobalASA::Request"}     = $Request;
+    ${"GlobalASA::Response"}    = $Response;
+    ${"GlobalASA::Server"}      = $Server;
+    ${"GlobalASA::Session"}     = $Session;
+    ${"GlobalASA::Form"}        = $Request->Form;
+    ${"GlobalASA::Application"} = $Application;
+    
     return GlobalASA->new();
   }
   else
   {
+    no strict 'refs';
+    ${"Apache2::ASP::GlobalASA::Request"}     = $Request;
+    ${"Apache2::ASP::GlobalASA::Response"}    = $Response;
+    ${"Apache2::ASP::GlobalASA::Server"}      = $Server;
+    ${"Apache2::ASP::GlobalASA::Session"}     = $Session;
+    ${"Apache2::ASP::GlobalASA::Form"}        = $Request->Form;
+    ${"Apache2::ASP::GlobalASA::Application"} = $Application;
     return Apache2::ASP::GlobalASA->new();
   }# end if()
 }# end _setup_globalasa()
@@ -360,9 +391,10 @@ sub _handle_error
   my ($s, $err) = @_;
   
   my $stack = Devel::StackTrace->new;
-warn "Error: " . $stack->as_string;
   $Response->Clear();
-  $GlobalASA->Script_OnError( $stack );
+  $GlobalASA->can('Script_OnError')->( $stack );
+  
+  return 0;
 }# end _handle_error()
 
 
@@ -488,11 +520,17 @@ Then, in your httpd.conf:
   PerlModule Apache2::Connection
   PerlModule Apache2::SubRequest
   
-  # All *.asp files are handled by Apache2::ASP
+  # All *.asp files are handled by Apache2::ASP:
   <Files ~ (\.asp$)>
     SetHandler      perl-script
     PerlHandler     Apache2::ASP
   </Files>
+  
+  # All requests to /handlers/* will be handled by their respective handler:
+  <Location /handlers>
+    SetHandler          perl-script
+    PerlResponseHandler Apache2::ASP
+  </Location>
 
 Then, in C</path/to/your/website/conf> add the file C<apache2-asp-config.xml>.
 It will contain data like this:
@@ -569,6 +607,9 @@ Well, it looks like this:
   |-- conf
   |   |-- apache2-asp-config.xml
   |   `-- httpd.conf
+  |--handlers
+  |  |--MyHandler.pm
+  |  `--MyOtherHandler.pm
   `-- www
       |-- GlobalASA.pm
       `-- index.asp

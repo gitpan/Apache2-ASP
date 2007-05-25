@@ -95,7 +95,7 @@ sub End
   # Cancel execution and force the server to stop processing this request.
   $s->{_connection} ||= $s->{r}->connection;
   my $sock = $s->{_connection}->client_socket;
-  $sock->close();
+  eval { $sock->close() };
 }# end End()
 
 
