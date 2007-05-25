@@ -6,7 +6,7 @@ use warnings;
 use Apache2::Directive;
 use Mail::Sendmail;
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 
 #==============================================================================

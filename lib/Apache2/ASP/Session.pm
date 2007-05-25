@@ -8,7 +8,7 @@ use Storable qw( freeze thaw );
 use Apache2::ASP::Config;
 use HTTP::Date 'time2iso';
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 #==============================================================================
 sub new

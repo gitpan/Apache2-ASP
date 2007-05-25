@@ -1,0 +1,9 @@
+<apache2-asp-config>
+  <db_user>root</db_user>
+  <db_pass>j@p@n</db_pass>
+  <db_driver>mysql</db_driver>
+  <db_name>besa_dev</db_name>
+  <db_host>localhost</db_host>
+  <session_cookie_domain>.besacode.com</session_cookie_domain>
+  <session_cookie_name>session-id</session_cookie_name>
+</apache2-asp-config>

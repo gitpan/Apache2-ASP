@@ -1,0 +1,37 @@
+
+#<Perl>
+#  use lib '/usr/local/dstack/lib';
+#</Perl>
+
+# Needed for CGI::Apache2::Wrapper to work properly:
+LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
+
+# Set the directory index:
+DirectoryIndex index.asp
+
+# Declare some important variables:
+PerlSetEnv APACHE2_APPLICATION_ROOT @ServerRoot@
+
+# Load up some important modules:
+PerlModule Apache::DBI
+PerlModule DBI
+PerlModule DBD::SQLite
+PerlModule CGI::Apache2::Wrapper
+PerlModule Apache2::ASP
+PerlModule Apache2::Directive
+PerlModule Apache2::RequestRec
+PerlModule Apache2::RequestIO
+PerlModule Apache2::Connection
+PerlModule Apache2::SubRequest
+
+# All *.asp files are handled by Apache2::ASP
+<Files ~ (\.asp$)>
+  SetHandler          perl-script
+  PerlResponseHandler Apache2::ASP
+</Files>
+
+<Location /handlers>
+  SetHandler          perl-script
+  PerlResponseHandler Apache2::ASP
+</Location>
+
