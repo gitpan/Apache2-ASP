@@ -9,7 +9,7 @@ use Apache2::ASP::Config;
 use Apache2::ASP::Session::Instance;
 use HTTP::Date 'time2iso';
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 #==============================================================================
 sub new

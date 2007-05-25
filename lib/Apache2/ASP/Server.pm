@@ -6,7 +6,7 @@ use warnings;
 use Apache2::Directive;
 use Mail::Sendmail;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 
 #==============================================================================
@@ -123,7 +123,7 @@ For example, "test@test.com" becomes "test%40test.com" with C<URLEncode()>.
 
 Returns an HTML-Encoded version of the string provided.
 
-For example, "<b>Hello</b>" becomes "C<&amp;lt;b&amp;gt;Hello&amp;lt;/b&amp;gt;>" with C<HTMLEncode()>.
+For example, "<b>Hello</b>" becomes "C<&lt;b&gt;Hello&lt;/b&gt;>" with C<HTMLEncode()>.
 
 =head2 MapPath( $path )
 

@@ -13,5 +13,7 @@ lib/Apache2/ASP/Request.pm
 lib/Apache2/ASP/Response.pm
 lib/Apache2/ASP/Server.pm
 lib/Apache2/ASP/Session.pm
+lib/Apache2/ASP/Session/Instance.pm
+lib/Apache2/ASP/Handler.pm
 lib/Apache2/ASP/MockRequest.pm
 META.yml

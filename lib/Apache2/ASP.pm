@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 use strict;
 use warnings 'all';
@@ -21,6 +21,7 @@ use Apache2::ASP::Application;
 use Apache2::ASP::Session;
 use Apache2::ASP::GlobalASA;
 use Apache2::ASP::MockRequest;
+use Apache2::ASP::Handler;
 
 use vars qw(
   $Session $Request $Response $Server $Application $GlobalASA
@@ -58,6 +59,11 @@ sub _handle_request
       return $s->_handle_static_request( $r, $q, $filename );
     }# end if()
   }
+  elsif( $r->uri =~ m/^\/handlers\// )
+  {
+    # This is a handler request:
+    return $s->_handle_handler_request( $r, $q );
+  }
   elsif( -d $filename )
   {
     # See if there is an index.asp here:
@@ -73,6 +79,57 @@ sub _handle_request
   }# end if()
   
 }# end _handle_request()
+
+
+#==============================================================================
+sub _handle_handler_request
+{
+  my ($s, $r, $q) = @_;
+  
+  # Standard ASP objects:
+  $Session     = Apache2::ASP::Session->new( undef, $r );
+  $Request     = Apache2::ASP::Request->new( $r, $q );
+  $Response    = Apache2::ASP::Response->new( $r, $q, $s );
+  $Server      = Apache2::ASP::Server->new( $r, $q, \"" );
+  $Application = Apache2::ASP::Application->new( );
+  
+  # Setup the global.asa:
+  $GlobalASA = $s->_setup_globalASA( $r );
+  $s->{_global_asa} = $GlobalASA;
+  
+  # Init the Session:
+  if( ! $Session->{__aspinit} )
+  {
+    $GlobalASA->Session_OnStart();
+    $Session->{__aspinit} = 1;
+  }# end if()
+  
+  # Init the Script:
+  $GlobalASA->Script_OnStart();
+  
+  # Figure out what package the controller is:
+  my ($handler_pkg) = $r->uri =~ m/^\/handlers\/([^\?]*)/
+    or return 404;
+  $handler_pkg =~ s/[^a-z0-9]/::/ig;
+  
+  # Get a reference to the main entrypoint for the handler:
+  eval "use $handler_pkg";
+  return 401 unless $handler_pkg->isa('Apache2::ASP::Handler');
+  my $coderef = $handler_pkg->can('run');
+
+  # Execute the handler:
+  eval { $coderef->( $handler_pkg, $Session, $Request, $Response, $Server, $Application ) };
+  if( $@ )
+  {
+    # Handle the execution error:
+    $s->_handle_error( $@ );
+  }# end if()
+  
+  # Follow the GlobalASA rules:
+  $GlobalASA->Script_OnEnd()
+    unless $@;
+  $Response->Flush;
+}# end _handle_controller_request()
 
 
 #==============================================================================
@@ -243,6 +300,7 @@ sub _setup_globalASA
   my $file = "$docroot/GlobalASA.pm";
   if( -f $file )
   {
+    no warnings 'uninitialized';
     if( $INC{'GlobalASA.pm'} ne $file )
     {
       push @INC, $docroot;
@@ -302,7 +360,7 @@ sub _handle_error
   my ($s, $err) = @_;
   
   my $stack = Devel::StackTrace->new;
-  
+warn "Error: " . $stack->as_string;
   $Response->Clear();
   $GlobalASA->Script_OnError( $stack );
 }# end _handle_error()
