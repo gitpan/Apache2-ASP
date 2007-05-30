@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.08;
+our $VERSION = 0.09;
 
 use strict;
 use warnings 'all';
@@ -38,108 +38,16 @@ sub handler : method
   $s = bless {r => $r}, ref($s) || $s;
   
   use lib "$ENV{APACHE2_APPLICATION_ROOT}/handlers";
-
-  my $handler_pkg;
-
-  if( $ENV{REQUEST_URI} =~ m/^\/handlers\// )
-  {
-    # (Try to) load up the handler:
-    ($handler_pkg) = $ENV{REQUEST_URI} =~ m/^\/handlers\/([^\?]+)/;
-    $handler_pkg =~ s/[^a-z0-9]/::/ig;
-    eval "use $handler_pkg";
-    if( $@ )
-    {
-      # Failed to load the handler:
-      warn "ERROR: Cannot load Handler '$handler_pkg': $@";
-      return 500;
-    }# end if()
-  }# end if()
-
   
-  my $q;
-  if(
-    defined($ENV{CONTENT_TYPE}) && 
-    ( $ENV{CONTENT_TYPE} =~ m@multipart/form\-data@ ) && 
-    $handler_pkg &&
-    $handler_pkg->isa('Apache2::ASP::Handler')
-  )
+  # Try to get the handler package:
+  my $handler_pkg = $s->_find_handler_package( $ENV{REQUEST_URI} );
+  if( ref($handler_pkg) eq 'HASH' )
   {
-    # Make sure the handler is of the right type:
-    if( ! $handler_pkg->isa('Apache2::ASP::UploadHandler') )
-    {
-      warn "ERROR: Package '$handler_pkg' must inherit from 'Apache2::ASP::UploadHandler'";
-      return 500;
-    }# end if()
-    
-    # Set up the hook:
-    $q = Apache2::ASP::CGI->new( $r, sub {
-      my ($upload, $data) = @_;
-      my $length_received = defined($data) ? length($data) : 0;
-      $r->pnotes( total_loaded => ($r->pnotes('total_loaded') || 0) + $length_received);
-      my $percent_complete = sprintf("%.2f", $r->pnotes('total_loaded') / $ENV{CONTENT_LENGTH} * 100 );
-      
-      # Mark our start time, so we can make our calculations:
-      my $start_time = $r->pnotes('upload_start_time');
-      if( ! $start_time )
-      {
-        $start_time = gettimeofday();
-        $r->pnotes('upload_start_time' => $start_time);
-      }# end if()
-      
-      # Calculate elapsed, total expected and remaining time, etc:
-      my $elapsed_time        = gettimeofday() - $start_time;
-      my $bytes_per_second    = $r->pnotes('total_loaded') / $elapsed_time;
-      $bytes_per_second       ||= 1;
-      my $total_expected_time = int( ($ENV{CONTENT_LENGTH} - $length_received) / $bytes_per_second );
-      my $time_remaining      = int( (100 - $percent_complete) * $total_expected_time / 100 );
-      $time_remaining         = 0 if $time_remaining < 0;
-      
-      my $Upload = {
-        upload              => $upload,
-        percent_complete    => $percent_complete,
-        elapsed_time        => $elapsed_time,
-        total_expected_time => $total_expected_time,
-        time_remaining      => $time_remaining,
-        length_received     => $length_received,
-        content_length      => $ENV{CONTENT_LENGTH},
-        data                => $data,
-      };
-      
-      # Init the upload:
-      my $did_init = $r->pnotes('did_init');
-      if( ! $did_init )
-      {
-        $r->pnotes( did_init => 1 );
-        $handler_pkg->upload_start(
-          $Session, $Request, $Response, $Server, $Application, $Upload
-        );
-        
-        # End the upload if we are done:
-        $r->push_handlers(PerlCleanupHandler => sub {
-          delete($Session->{$_})
-            foreach keys(%$Upload);
-          $Session->save;
-        });
-      }# end if()
-      
-      if( $length_received <= 0 )
-      {
-        $handler_pkg->upload_end(
-          $Session, $Request, $Response, $Server, $Application, $Upload
-        );
-      }# end if()
-      
-      # Call the hook:
-      $handler_pkg->upload_hook(
-        $Session, $Request, $Response, $Server, $Application, $Upload
-      );
-    });
-  }
-  else
-  {
-    $q = Apache2::ASP::CGI->new( $r );
+    # An error has occurred - return the error status:
+    return $handler_pkg->{STATUS};
   }# end if()
   
+  my $q = $s->_setup_cgi( $handler_pkg );
   $s->{q} = $q;
   
   return $s->_handle_request( $r, $q );
@@ -505,6 +413,122 @@ sub _handle_error
 }# end _handle_error()
 
 
+#==============================================================================
+sub _find_handler_package
+{
+  my ($s, $uri) = @_;
+  
+  if( $uri =~ m/^\/handlers\// )
+  {
+    # (Try to) load up the handler:
+    my ($handler_pkg) = $uri =~ m/^\/handlers\/([^\?]+)/;
+    $handler_pkg =~ s/[^a-z0-9]/::/ig;
+    eval "use $handler_pkg";
+    if( $@ )
+    {
+      # Failed to load the handler:
+      warn "ERROR: Cannot load Handler '$handler_pkg': $@";
+      return { STATUS => 500 };
+    }
+    else
+    {
+      return $handler_pkg;
+    }# end if()
+  }# end if()
+}# end _find_handler_package()
+
+
+#==============================================================================
+sub _setup_cgi
+{
+  my ($s, $handler_pkg) = @_;
+  
+  if(
+    # We are handling a file upload with a subclass of Apache2::ASP::Handler:
+    defined($ENV{CONTENT_TYPE}) && 
+    ( $ENV{CONTENT_TYPE} =~ m@multipart/form\-data@ ) && 
+    $handler_pkg &&
+    $handler_pkg->isa('Apache2::ASP::Handler')
+  )
+  {
+    # Make sure the handler is of the right type:
+    if( ! $handler_pkg->isa('Apache2::ASP::UploadHandler') )
+    {
+      warn "ERROR: Package '$handler_pkg' must inherit from 'Apache2::ASP::UploadHandler'";
+      return 500;
+    }# end if()
+    
+    # Set up the hook:
+    return Apache2::ASP::CGI->new( $s->{r}, sub {
+      my ($upload, $data) = @_;
+      my $length_received = defined($data) ? length($data) : 0;
+      $s->{r}->pnotes( total_loaded => ($s->{r}->pnotes('total_loaded') || 0) + $length_received);
+      my $percent_complete = sprintf("%.2f", $s->{r}->pnotes('total_loaded') / $ENV{CONTENT_LENGTH} * 100 );
+      
+      # Mark our start time, so we can make our calculations:
+      my $start_time = $s->{r}->pnotes('upload_start_time');
+      if( ! $start_time )
+      {
+        $start_time = gettimeofday();
+        $s->{r}->pnotes('upload_start_time' => $start_time);
+      }# end if()
+      
+      # Calculate elapsed, total expected and remaining time, etc:
+      my $elapsed_time        = gettimeofday() - $start_time;
+      my $bytes_per_second    = $s->{r}->pnotes('total_loaded') / $elapsed_time;
+      $bytes_per_second       ||= 1;
+      my $total_expected_time = int( ($ENV{CONTENT_LENGTH} - $length_received) / $bytes_per_second );
+      my $time_remaining      = int( (100 - $percent_complete) * $total_expected_time / 100 );
+      $time_remaining         = 0 if $time_remaining < 0;
+      
+      my $Upload = {
+        upload              => $upload,
+        percent_complete    => $percent_complete,
+        elapsed_time        => $elapsed_time,
+        total_expected_time => $total_expected_time,
+        time_remaining      => $time_remaining,
+        length_received     => $length_received,
+        content_length      => $ENV{CONTENT_LENGTH},
+        data                => $data,
+      };
+      
+      # Init the upload:
+      my $did_init = $s->{r}->pnotes('did_init');
+      if( ! $did_init )
+      {
+        $s->{r}->pnotes( did_init => 1 );
+        $handler_pkg->upload_start(
+          $Session, $Request, $Response, $Server, $Application, $Upload
+        );
+        
+        # End the upload if we are done:
+        $s->{r}->push_handlers(PerlCleanupHandler => sub {
+          delete($Session->{$_})
+            foreach keys(%$Upload);
+          $Session->save;
+        });
+      }# end if()
+      
+      if( $length_received <= 0 )
+      {
+        $handler_pkg->upload_end(
+          $Session, $Request, $Response, $Server, $Application, $Upload
+        );
+      }# end if()
+      
+      # Call the hook:
+      $handler_pkg->upload_hook(
+        $Session, $Request, $Response, $Server, $Application, $Upload
+      );
+    });
+  }
+  else
+  {
+    return Apache2::ASP::CGI->new( $s->{r} );
+  }# end if()
+}# end _setup_cgi()
+
+
 1;# return true:
 
 __END__
@@ -619,7 +643,6 @@ Then, in your httpd.conf:
   PerlModule Apache::DBI
   PerlModule DBI
   PerlModule DBD::mysql # or whatever database you will keep your session data in
-  PerlModule CGI::Apache2::Wrapper
   PerlModule Apache2::ASP
   PerlModule Apache2::Directive
   PerlModule Apache2::RequestRec

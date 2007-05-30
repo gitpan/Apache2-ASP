@@ -95,7 +95,6 @@ INSTALLATION
       PerlModule Apache::DBI
       PerlModule DBI
       PerlModule DBD::mysql # or whatever database you will keep your session data in
-      PerlModule CGI::Apache2::Wrapper
       PerlModule Apache2::ASP
       PerlModule Apache2::Directive
       PerlModule Apache2::RequestRec

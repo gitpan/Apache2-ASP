@@ -1,10 +1,6 @@
 
-#<Perl>
-#  use lib '/usr/local/dstack/lib';
-#</Perl>
-
-# Needed for CGI::Apache2::Wrapper to work properly:
-LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
+# Needed for file uploads to work properly:
+LoadModule apreq_module /usr/local/apache2/modules/mod_apreq2.so
 
 # Set the directory index:
 DirectoryIndex index.asp
@@ -16,7 +12,6 @@ PerlSetEnv APACHE2_APPLICATION_ROOT @ServerRoot@
 PerlModule Apache::DBI
 PerlModule DBI
 PerlModule DBD::SQLite
-PerlModule CGI::Apache2::Wrapper
 PerlModule Apache2::ASP
 PerlModule Apache2::Directive
 PerlModule Apache2::RequestRec
