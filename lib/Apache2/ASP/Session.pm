@@ -142,7 +142,7 @@ load-balanced servers without the need for "session affinity" at the network lev
 
 Sessions are stored in a SQL database table with the following structure:
 
-  CREATE TABLE sessions (
+  CREATE TABLE asp_sessions (
     session_id CHAR(32) PRIMARY KEY NOT NULL,
     session_data BLOB,
     created_on DATETIME,

@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.11 2007-05-30
+  - Fixed inaccurate documentation about the table structure for Sessions.
+
+0.10 2007-05-30
+  - Minor bugfixes.
+
 0.09 2007-05-30
   - Updated "Changes"
   - Updated tests' httpd.conf (removed erroneous comments)
