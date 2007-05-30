@@ -1,17 +1,20 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 use strict;
 use warnings 'all';
-use CGI::Apache2::Wrapper ();
+use APR::Table ();
+use Apache2::ASP::CGI;
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::Directive ();
 use Apache2::Connection ();
 use Apache2::SubRequest ();
+use Apache2::RequestUtil ();
 use Devel::StackTrace;
+use Time::HiRes 'gettimeofday';
 
 use Apache2::ASP::Parser;
 use Apache2::ASP::Request;
@@ -34,7 +37,109 @@ sub handler : method
   my ($s, $r) = @_;
   $s = bless {r => $r}, ref($s) || $s;
   
-  my $q = CGI::Apache2::Wrapper->new( $r );
+  use lib "$ENV{APACHE2_APPLICATION_ROOT}/handlers";
+
+  my $handler_pkg;
+
+  if( $ENV{REQUEST_URI} =~ m/^\/handlers\// )
+  {
+    # (Try to) load up the handler:
+    ($handler_pkg) = $ENV{REQUEST_URI} =~ m/^\/handlers\/([^\?]+)/;
+    $handler_pkg =~ s/[^a-z0-9]/::/ig;
+    eval "use $handler_pkg";
+    if( $@ )
+    {
+      # Failed to load the handler:
+      warn "ERROR: Cannot load Handler '$handler_pkg': $@";
+      return 500;
+    }# end if()
+  }# end if()
+
+  
+  my $q;
+  if(
+    defined($ENV{CONTENT_TYPE}) && 
+    ( $ENV{CONTENT_TYPE} =~ m@multipart/form\-data@ ) && 
+    $handler_pkg &&
+    $handler_pkg->isa('Apache2::ASP::Handler')
+  )
+  {
+    # Make sure the handler is of the right type:
+    if( ! $handler_pkg->isa('Apache2::ASP::UploadHandler') )
+    {
+      warn "ERROR: Package '$handler_pkg' must inherit from 'Apache2::ASP::UploadHandler'";
+      return 500;
+    }# end if()
+    
+    # Set up the hook:
+    $q = Apache2::ASP::CGI->new( $r, sub {
+      my ($upload, $data) = @_;
+      my $length_received = defined($data) ? length($data) : 0;
+      $r->pnotes( total_loaded => ($r->pnotes('total_loaded') || 0) + $length_received);
+      my $percent_complete = sprintf("%.2f", $r->pnotes('total_loaded') / $ENV{CONTENT_LENGTH} * 100 );
+      
+      # Mark our start time, so we can make our calculations:
+      my $start_time = $r->pnotes('upload_start_time');
+      if( ! $start_time )
+      {
+        $start_time = gettimeofday();
+        $r->pnotes('upload_start_time' => $start_time);
+      }# end if()
+      
+      # Calculate elapsed, total expected and remaining time, etc:
+      my $elapsed_time        = gettimeofday() - $start_time;
+      my $bytes_per_second    = $r->pnotes('total_loaded') / $elapsed_time;
+      $bytes_per_second       ||= 1;
+      my $total_expected_time = int( ($ENV{CONTENT_LENGTH} - $length_received) / $bytes_per_second );
+      my $time_remaining      = int( (100 - $percent_complete) * $total_expected_time / 100 );
+      $time_remaining         = 0 if $time_remaining < 0;
+      
+      my $Upload = {
+        upload              => $upload,
+        percent_complete    => $percent_complete,
+        elapsed_time        => $elapsed_time,
+        total_expected_time => $total_expected_time,
+        time_remaining      => $time_remaining,
+        length_received     => $length_received,
+        content_length      => $ENV{CONTENT_LENGTH},
+        data                => $data,
+      };
+      
+      # Init the upload:
+      my $did_init = $r->pnotes('did_init');
+      if( ! $did_init )
+      {
+        $r->pnotes( did_init => 1 );
+        $handler_pkg->upload_start(
+          $Session, $Request, $Response, $Server, $Application, $Upload
+        );
+        
+        # End the upload if we are done:
+        $r->push_handlers(PerlCleanupHandler => sub {
+          delete($Session->{$_})
+            foreach keys(%$Upload);
+          $Session->save;
+        });
+      }# end if()
+      
+      if( $length_received <= 0 )
+      {
+        $handler_pkg->upload_end(
+          $Session, $Request, $Response, $Server, $Application, $Upload
+        );
+      }# end if()
+      
+      # Call the hook:
+      $handler_pkg->upload_hook(
+        $Session, $Request, $Response, $Server, $Application, $Upload
+      );
+    });
+  }
+  else
+  {
+    $q = Apache2::ASP::CGI->new( $r );
+  }# end if()
+  
   $s->{q} = $q;
   
   return $s->_handle_request( $r, $q );
@@ -142,6 +247,7 @@ sub _handle_handler_request
   $Response->Flush;
   $Response->DESTROY;
   $Request->DESTROY;
+  undef($Request);
   
   return 0;
 }# end _handle_handler_request()
@@ -206,6 +312,7 @@ sub _handle_dynamic_request
   $Response->Flush;
   $Response->DESTROY;
   $Request->DESTROY;
+  undef($Request);
   
   return $status;
 }# end _handle_dynamic_request()
@@ -357,7 +464,7 @@ sub _compile_script
   $pkg =~ s/[^a-zA-Z0-9_]/_/g;
   
   my $stub = <<EOF;
-package $pkg; use vars qw(\$Request \$Response \$Server \$Session \$Form \$Application);sub Process {$parsed
+package $pkg; use vars qw(\$Request \$Response \$Server \$Session \$Form \$Application); sub Process {$parsed
 \$Response->Flush;
 };
 
@@ -616,7 +723,7 @@ Well, it looks like this:
 
 =head1 AUTHOR
 
-John Drago L<jdrago_999@yahoo.com>
+John Drago L<mailto:jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 

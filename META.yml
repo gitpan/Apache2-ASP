@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache2-ASP
-version:      0.07
+version:      0.08
 version_from: lib/Apache2/ASP.pm
 installdirs:  site
 requires:
@@ -17,6 +17,7 @@ requires:
     Mail::Sendmail:                
     Storable:                      
     Test::More:                    
+    Time::HiRes:                   
     XML::Simple:                   
 
 distribution_type: module

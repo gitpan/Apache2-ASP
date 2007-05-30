@@ -9,7 +9,7 @@ use Apache::TestUtil;
 use Apache::TestRequest qw( GET_BODY UPLOAD );
 use Cwd;
 
-plan tests => 16,
+plan tests => 17,
   sub { $^O ne 'MSWin32'};
 
 # Make sure we can render a simple page:
@@ -33,32 +33,64 @@ plan tests => 16,
   ok( $data =~ m/Hello there, John\./ );
 }
 
-# File upload: 1/2:
+# File upload: 1/3:
 {
   my $url = '/004-upload.asp';
   my $pwd = getcwd();
   
-  my $filename = "$pwd/$0";
+  my $filename = "$pwd/$0.UPLOAD";
+  my $str = "Hello, World Again! " x80000;
+  open my $ofh, '>', $filename;
+  print $ofh $str;
+  close($ofh);
   my $res = UPLOAD $url, filename => $filename;
-  my $expected_size = -s $filename;
+  unlink($filename);
+  my $expected_size = length( $str );
   ok( $res->content =~ m/\b$expected_size\b/ );
 }
 
-# File upload: 2/2:
+# File upload: 2/3:
 {
   my $url = '/005-upload.asp';
   my $pwd = getcwd();
   
-  my $filename = "$pwd/$0";
+  my $filename = "$pwd/$0.UPLOAD";
+  my $str = "Hello, World! " x80000;
+  open my $ofh, '>', $filename;
+  print $ofh $str;
+  close($ofh);
   my $res = UPLOAD $url, filename => $filename;
   
   # Read our copy into memory:
   open my $ifh, '<', $filename;
   local $/ = '';
+  binmode($ifh);
   my $data = <$ifh>;
   close( $ifh );
 
-  ok( $res->content eq $data );
+  ok( $str eq $res->content && $res->content eq $data );
+}
+
+# File upload: 3/3:
+{
+  my $url = '/handlers/TestHandler';
+  my $pwd = getcwd();
+  
+  my $filename = "$pwd/$0.UPLOAD";
+  my $str = "Hello, World! " x900_000;
+  open my $ofh, '>', $filename;
+  print $ofh $str;
+  close($ofh);
+  my $res = UPLOAD $url, filename => $filename;
+  
+  # Read our copy into memory:
+  open my $ifh, '<', $filename;
+  local $/ = '';
+  binmode($ifh);
+  my $data = <$ifh>;
+  close( $ifh );
+
+  ok( 1 );
 }
 
 # Load test:

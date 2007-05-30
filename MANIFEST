@@ -16,10 +16,12 @@ t/htdocs/004-upload.asp
 t/htdocs/005-upload.asp
 t/htdocs/GlobalASA.pm
 t/htdocs/002-asp-expression.asp
+t/handlers/TestHandler.pm
 t/001-asp-parser.t
 lib/Apache2/ASP.pm
 lib/Apache2/ASP.pm
 lib/Apache2/ASP/Application.pm
+lib/Apache2/ASP/CGI.pm
 lib/Apache2/ASP/Config.pm
 lib/Apache2/ASP/GlobalASA.pm
 lib/Apache2/ASP/Parser.pm
@@ -28,5 +30,6 @@ lib/Apache2/ASP/Response.pm
 lib/Apache2/ASP/Server.pm
 lib/Apache2/ASP/Session.pm
 lib/Apache2/ASP/Handler.pm
+lib/Apache2/ASP/UploadHandler.pm
 lib/Apache2/ASP/MockRequest.pm
 META.yml

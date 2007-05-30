@@ -26,6 +26,7 @@ my %require = (
   'DBD::SQLite'           => 1.13,
   'Storable'              => "",
   'Mail::Sendmail'        => "",
+  'Time::HiRes'           => "",
 );
 my @scripts = qw( t/TEST );
 

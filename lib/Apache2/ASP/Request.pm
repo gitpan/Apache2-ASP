@@ -1,18 +1,20 @@
 
 package Apache2::ASP::Request;
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 use strict;
 use warnings;
-
 
 #==============================================================================
 sub new
 {
   my ($s, $r, $q) = @_;
   
-  return bless { q => $q, r => $r }, ref($s) || $s;
+  return bless {
+    q => $q,
+    r => $r,
+  }, ref($s) || $s;
 }# end new()
 
 
@@ -110,7 +112,6 @@ sub ServerVariables
 #==============================================================================
 sub DESTROY
 {
-  
 }# end DESTROY()
 
 1;# return true:

@@ -1,7 +1,7 @@
 
 package Apache2::ASP::Response;
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 use strict;
 use warnings 'all';
@@ -75,7 +75,8 @@ sub Flush
   my $s = shift;
   
   my $buffer = delete( $s->{_buffer} );
-  $s->{_asp}->{_global_asa}->Script_OnFlush( \$buffer );
+  $s->{_asp}->{_global_asa}->Script_OnFlush( \$buffer )
+    if $s->{_asp}->{_global_asa};
   
   if( ! $s->{_sent_header} )
   {
