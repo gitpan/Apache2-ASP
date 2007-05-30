@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.09;
+our $VERSION = 0.10;
 
 use strict;
 use warnings 'all';
@@ -232,6 +232,7 @@ sub handle_sub_request
 {
   my ($s, $script_contents, @args) = @_;
   
+  $s->{_is_sub_request} = 1;
   my $r = Apache2::ASP::MockRequest->new();
 
   # Standard ASP objects:
@@ -274,6 +275,8 @@ sub handle_sub_request
     $s->_handle_error( $@ );
   }# end if()
   
+  $s->{_is_sub_request} = 0;
+  
   return $r->{_buffer};
 }# end handle_sub_request()
 
@@ -303,7 +306,7 @@ sub execute_script
   
   # Follow the GlobalASA rules:
   $GlobalASA->Script_OnEnd()
-    unless $@;
+    unless $@ || $s->{_is_sub_request};
 }# end execute_script()
 
 

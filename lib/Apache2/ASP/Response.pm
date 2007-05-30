@@ -151,7 +151,9 @@ sub Include
     $code = \$contents;
     close($ifh);
   }# end if()
+  $s->{_asp}->{_is_sub_request} = 1;
   $s->{_asp}->execute_script( $code, @args );
+  $s->{_asp}->{_is_sub_request} = 0;
 }# end Include()
 
 
