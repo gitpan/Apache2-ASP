@@ -57,6 +57,9 @@ sub Write
 {
   my ($s, $str) = @_;
   
+  $str = "" unless defined($str);
+  $str =~ s/_____TILDE_____/\~/g;
+  
   no warnings 'uninitialized';
   if( $s->{Buffer} )
   {

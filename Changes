@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.14 2007-05-31
+  - Fixed a bug in the Apache2::ASP::Parser that would cause
+    an error if it encountered a ~ in an ASP script.
+
 0.13 2007-05-31
   - Extended Apache2::ASP::MediaManager
   - Updated documentation for Apache2::ASP::MediaManager

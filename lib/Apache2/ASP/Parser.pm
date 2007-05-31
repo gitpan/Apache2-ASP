@@ -25,6 +25,7 @@ sub parse_file
 sub parse_string
 {
   my ($s, $txt) = @_;
+  
   $txt = '$Response->Write(q~' . $txt . '~);';
   $txt =~ s@
     <\%([^\=].*?)\%>
@@ -36,7 +37,20 @@ sub parse_string
   
   $txt =~ s@\$Response\-\>End(?:\(?[\s.]*?\)?);@return;@g;
   
+  $txt =~ s@\$Response\-\>Write\(q\~(.*?)\~\);@
+    '$Response->Write(q~' . _fix_tilde($1) . '~);'
+  @sxge;
+
   return $txt;
 }# end parse_string()
+
+
+#==============================================================================
+sub _fix_tilde
+{
+  my $str = shift;
+  $str =~ s/~/_____TILDE_____/g;
+  return $str;
+}# end _fix_tilde()
 
 1;# return true:
