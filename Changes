@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.13 2007-05-31
+  - Extended Apache2::ASP::MediaManager
+  - Updated documentation for Apache2::ASP::MediaManager
+  - Added Apache2::ASP::URLFilter
+  - Updated INSTALLATION instructions in the documentation for Apache2::ASP
+
 0.12 2007-05-30
   - Added Apache2::ASP::MediaManager
   - Fixed documentation for Apache2::ASP::UploadHandler

@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.12;
+our $VERSION = 0.13;
 
 use strict;
 use warnings 'all';
@@ -635,6 +635,7 @@ Then, in your httpd.conf:
   
   # Declare this important variable:
   PerlSetEnv APACHE2_APPLICATION_ROOT /path/to/your/website
+  PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
 
   # Needed for CGI::Apache2::Wrapper to work properly:
   LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
@@ -652,6 +653,10 @@ Then, in your httpd.conf:
   PerlModule Apache2::RequestIO
   PerlModule Apache2::Connection
   PerlModule Apache2::SubRequest
+  
+  # Configuration for MediaManager:
+  PerlModule Apache2::ASP::URLFilter
+  PerlTransHandler Apache2::ASP::URLFilter
   
   # All *.asp files are handled by Apache2::ASP:
   <Files ~ (\.asp$)>

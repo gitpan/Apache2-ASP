@@ -33,4 +33,5 @@ lib/Apache2/ASP/Handler.pm
 lib/Apache2/ASP/UploadHandler.pm
 lib/Apache2/ASP/MockRequest.pm
 lib/Apache2/ASP/MediaManager.pm
+lib/Apache2/ASP/URLFilter.pm
 META.yml
