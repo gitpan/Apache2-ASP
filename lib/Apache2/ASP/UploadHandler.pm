@@ -87,7 +87,7 @@ Then, create a web pages with a form that uploads a file to C</handlers/MyUpload
 
   <html>
   ...
-  <form method="POST" enctype="multipart/form-data">
+  <form method="POST" enctype="multipart/form-data" action="/handlers/MyUploader">
     <input type="file" name="filename">
     <input type="submit" value="Click Here to Upload">
   </form>

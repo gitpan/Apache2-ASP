@@ -4,21 +4,9 @@ use base 'Apache2::ASP::GlobalASA';
 use vars qw($Request $Response $Session $Application $Server $Form);
 use Data::Dumper;
 
-sub Script_OnStart
+sub Session_OnStart
 {
-  # do stuff here.
-#  $Request->SetUploadHook(sub {
-#    my ($upload, $len, $data) = @_;
-#    my $script = $Request->ServerVariables("SCRIPT_FILENAME");
-#    warn "OK: Request to '$script': " . Dumper($upload);
-#    1;
-#  });
-}
-
-
-sub Script_OnEnd
-{
-#  $Request->SetUploadHook(sub {});
+  $Session->{file_upload_root} = "$ENV{APACHE2_APPLICATION_ROOT}/MEDIA";
 }
 
 1;# return true:

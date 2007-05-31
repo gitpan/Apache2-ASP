@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.12 2007-05-30
+  - Added Apache2::ASP::MediaManager
+  - Fixed documentation for Apache2::ASP::UploadHandler
+
 0.11 2007-05-30
   - Fixed inaccurate documentation about the table structure for Sessions.
 

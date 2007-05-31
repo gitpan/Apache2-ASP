@@ -27,6 +27,7 @@ my %require = (
   'Storable'              => "",
   'Mail::Sendmail'        => "",
   'Time::HiRes'           => "",
+  "MIME::Types"           => "",
 );
 my @scripts = qw( t/TEST );
 
