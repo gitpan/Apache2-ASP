@@ -15,6 +15,9 @@ SYNOPSIS
       </html>
 
 DESCRIPTION
+    THIS MODULE IS STILL UNDER DEVELOPMENT and is not intended for
+    production use until version 1.0 has been released.
+
     Apache2::ASP is a new implementation of the ASP web programming for the
     mod_perl2 environment. Its aim is high performance, stability,
     scalability and ease of use.

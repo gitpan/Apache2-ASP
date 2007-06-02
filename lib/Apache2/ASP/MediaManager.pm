@@ -6,6 +6,7 @@ use base 'Apache2::ASP::UploadHandler';
 use MIME::Types;
 
 my $mimetypes = MIME::Types->new();
+our %modes = ();
 
 
 #==============================================================================
@@ -27,13 +28,20 @@ sub run
   -f $filename or return 404;
   
   # Call our extension hooks:
-  if( $Request->Form('mode') eq 'delete' )
+  if( my $mode = $Request->Form('mode') )
   {
-    $s->before_delete($Session, $Request, $Response, $Server, $Application)
-      or return;
-    $s->delete_file( $Session, $Request, $Response, $Server, $Application, $filename );
-    $s->after_delete($Session, $Request, $Response, $Server, $Application);
-    return;
+    if( $mode eq 'delete' )
+    {
+      $s->before_delete($Session, $Request, $Response, $Server, $Application)
+        or return;
+      $s->delete_file( $Session, $Request, $Response, $Server, $Application, $filename );
+      $s->after_delete($Session, $Request, $Response, $Server, $Application);
+      return;
+    }
+    elsif( exists($modes{ $mode }) && defined($modes{ $mode }) )
+    {
+      return $modes{$mode}->( @_ );
+    }# end if()
   }# end if()
   
   # Get the readable filehandle:
@@ -327,6 +335,15 @@ sub after_delete
   my ($s, $Session, $Request, $Response, $Server, $Application) = @_;
   
 }# end after_delete()
+
+
+#==============================================================================
+sub register_mode
+{
+  my ($s, %info) = @_;
+  
+  $modes{ $info{name} } = $info{handler};
+}# end register_mode()
 
 1;# return true:
 

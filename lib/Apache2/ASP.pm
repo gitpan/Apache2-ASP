@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.14;
+our $VERSION = 0.15;
 
 use strict;
 use warnings 'all';
@@ -557,6 +557,9 @@ Apache2::ASP - ASP for a mod_perl2 environment.
   </html>
 
 =head1 DESCRIPTION
+
+B<THIS MODULE IS STILL UNDER DEVELOPMENT> and is not intended for production use
+until version 1.0 has been released.
 
 Apache2::ASP is a new implementation of the ASP web programming for the mod_perl2 
 environment.  Its aim is high performance, stability, scalability and ease of use.
