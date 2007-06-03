@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.16 2007-06-02
+  - Added tests for Apache2::ASP::MediaManager.
+  - Updated documentation for Apache2::ASP::MediaManager.
+  - Updated documentation for Apache2::ASP.
+
 0.15 2007-06-02
   - Added the ability to register "mode" handlers for subclasses
     of Apache2::ASP::MediaManager.

@@ -200,12 +200,26 @@ INSTALLATION
       |-- conf
       |   |-- apache2-asp-config.xml
       |   `-- httpd.conf
+      |-- etc
+      |   |-- other_files_needed_by_the_site.txt
+      |   `-- giant_word_dictionary.txt
       |--handlers
       |  |--MyHandler.pm
       |  `--MyOtherHandler.pm
       `-- www
           |-- GlobalASA.pm
           `-- index.asp
+
+BUGS
+    It's possible that some bugs have found their way into this release.
+
+    Use RT <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit
+    bug reports.
+
+HOMEPAGE
+    Please visit the Apache2::ASP homepage at
+    <http://apache2-asp.no-ip.org/> to see examples of Apache2::ASP in
+    action.
 
 AUTHOR
     John Drago <mailto:jdrago_999@yahoo.com>

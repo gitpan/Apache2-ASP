@@ -7,6 +7,9 @@ DirectoryIndex index.asp
 
 # Declare some important variables:
 PerlSetEnv APACHE2_APPLICATION_ROOT @ServerRoot@
+PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT @ServerRoot@/MEDIA
+
+PerlRequire @ServerRoot@/httpd_startup.pl
 
 # Load up some important modules:
 PerlModule Apache::DBI
@@ -18,6 +21,10 @@ PerlModule Apache2::RequestRec
 PerlModule Apache2::RequestIO
 PerlModule Apache2::Connection
 PerlModule Apache2::SubRequest
+
+# Configuration for MediaManager:
+PerlModule Apache2::ASP::URLFilter
+PerlTransHandler Apache2::ASP::URLFilter
 
 # All *.asp files are handled by Apache2::ASP
 <Files ~ (\.asp$)>

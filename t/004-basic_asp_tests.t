@@ -6,10 +6,10 @@ use warnings 'all';
 use Apache2::ASP;
 use Apache::Test;
 use Apache::TestUtil;
-use Apache::TestRequest qw( GET_BODY UPLOAD );
+use Apache::TestRequest qw( GET_BODY GET UPLOAD );
 use Cwd;
 
-plan tests => 17,
+plan tests => 22,
   sub { $^O ne 'MSWin32'};
 
 # Make sure we can render a simple page:
@@ -31,6 +31,25 @@ plan tests => 17,
   my $url = '/003-form-variables.asp?name=John';
   my $data = GET_BODY $url;
   ok( $data =~ m/Hello there, John\./ );
+}
+
+# Load test:
+{
+  my $url = '/002-asp-expression.asp';
+  
+  for( 1...10 )
+  {
+    my $data = GET_BODY $url;
+    ok( 1 );
+  }# end for()
+}
+
+# Controller test:
+{
+  my $url = '/handlers/Apache2_ASP_Handler';
+  my $data = GET_BODY $url;
+  
+  ok( $data eq 'This is the default handler response.' );
 }
 
 # File upload: 1/3:
@@ -93,21 +112,49 @@ plan tests => 17,
   ok( 1 );
 }
 
-# Load test:
+# MediaManager tests:
 {
-  my $url = '/002-asp-expression.asp';
+  my $url = "/handlers/MediaManager";
+  my $pwd = getcwd();
   
-  for( 1...10 )
-  {
-    my $data = GET_BODY $url;
-    ok( 1 );
-  }# end for()
-}
-
-# Controller test:
-{
-  my $url = '/handlers/Apache2_ASP_Handler';
-  my $data = GET_BODY $url;
+  my $filename = "$pwd/$0.txt";
+  my $str = "Hello, World! " x900;
+  open my $ofh, '>', $filename;
+  print $ofh $str;
+  close($ofh);
   
-  ok( $data eq 'This is the default handler response.' );
+  # Test out the "create" mode:
+  my $res = UPLOAD $url,
+            filename => $filename,
+            mode  => 'create';
+  
+  # We should have been told that the Create is Successful:
+  my $expected = 'Create Successful';
+  ok( $expected eq $res->content );
+  
+  # Test out the "update" mode:
+  $res = UPLOAD $url,
+            filename => $filename,
+            mode  => 'update';
+  
+  # We should have been told that the Update is Successful:
+  $expected = 'Update Successful';
+  ok( $expected eq $res->content );
+  
+  # Change the URL to the file's URL itself:
+  my $file = "$0.txt";
+  $file =~ s/^t\///;
+  $url = "/media/$file";
+  
+  # Make sure we can download the file:
+  $res = GET $url;
+  ok( $res->content eq $str );
+  
+  # Test out the "mymode" extension hook:
+  $res = GET "$url?mode=mymode";
+  ok( $res->content eq 'mymode Successful' );
+  
+  # Make sure we can delete the file:
+  $res = GET "$url?mode=delete";
+  ok( $res->content eq 'Delete Successful' );
 }

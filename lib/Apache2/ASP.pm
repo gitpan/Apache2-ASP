@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.15;
+our $VERSION = 0.16;
 
 use strict;
 use warnings 'all';
@@ -44,6 +44,7 @@ sub handler : method
   if( ref($handler_pkg) eq 'HASH' )
   {
     # An error has occurred - return the error status:
+    warn "ERROR: Cannot load handler";
     return $handler_pkg->{STATUS};
   }# end if()
   
@@ -748,12 +749,26 @@ Well, it looks like this:
   |-- conf
   |   |-- apache2-asp-config.xml
   |   `-- httpd.conf
+  |-- etc
+  |   |-- other_files_needed_by_the_site.txt
+  |   `-- giant_word_dictionary.txt
   |--handlers
   |  |--MyHandler.pm
   |  `--MyOtherHandler.pm
   `-- www
       |-- GlobalASA.pm
       `-- index.asp
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
 
 =head1 AUTHOR
 

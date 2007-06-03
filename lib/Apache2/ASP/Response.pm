@@ -231,7 +231,7 @@ sub _print_headers
   
   return if $s->{_set_headers};
   
-  $s->{r}->content_type( $s->{ContentType} );
+  $s->{r}->content_type( $s->{ContentType} || 'text/html' );
   my ($status) = $s->{Status} =~ m/^(\d+)/;
   $s->{r}->status( $status );
   

@@ -4,6 +4,6 @@
   <db_driver>mysql</db_driver>
   <db_name>besa_dev</db_name>
   <db_host>localhost</db_host>
-  <session_cookie_domain>.besacode.com</session_cookie_domain>
+  <session_cookie_domain>localhost</session_cookie_domain>
   <session_cookie_name>session-id</session_cookie_name>
 </apache2-asp-config>

@@ -431,6 +431,40 @@ Apache2::ASP aims to deliver this right out of the box.  Since all the file-uplo
 already done, all you need to do is subclass C<Apache2::ASP::MediaManager> and go from there
 (as shown in the synopsis above).
 
+=head1 PROTECTED METHODS
+
+The following methods are intended for subclasses of C<Apache2::ASP::MediaManager>.
+
+=head2 register_mode( %args )
+
+Allows your MediaManager class to handle "mode=xxx" requests on files.
+
+Example:
+
+  package MyMediaManager;
+  
+  use base 'Apache2::ASP::MediaManager';
+  
+  __PACKAGE__->register_mode(
+    name    => 'mymode',
+    handler => \&do_mymode,
+  );
+  
+  # Accessible via URLs such as /media/[filename]?mode=mymode
+  sub do_mymode
+  {
+    my ($Session, $Request, $Response, $Server, $Application) = @_;
+    
+    # ... do stuff ...
+    $Response->Write("mymode is successful!");
+  }# end do_mymode()
+
+Any call to C</media/file123.gif?mode=mymode> will execute your C<do_mymode()> method.
+
+This is useful for generating image thumbnails - i.e. C</media/file123.gif?mode=thumb&max_w=100&max_h=80>
+
+The rest is left as an exercise for the reader.
+
 =head1 OVERRIDABLE METHODS
 
 =head2 before_create($s, $Session, $Request, $Response, $Server, $Application, $Upload)
@@ -480,23 +514,40 @@ time to make a note that the download occurred (who downloaded what and when).
 =head1 ADVANCED METHODS
 
 The following are overridable methods that - if necessary - can be overridden to achieve specialized
-functionality (such as composing file paths differently, for example).
+functionality (such as composing file paths differently, or archiving files instead of deleting them,
+for example).
 
 =head2 compose_download_file_path($s, $Session, $Request, $Response, $Server, $Application)
 
+Should return a string like "file_to_be_downloaded.gif"
+
 =head2 compose_download_file_name($s, $Session, $Request, $Response, $Server, $Application)
 
-=head2 compose_upload_file_name($s, $Session, $Request, $Response, $Server, $Application, $Upload)
+Should return a string like "/absolute/local/path/to/file.gif"
 
 =head2 delete_file($s, $Session, $Request, $Response, $Server, $Application, $filename)
 
-=head2 open_file_for_writing($s, $Session, $Request, $Response, $Server, $Application, $filename)
+Should delete C<$filename> from disk.
 
 =head2 send_http_headers($s, $Session, $Request, $Response, $Server, $Application, $filename, $file, $ext)
 
+Should cause any HTTP headers to be sent to the client.
+
 =head2 compose_upload_file_name($s, $Session, $Request, $Response, $Server, $Application, $Upload)
 
+Should return a string like "uploaded_file.gif"
+
+=head2 open_file_for_reading($s, $Session, $Request, $Response, $Server, $Application, $filename)
+
+Should return a filehandle opened for reading.
+
+=head2 open_file_for_writing($s, $Session, $Request, $Response, $Server, $Application, $filename)
+
+Should return a filehandle opened for writing.
+
 =head2 open_file_for_appending($s, $Session, $Request, $Response, $Server, $Application, $filename)
+
+Should return a filehandle opened for appending.
 
 =head1 SEE ALSO
 

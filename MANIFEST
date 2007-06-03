@@ -5,8 +5,9 @@ README
 t/TEST.PL
 t/sessiontest
 t/003-application.t
-t/004-ASP_tests.t
+t/004-basic_asp_tests.t
 t/TEST
+t/MEDIA
 t/conf/extra.conf.in
 t/conf/apache2-asp-config.xml
 t/002-session.t
