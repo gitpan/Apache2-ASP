@@ -142,7 +142,7 @@ sub compose_download_file_path
   
   # Compose the local filename:
   my $file = $Request->Form->{file};
-  my $filename = $ENV{APACHE2_MEDIA_MANAGER_UPLOAD_ROOT} . '/' . $file;
+  my $filename = $ENV{APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT} . '/' . $file;
   
   return $filename;
 }# end compose_file_path()
@@ -180,7 +180,7 @@ sub compose_upload_file_path
 {
   my ($s, $Session, $Request, $Response, $Server, $Application, $Upload, $filename) = @_;
   
-  return "$ENV{APACHE2_MEDIA_MANAGER_UPLOAD_ROOT}/$filename";
+  return "$ENV{APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT}/$filename";
 }# end compose_upload_file_path()
 
 
@@ -359,7 +359,7 @@ Apache2::ASP::MediaManager - Instant file management for Apache2::ASP applicatio
 
 First, add the following to your httpd.conf file:
 
-  PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT /usr/local/dstack/MEDIA
+  PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT /usr/local/dstack/MEDIA
   
   # Configuration for MediaManager:
   RedirectMatch ^/media/(.*) /handlers/MyMediaManager?file=$1

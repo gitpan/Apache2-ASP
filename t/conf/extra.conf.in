@@ -6,8 +6,8 @@ LoadModule apreq_module /usr/local/apache2/modules/mod_apreq2.so
 DirectoryIndex index.asp
 
 # Declare some important variables:
-PerlSetEnv APACHE2_APPLICATION_ROOT @ServerRoot@
-PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT @ServerRoot@/MEDIA
+PerlSetEnv APACHE2_ASP_APPLICATION_ROOT @ServerRoot@
+PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT @ServerRoot@/MEDIA
 
 PerlRequire @ServerRoot@/httpd_startup.pl
 
@@ -21,6 +21,10 @@ PerlModule Apache2::RequestRec
 PerlModule Apache2::RequestIO
 PerlModule Apache2::Connection
 PerlModule Apache2::SubRequest
+
+# Specify which Session manager you want:
+PerlSetEnv APACHE2_ASP_SESSION_MANAGER Apache2::ASP::Session::MySQL
+PerlSetEnv APACHE2_ASP_APPLICATION_MANAGER Apache2::ASP::Application::MySQL
 
 # Configuration for MediaManager:
 PerlModule Apache2::ASP::URLFilter

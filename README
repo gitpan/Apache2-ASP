@@ -15,9 +15,6 @@ SYNOPSIS
       </html>
 
 DESCRIPTION
-    THIS MODULE IS STILL UNDER DEVELOPMENT and is not intended for
-    production use until version 1.0 has been released.
-
     Apache2::ASP is a new implementation of the ASP web programming for the
     mod_perl2 environment. Its aim is high performance, stability,
     scalability and ease of use.
@@ -86,8 +83,8 @@ INSTALLATION
     Then, in your httpd.conf:
 
       # Declare this important variable:
-      PerlSetEnv APACHE2_APPLICATION_ROOT /path/to/your/website
-      PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
+      PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /path/to/your/website
+      PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
 
       # Needed for CGI::Apache2::Wrapper to work properly:
       LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so

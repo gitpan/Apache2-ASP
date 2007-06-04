@@ -9,10 +9,10 @@ use Cwd;
 
 # Set the environment variable:
 my $here = getcwd();
-$ENV{APACHE2_APPLICATION_ROOT} = "$here/t";
+$ENV{APACHE2_ASP_APPLICATION_ROOT} = "$here/t";
 
 # Load up some modules:
-use_ok('Apache2::ASP::Session');
+use_ok('Apache2::ASP::Session::MySQL');
 use_ok('Apache2::ASP');
 use_ok('DBI');
 use_ok('DBD::SQLite');
@@ -84,7 +84,7 @@ EOF
   $sth->finish();
   
   # Clobber the DSN environment variable:
-  $ENV{APACHE2_ASP_SESSION_DSN} = ['DBI:SQLite:dbname=t/sessiontest'];
+  $ENV{APACHE2_ASP_STATE_DSN} = ['DBI:SQLite:dbname=t/sessiontest'];
 }# end setup_session_database()
 
 
@@ -94,7 +94,7 @@ sub setup_session
   my $session_id = shift;
   
   # Finally - return a session:
-  return Apache2::ASP::Session->new( $session_id, $r );
+  return Apache2::ASP::Session::MySQL->new( $session_id, $r );
 }# end setup_session()
 
 

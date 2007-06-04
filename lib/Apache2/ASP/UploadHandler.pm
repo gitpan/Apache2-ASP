@@ -1,8 +1,6 @@
 
 package Apache2::ASP::UploadHandler;
 
-our $VERSION = 0.08;
-
 use strict;
 use base 'Apache2::ASP::Handler';
 our $LastUpdate;

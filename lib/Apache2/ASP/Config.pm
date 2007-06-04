@@ -1,8 +1,6 @@
 
 package Apache2::ASP::Config;
 
-our $VERSION = 0.08;
-
 use strict;
 use warnings;
 use XML::Simple;
@@ -14,11 +12,11 @@ sub import
   my ($class, $option) = @_;
 
   # First load the configuration:
-  my $file = "$ENV{APACHE2_APPLICATION_ROOT}/conf/apache2-asp-config.xml";
+  my $file = "$ENV{APACHE2_ASP_APPLICATION_ROOT}/conf/apache2-asp-config.xml";
   my $xml = eval { XMLin( $file ) }
     or die "Cannot load $file: $@";
   $ENV{$_} = $xml->{$_} foreach keys %$xml;
-  $ENV{APACHE2_ASP_DSN} = [
+  $ENV{APACHE2_ASP_STATE_DSN} = [
     "DBI:$xml->{db_driver}:$xml->{db_name}:$xml->{db_host}",
     $xml->{db_user},
     $xml->{db_pass}

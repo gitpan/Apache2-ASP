@@ -3,7 +3,6 @@
 use strict;
 use warnings 'all';
 
-use Apache2::ASP;
 use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest qw( GET_BODY GET UPLOAD );

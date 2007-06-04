@@ -1,8 +1,6 @@
 
 package Apache2::ASP::Response;
 
-our $VERSION = 0.08;
-
 use strict;
 use warnings 'all';
 use Apache2::Const "-compile" => ':common';

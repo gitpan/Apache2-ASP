@@ -1,8 +1,6 @@
 
 package Apache2::ASP::Server;
 
-our $VERSION = 0.08;
-
 use strict;
 use warnings;
 use Apache2::Directive;

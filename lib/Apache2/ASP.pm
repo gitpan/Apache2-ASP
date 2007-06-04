@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.16;
+our $VERSION = 0.17;
 
 use strict;
 use warnings 'all';
@@ -30,6 +30,9 @@ use vars qw(
   $Session $Request $Response $Server $Application $GlobalASA
 );
 
+# Ignore these *Manager variables - they not part of the public API:
+use vars qw( $SessionManager $ApplicationManager );
+
 
 #==============================================================================
 sub handler : method
@@ -37,7 +40,10 @@ sub handler : method
   my ($s, $r) = @_;
   $s = bless {r => $r}, ref($s) || $s;
   
-  use lib "$ENV{APACHE2_APPLICATION_ROOT}/handlers";
+  # We need our /handlers:
+  use lib "$ENV{APACHE2_ASP_APPLICATION_ROOT}/handlers";
+  $s->_setup_session_manager();
+  $s->_setup_application_manager();
   
   # Try to get the handler package:
   my $handler_pkg = $s->_find_handler_package( $ENV{REQUEST_URI} );
@@ -53,6 +59,36 @@ sub handler : method
   
   return $s->_handle_request( $r, $q );
 }# end handler()
+
+
+#==============================================================================
+sub _setup_session_manager
+{
+  my $s = shift;
+  
+  ($SessionManager) ||= ( $ENV{APACHE2_ASP_SESSION_MANAGER} || 'Apache2::ASP::Session::MySQL' );
+  
+  my $file = $SessionManager;
+  $file =~ s/::/\//g;
+  $file .= ".pm";
+  return if $INC{$file};
+  require $file;
+}# end _setup_session_handler()
+
+
+#==============================================================================
+sub _setup_application_manager
+{
+  my $s = shift;
+  
+  ($ApplicationManager) ||= ( $ENV{APACHE2_ASP_APPLICATION_MANAGER} || 'Apache2::ASP::Application::MySQL' );
+  
+  my $file = $ApplicationManager;
+  $file =~ s/::/\//g;
+  $file .= ".pm";
+  return if $INC{$file};
+  require $file;
+}# end _setup_application_manager()
 
 
 #==============================================================================
@@ -101,11 +137,11 @@ sub _handle_handler_request
   my ($s, $r, $q) = @_;
   
   # Standard ASP objects:
-  $Session     = Apache2::ASP::Session->new( undef, $r );
+  $Session     = $SessionManager->new( undef, $r );
   $Request     = Apache2::ASP::Request->new( $r, $q );
   $Response    = Apache2::ASP::Response->new( $r, $q, $s );
   $Server      = Apache2::ASP::Server->new( $r, $q, \"" );
-  $Application = Apache2::ASP::Application->new( );
+  $Application = $ApplicationManager->new( );
   
   # Setup the global.asa:
   $GlobalASA = $s->_setup_globalASA( $r );
@@ -184,11 +220,11 @@ sub _handle_dynamic_request
   close( $ifh );
 
   # Standard ASP objects:
-  $Session     = Apache2::ASP::Session->new( undef, $r );
+  $Session     = $SessionManager->new( undef, $r );
   $Request     = Apache2::ASP::Request->new( $r, $q );
   $Response    = Apache2::ASP::Response->new( $r, $q, $s );
   $Server      = Apache2::ASP::Server->new( $r, $q, \$script_contents );
-  $Application = Apache2::ASP::Application->new( );
+  $Application = $ApplicationManager->new( );
   
   # Setup the global.asa:
   $GlobalASA = $s->_setup_globalASA( $r );
@@ -237,11 +273,11 @@ sub handle_sub_request
   my $r = Apache2::ASP::MockRequest->new();
 
   # Standard ASP objects:
-  my $Session     = Apache2::ASP::Session->new( undef, $r );
+  my $Session     = $SessionManager->new( undef, $r );
   my $Request     = Apache2::ASP::Request->new( $r, $s->{q} );
   my $Response    = Apache2::ASP::Response->new( $r, $s->{q}, $s );
   my $Server      = Apache2::ASP::Server->new( $r, $s->{q}, \$script_contents );
-  my $Application = Apache2::ASP::Application->new( );
+  my $Application = $ApplicationManager->new( );
   
   # Setup the global.asa:
   my $GlobalASA = $s->_setup_globalASA( $r );
@@ -559,9 +595,6 @@ Apache2::ASP - ASP for a mod_perl2 environment.
 
 =head1 DESCRIPTION
 
-B<THIS MODULE IS STILL UNDER DEVELOPMENT> and is not intended for production use
-until version 1.0 has been released.
-
 Apache2::ASP is a new implementation of the ASP web programming for the mod_perl2 
 environment.  Its aim is high performance, stability, scalability and ease of use.
 
@@ -638,8 +671,8 @@ Learn more by reading the L<Apache2::ASP::Application> documentation.
 Then, in your httpd.conf:
   
   # Declare this important variable:
-  PerlSetEnv APACHE2_APPLICATION_ROOT /path/to/your/website
-  PerlSetEnv APACHE2_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
+  PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /path/to/your/website
+  PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
 
   # Needed for CGI::Apache2::Wrapper to work properly:
   LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
