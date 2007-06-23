@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.03 2007-06-23
+  - Updated Apache2::ASP::PageHandler to correctly decide whether an ASP
+    script should be recompiled or not.
+
 1.02 2007-06-23
   - Apache2::ASP::Manual::Intro was changed from *.pod to *.pm so that CPAN
     would index it properly.

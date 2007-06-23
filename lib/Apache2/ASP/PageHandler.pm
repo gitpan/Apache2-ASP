@@ -6,6 +6,7 @@ use warnings 'all';
 use base 'Apache2::ASP::Handler';
 use Apache2::ASP::Parser;
 
+our %ASP_Times = ();
 
 #==============================================================================
 sub run
@@ -79,9 +80,18 @@ sub asp_has_changed
   my ($s, $package_filename, $asp_filename) = @_;
   
   my $pm_time   = (stat($package_filename))[9];
-  my $asp_time  = (stat($asp_filename))[9];
+  my $asp_time;
+  if( $ASP_Times{ $asp_filename } )
+  {
+    $asp_time = $ASP_Times{ $asp_filename };
+  }
+  else
+  {
+    $asp_time  = (stat($asp_filename))[9];
+  }# end if()
   
   return $asp_time && $pm_time && ($asp_time > $pm_time);
+  
 }# end asp_has_changed()
 
 
@@ -125,6 +135,8 @@ sub compile_asp
     or die "Cannot open '$package_filename' for writing: $!";
   print $ofh $page_code;
   close($ofh);
+  
+  $ASP_Times{$asp_filename} = time();
   
   return 1;
 }# end compile_asp()

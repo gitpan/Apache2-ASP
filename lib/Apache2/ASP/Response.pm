@@ -138,7 +138,7 @@ sub Flush
   my $s = shift;
   
   my $buffer = delete( $s->{_buffer} );
-  if( $s->{asp}->global_asa )
+  if( ( ! $s->{is_subrequest} ) && $s->{asp}->global_asa )
   {
     $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer );
   }# end if()
@@ -204,12 +204,14 @@ sub Include
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
+#  $s->{is_subrequest} = 1;
   my $ref = $asp->setup_request( $r, $s->{asp}->q );
   eval {
     $ref->( 1, @args );
     $s->Write( $r->buffer );
     $s->Flush;
   };
+#  $s->{is_subrequest} = 0;
   if( $@ )
   {
     die "Cannot Include script '$script': $@";
@@ -232,12 +234,13 @@ sub TrapInclude
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
+#  $s->{is_subrequest} = 1;
   my $ref = $asp->setup_request( $r, $s->{asp}->q );
   
   my $include = eval {
     $ref->( 1, @args );
     $asp->response->End;
-#    $s->{asp}->subrequest( $script, @args );
+#    $s->{is_subrequest} = 0;
     return $r->buffer;
   };
   if( $@ )
