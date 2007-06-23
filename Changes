@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.06 2007-06-23
+  - Fixed a bug in Apache2::ASP::PageHandler that caused a bug in which changed ASP
+    scripts would not be reloaded by other Apache processes after the first Apache
+    process had recompiled the *.pm file as a result of the ASP script being changed.
+
 1.05 2007-06-23
   - $Application->save() is now called at the end of each (non-error) request.
 

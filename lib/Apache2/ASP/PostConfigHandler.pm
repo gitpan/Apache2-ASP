@@ -10,6 +10,20 @@ sub handler : method
   $ENV{APACHE2_ASP_GLOBALCONFIG} = Apache2::ASP::GlobalConfig->new();
   warn "Apache2::ASP::GlobalConfig has been loaded into \$ENV{APACHE2_ASP_GLOBALCONFIG}\n";
   
+  foreach my $config ( $ENV{APACHE2_ASP_GLOBALCONFIG}->web_applications )
+  {
+    opendir my $dir, $config->page_cache_root . '/' . $config->application_name
+      or return;
+    foreach my $file ( readdir($dir) )
+    {
+      next if $file =~ m/\.+$/;
+      $file = $config->application_name . '/' . $file;
+      eval { require $file };
+      warn "Couldn't load '$file': $@"
+        if $@;
+    }# end foreach()
+  }# end foreach()
+  
   return 0;
 }# end handler()
 
