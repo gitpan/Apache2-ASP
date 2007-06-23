@@ -138,7 +138,7 @@ sub Flush
   my $s = shift;
   
   my $buffer = delete( $s->{_buffer} );
-  if( ( ! $s->{is_subrequest} ) && $s->{asp}->global_asa )
+  if( $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && ( ! $s->{is_subrequest} ) && $s->{asp}->global_asa )
   {
     $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer );
   }# end if()

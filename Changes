@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.04 2007-06-23
+  - GlobalASA::Script_OnFlush is only called when the current handler
+    isa Apache2::ASP::PageHandler.
+
 1.03 2007-06-23
   - Updated Apache2::ASP::PageHandler to correctly decide whether an ASP
     script should be recompiled or not.

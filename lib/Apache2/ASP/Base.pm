@@ -20,7 +20,7 @@ sub new
   
   my $s = bless {
     config  => $config, #Apache2::ASP::Config->new(),
-  }, $class;
+  }, ref($class) ? ref($class) : $class;
   
   return $s;
 }# end new()
@@ -45,6 +45,7 @@ sub setup_request
   
   # Who's going to handle this request?
   my $handler = $s->resolve_request_handler( $s->r->uri );
+  $s->{handler} = $handler;
   
   # Now execute the request handler:
   my $subref = sub {
