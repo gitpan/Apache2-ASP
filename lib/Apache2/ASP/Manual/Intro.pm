@@ -1,4 +1,10 @@
 
+package Apache2::ASP::Manual::Intro;
+
+1;
+
+__END__
+
 =pod
 
 =head1 NAME
@@ -284,3 +290,4 @@ This software is free software.  It may be used and distributed under the
 same terms as Perl itself.
 
 =cut
+
