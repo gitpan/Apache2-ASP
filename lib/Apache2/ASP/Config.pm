@@ -46,6 +46,13 @@ sub validate_config
   
   $s->_fixup_path( 'application_root' );
   
+  die "web_application.domain_re is not defined"
+    unless defined($s->{domain_re});
+  
+  eval { 'whatever' =~ m/$s->{domain_re}/ };
+  die "web_application.domain_re has errors: $@"
+    if $@;
+  
   die "web_application.application_root '@{[ $s->application_root ]}' does not exist"
     unless -d $s->application_root;
   
@@ -203,6 +210,8 @@ __END__
 =pod
 
 =head1 NAME
+
+Apache2::ASP::Config - Configuration object for Apache2::ASP web applications.
 
 =head1 READ THIS FIRST
 

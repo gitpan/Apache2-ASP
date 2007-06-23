@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.00 2007-06-22
+  - Fixed POD in Apache2::ASP::Config.
+  - Apache2::ASP::Config now verifies the validity of web_application.domain_re values.
+
 0.18 2007-06-22
   - Completely rewrote almost everything.
   - Almost everything not rewritten was refactored.
