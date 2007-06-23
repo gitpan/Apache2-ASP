@@ -3,19 +3,21 @@ package Apache2::ASP::Server;
 
 use strict;
 use warnings;
-use Apache2::Directive;
 use Mail::Sendmail;
 
 
 #==============================================================================
 sub new
 {
-  my ($s, $r, $q, $scriptref) = @_;
+  my ($s, $asp) = @_;
   return bless {
-    r         => $r,
-    q         => $q,
-    ScriptRef => $scriptref,
-  }, ref($s) || $s;
+    asp       => $asp,
+    r         => $asp->{r},
+    q         => $asp->{q},
+    
+    # This may be deprecated soon:
+    ScriptRef => \"",
+  }, $s;
 }# end new()
 
 
@@ -61,9 +63,17 @@ sub MapPath
 {
   my ($s, $path) = @_;
   
-  # Mr. Chamas did this right the first time :)
   my $subr = $s->{r}->lookup_uri( $path );
-  $subr ? $subr->filename : undef;
+  my $file = $subr ? $subr->filename : undef;
+  if( defined($file) && -f $file )
+  {
+    return $file;
+  }
+  else
+  {
+    my $file = $s->{asp}->config->www_root . $path;
+    return -f $file ? $file : undef;
+  }# end if()
 }# end MapPath()
 
 
@@ -111,6 +121,8 @@ performed asynchronously.
 
 =head1 PUBLIC METHODS
 
+=head2 new( $asp )
+
 =head2 URLEncode( $str )
 
 Returns a URL-Encoded version of the string provided.
@@ -122,6 +134,12 @@ For example, "test@test.com" becomes "test%40test.com" with C<URLEncode()>.
 Returns an HTML-Encoded version of the string provided.
 
 For example, "<b>Hello</b>" becomes "C<&lt;b&gt;Hello&lt;/b&gt;>" with C<HTMLEncode()>.
+
+=head2 HTMLDecode( $str )
+
+Returns an HTML-Decoded version of the string provided.
+
+For example, "C<&lt;b&gt;Hello&lt;/b&gt;>" becomes "<b>Hello</b>" with C<HTMLDecode()>.
 
 =head2 MapPath( $path )
 
@@ -147,9 +165,20 @@ For example:
     $Response->Write("Hello!");
   %>
 
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
-John Drago L<jdrago_999@yahoo.com>
+John Drago L<mailto:jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 

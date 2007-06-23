@@ -1,24 +1,24 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache2-ASP
-version:      0.17
+version:      0.18
 version_from: lib/Apache2/ASP.pm
 installdirs:  site
 requires:
-    Apache2::Const:                2.000002
     Apache::Test:                  
-    CGI::Apache2::Wrapper:         0.21
+    CGI:                           
+    CGI::Apache2::Wrapper:         
     Cwd:                           
-    DBD::SQLite:                   1.13
-    DBI:                           1.5
+    DateTime::Duration:            
+    DBD::SQLite:                   
+    DBI:                           
     Devel::StackTrace:             
     Digest::MD5:                   
-    HTTP::Date:                    1.47
+    HTTP::Date:                    
     Mail::Sendmail:                
     MIME::Types:                   
     Storable:                      
-    Test::More:                    
-    Time::HiRes:                   
+    Sys::Hostname:                 
     XML::Simple:                   
 
 distribution_type: module

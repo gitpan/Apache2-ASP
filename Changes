@@ -1,5 +1,36 @@
 Revision history for Perl extension Apache2::ASP.
 
+0.18 2007-06-22
+  - Completely rewrote almost everything.
+  - Almost everything not rewritten was refactored.
+  - Added tests to achieve nearly 100% code coverage.
+  - Changed the interface for Apache2::ASP::Handler.
+  - Changed the interface for Apache2::ASP::UploadHandler.
+  - Changed the interface for Apache2::ASP::MediaManager.
+  - ASP scripts are converted into *.pm files, then loaded via require().
+  - If the ASP has not changed, we don't recompile the ASP.
+  - If the ASP did change since the *.pm file was written, we recompile the ASP.
+  - I hope to be able to perform code coverage testing on ASP scripts at some point.
+  - Added Apache2::ASP::Config.
+  - Changed the apache2-asp-config.xml format to support Apache2::ASP::Config.
+  - Added Apache2::ASP::PostConfigHandler.
+  - Added Apache2::ASP::PageHandler.
+  - Added Apache2::ASP::ApacheRequest.
+  - Added Apache2::ASP::UploadHook.
+  - Added Apache2::ASP::UploadHookArgs.
+  - Added Apache2::ASP::TransHandler.
+  - Broke out Apache2::ASP::Application into ApplicationStateManager and its 
+    database-specific subclasses (*::SQLite, *::MySQL, etc).
+  - Broke out Apache2::ASP::Session into SessionStateManager and its database-specific
+    subclasses (*::SQLite, *::MySQL, etc).
+  - Added the ability to subclass Apache2::ASP::Base.
+  - Apache2::ASP is now a subclass of Apache2::ASP::Base.
+  - Code coverage (on average) is above 90%
+  - Added requirements that the directory @ServerRoot@/PAGE_CACHE must exist and 
+    must be readable/writable by the server process.
+  - Added the ability to have several web applications defined in one apache2-asp-config.xml file.
+  - Added documentation for all classes.
+
 0.17 2007-06-03
   - Added the ability to subclass Apache2::ASP::Application
   - Added the ability to subclass Apache2::ASP::Session

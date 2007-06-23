@@ -1,12 +1,16 @@
 
 package Apache2::ASP;
 
-our $VERSION = 0.17;
+our $VERSION = 0.18;
 
 use strict;
 use warnings 'all';
-use APR::Table ();
+use base 'Apache2::ASP::Base';
+
 use Apache2::ASP::CGI;
+use Apache2::ASP::UploadHook;
+
+use APR::Table ();
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::Directive ();
@@ -14,430 +18,46 @@ use Apache2::Connection ();
 use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 use Devel::StackTrace;
-use Time::HiRes 'gettimeofday';
-
-use Apache2::ASP::Parser;
-use Apache2::ASP::Request;
-use Apache2::ASP::Response;
-use Apache2::ASP::Server;
-use Apache2::ASP::Application;
-use Apache2::ASP::Session;
-use Apache2::ASP::GlobalASA;
-use Apache2::ASP::MockRequest;
-use Apache2::ASP::Handler;
-
-use vars qw(
-  $Session $Request $Response $Server $Application $GlobalASA
-);
-
-# Ignore these *Manager variables - they not part of the public API:
-use vars qw( $SessionManager $ApplicationManager );
 
 
 #==============================================================================
 sub handler : method
 {
-  my ($s, $r) = @_;
-  $s = bless {r => $r}, ref($s) || $s;
+  my ($class, $r) = @_;
   
-  # We need our /handlers:
-  use lib "$ENV{APACHE2_ASP_APPLICATION_ROOT}/handlers";
-  $s->_setup_session_manager();
-  $s->_setup_application_manager();
+  # We function best as an object:
+  my $s = $class->SUPER::new( $ENV{APACHE2_ASP_CONFIG} );
   
-  # Try to get the handler package:
-  my $handler_pkg = $s->_find_handler_package( $ENV{REQUEST_URI} );
-  if( ref($handler_pkg) eq 'HASH' )
+  # What Apache2::ASP::Handler is going to handle this request?
+  my $handler_class = $s->resolve_request_handler( $r->uri );
+  if( $handler_class->isa('Apache2::ASP::UploadHandler') )
   {
-    # An error has occurred - return the error status:
-    warn "ERROR: Cannot load handler";
-    return $handler_pkg->{STATUS};
-  }# end if()
-  
-  my $q = $s->_setup_cgi( $handler_pkg );
-  $s->{q} = $q;
-  
-  return $s->_handle_request( $r, $q );
-}# end handler()
-
-
-#==============================================================================
-sub _setup_session_manager
-{
-  my $s = shift;
-  
-  ($SessionManager) ||= ( $ENV{APACHE2_ASP_SESSION_MANAGER} || 'Apache2::ASP::Session::MySQL' );
-  
-  my $file = $SessionManager;
-  $file =~ s/::/\//g;
-  $file .= ".pm";
-  return if $INC{$file};
-  require $file;
-}# end _setup_session_handler()
-
-
-#==============================================================================
-sub _setup_application_manager
-{
-  my $s = shift;
-  
-  ($ApplicationManager) ||= ( $ENV{APACHE2_ASP_APPLICATION_MANAGER} || 'Apache2::ASP::Application::MySQL' );
-  
-  my $file = $ApplicationManager;
-  $file =~ s/::/\//g;
-  $file .= ".pm";
-  return if $INC{$file};
-  require $file;
-}# end _setup_application_manager()
-
-
-#==============================================================================
-sub _handle_request
-{
-  my ($s, $r, $q) = @_;
-  
-  my $filename = $r->filename;
-  
-  if( -f $filename )
-  {
-    if( $filename =~ m/\.asp$/ )
-    {
-      return $s->_handle_dynamic_request( $r, $q, $filename );
-    }
-    else
-    {
-      return $s->_handle_static_request( $r, $q, $filename );
-    }# end if()
+    # We use the upload_hook functionality from Apache::Request
+    # to process uploads:
+    my $hook_obj = Apache2::ASP::UploadHook->new(
+      asp           => $s,
+      handler_class => $handler_class,
+    );
+    $s->{q} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
   }
-  elsif( $r->uri =~ m/^\/handlers\// )
+  else
   {
-    # This is a handler request:
-    return $s->_handle_handler_request( $r, $q );
-  }
-  elsif( -d $filename )
-  {
-    # See if there is an index.asp here:
-    if( -f $filename . "index.asp" )
-    {
-      $r->filename( $filename . "index.asp" );
-      return $s->handler( $r );
-    }
-    else
-    {
-      return 403;
-    }# end if()
+    # Not an upload - normal CGI functionality will work fine:
+    $s->{q} = Apache2::ASP::CGI->new( $r );
   }# end if()
   
-}# end _handle_request()
-
-
-#==============================================================================
-sub _handle_handler_request
-{
-  my ($s, $r, $q) = @_;
-  
-  # Standard ASP objects:
-  $Session     = $SessionManager->new( undef, $r );
-  $Request     = Apache2::ASP::Request->new( $r, $q );
-  $Response    = Apache2::ASP::Response->new( $r, $q, $s );
-  $Server      = Apache2::ASP::Server->new( $r, $q, \"" );
-  $Application = $ApplicationManager->new( );
-  
-  # Setup the global.asa:
-  $GlobalASA = $s->_setup_globalASA( $r );
-  $s->{_global_asa} = $GlobalASA;
-  
-  # Init the Session:
-  if( ! $Session->{__aspinit} )
-  {
-    $GlobalASA->Session_OnStart();
-    $Session->{__aspinit} = 1;
-  }# end if()
-  
-  # Init the Script:
-  $GlobalASA->Script_OnStart();
-  
-  # Figure out what package the controller is:
-  my ($handler_pkg) = $r->uri =~ m/^\/handlers\/([^\?]*)/
-    or return 404;
-  $handler_pkg =~ s/[^a-z0-9]/::/ig;
-  
-  # Get a reference to the main entrypoint for the handler:
-  eval "use $handler_pkg";
+  # Get our subref and execute it:
+  my $handler = $s->setup_request( $r, $s->{q} );
+  my $status = eval { $handler->( ) };
   if( $@ )
   {
-    # Handle the execution error:
-    return $s->_handle_error( $@ );
-  }# end if()
-  return 401 unless $handler_pkg->isa('Apache2::ASP::Handler');
-  my $coderef = $handler_pkg->can('run');
-
-  # Execute the handler:
-  eval { $coderef->( $handler_pkg, $Session, $Request, $Response, $Server, $Application ) };
-  if( $@ )
-  {
-    # Handle the execution error:
+    warn "ERROR AFTER CALLING \$handler->( ): $@";
     return $s->_handle_error( $@ );
   }# end if()
   
-  # Follow the GlobalASA rules:
-  $GlobalASA->Script_OnEnd()
-    unless $@;
-  $Response->Flush;
-  
-  my $status = $Response->{ApacheStatus};
-  $Session->DESTROY;
-  $Server->DESTROY;
-  $Application->DESTROY;
-  $Response->Flush;
-  $Response->DESTROY;
-  $Request->DESTROY;
-  undef($Request);
-  
-  return 0;
-}# end _handle_handler_request()
-
-
-#==============================================================================
-sub _handle_static_request
-{
-  my ($s, $r, $q, $filename) = @_;
-  
-  return $r->sendfile( $filename );
-}# end _handle_static_request()
-
-
-#==============================================================================
-sub _handle_dynamic_request
-{
-  my ($s, $r, $q, $filename) = @_;
-
-  # Read the file:
-  open my $ifh, '<', $filename
-    or die "Cannot open file '$filename': $!";
-  local $/;
-  my $script_contents = <$ifh>;
-  close( $ifh );
-
-  # Standard ASP objects:
-  $Session     = $SessionManager->new( undef, $r );
-  $Request     = Apache2::ASP::Request->new( $r, $q );
-  $Response    = Apache2::ASP::Response->new( $r, $q, $s );
-  $Server      = Apache2::ASP::Server->new( $r, $q, \$script_contents );
-  $Application = $ApplicationManager->new( );
-  
-  # Setup the global.asa:
-  $GlobalASA = $s->_setup_globalASA( $r );
-  $GlobalASA->init_globals(
-    $Request,
-    $Response,
-    $Session,
-    scalar( $Request->Form ),
-    $Application,
-    $Server
-  ) or die "Cannot init globals!";
-  $s->{_global_asa} = $GlobalASA;
-  
-  # Prepare the code for parsing:
-  $GlobalASA->Script_OnParse();
-  
-  # Init the Session:
-  if( ! $Session->{__aspinit} )
-  {
-    $GlobalASA->Session_OnStart();
-    $Session->{__aspinit} = 1;
-  }# end if()
-  
-  $s->execute_script( \$script_contents );
-  
-  my $status = $Response->{ApacheStatus};
-  $Session->DESTROY;
-  $Server->DESTROY;
-  $Application->DESTROY;
-  $Response->Flush;
-  $Response->DESTROY;
-  $Request->DESTROY;
-  undef($Request);
-  
+  # 0 = OK, everything else means errors of some kind:
   return $status;
-}# end _handle_dynamic_request()
-
-
-#==============================================================================
-# Used for TrapInclude only:
-sub handle_sub_request
-{
-  my ($s, $script_contents, @args) = @_;
-  
-  $s->{_is_sub_request} = 1;
-  my $r = Apache2::ASP::MockRequest->new();
-
-  # Standard ASP objects:
-  my $Session     = $SessionManager->new( undef, $r );
-  my $Request     = Apache2::ASP::Request->new( $r, $s->{q} );
-  my $Response    = Apache2::ASP::Response->new( $r, $s->{q}, $s );
-  my $Server      = Apache2::ASP::Server->new( $r, $s->{q}, \$script_contents );
-  my $Application = $ApplicationManager->new( );
-  
-  # Setup the global.asa:
-  my $GlobalASA = $s->_setup_globalASA( $r );
-  $GlobalASA->init_globals(
-    $Request,
-    $Response,
-    $Session,
-    scalar( $Request->Form ),
-    $Application,
-    $Server
-  ) or die "Cannot init globals!";
-  local($s->{_global_asa}) = $GlobalASA;
-  
-  # Prepare the code for parsing:
-  $GlobalASA->Script_OnParse();
-  
-  # Init the Session:
-  if( ! $Session->{__aspinit} )
-  {
-    $GlobalASA->Session_OnStart();
-    $Session->{__aspinit} = 1;
-  }# end if()
-  
-  # Init the Script:
-  $GlobalASA->Script_OnStart();
-  my $coderef = $s->_compile_script( $Server->{ScriptRef} );
-  
-  eval { $coderef->( @args ) };
-  if( $@ )
-  {
-    # Handle the execution error:
-    $s->_handle_error( $@ );
-  }# end if()
-  
-  $s->{_is_sub_request} = 0;
-  
-  return $r->{_buffer};
-}# end handle_sub_request()
-
-
-#==============================================================================
-sub execute_script
-{
-  my ($s, $scriptref, @args) = @_;
-  $Server->{ScriptRef} = $scriptref;
-
-  # Init the Script:
-  $GlobalASA->Script_OnStart();
-  my $coderef = $s->_compile_script( $Server->{ScriptRef} );
-  if( $@ )
-  {
-    # An error - handle it:
-    $s->_handle_error( $@ );
-  }# end if()
-  
-  # Execute the script:
-  eval { $coderef->( @args ) };
-  if( $@ )
-  {
-    # Handle the execution error:
-    $s->_handle_error( $@ );
-  }# end if()
-  
-  # Follow the GlobalASA rules:
-  $GlobalASA->Script_OnEnd()
-    unless $@ || $s->{_is_sub_request};
-}# end execute_script()
-
-
-#==============================================================================
-sub _setup_globalASA
-{
-  my ($s, $r);
-  my $tree = Apache2::Directive::conftree();
-  
-  my $docroot;
-  # Check out our VirtualHost config (if it exists):
-  if( my $vhost = $tree->lookup('VirtualHost') )
-  {
-    $docroot = $tree->lookup('VirtualHost')->{DocumentRoot};
-  }
-  else
-  {
-    # Default to the global DocumentRoot:
-    $docroot = $tree->lookup('DocumentRoot');
-  }# end if()
-  
-  $docroot =~ s/"//g;
-  
-  my $file = "$docroot/GlobalASA.pm";
-  if( -f $file )
-  {
-    no warnings 'uninitialized';
-    if( $INC{'GlobalASA.pm'} ne $file )
-    {
-      push @INC, $docroot;
-      require GlobalASA;
-    }# end if()
-    
-    no strict 'refs';
-    ${"GlobalASA::Request"}     = $Request;
-    ${"GlobalASA::Response"}    = $Response;
-    ${"GlobalASA::Server"}      = $Server;
-    ${"GlobalASA::Session"}     = $Session;
-    ${"GlobalASA::Form"}        = $Request->Form;
-    ${"GlobalASA::Application"} = $Application;
-    
-    return GlobalASA->new();
-  }
-  else
-  {
-    no strict 'refs';
-    ${"Apache2::ASP::GlobalASA::Request"}     = $Request;
-    ${"Apache2::ASP::GlobalASA::Response"}    = $Response;
-    ${"Apache2::ASP::GlobalASA::Server"}      = $Server;
-    ${"Apache2::ASP::GlobalASA::Session"}     = $Session;
-    ${"Apache2::ASP::GlobalASA::Form"}        = $Request->Form;
-    ${"Apache2::ASP::GlobalASA::Application"} = $Application;
-    return Apache2::ASP::GlobalASA->new();
-  }# end if()
-}# end _setup_globalasa()
-
-
-#==============================================================================
-sub _compile_script
-{
-  my ($s, $ref) = @_;
-
-  my $parsed = Apache2::ASP::Parser->parse_string( $$ref );
-  
-  my $pkg = $s->{r}->filename;
-  $pkg =~ s/[^a-zA-Z0-9_]/_/g;
-  
-  my $stub = <<EOF;
-package $pkg; use vars qw(\$Request \$Response \$Server \$Session \$Form \$Application); sub Process {$parsed
-\$Response->Flush;
-};
-
-
-1;
-EOF
-
-  no warnings 'redefine';
-  eval $stub;
-  if( $@ )
-  {
-    # Handle the error:
-    $s->_handle_error( $@ );
-  }# end if()
-  no strict 'refs';
-  ${"$pkg\::Request"}     = $Request;
-  ${"$pkg\::Response"}    = $Response;
-  ${"$pkg\::Server"}      = $Server;
-  ${"$pkg\::Session"}     = $Session;
-  ${"$pkg\::Form"}        = $Request->Form;
-  ${"$pkg\::Application"} = $Application;
-  
-  # Return the subref:
-  return $pkg->can('Process');
-}# end _asp_stub()
+}# end handler()
 
 
 #==============================================================================
@@ -446,128 +66,12 @@ sub _handle_error
   my ($s, $err) = @_;
   
   my $stack = Devel::StackTrace->new;
-  $Response->Clear();
-  $GlobalASA->can('Script_OnError')->( $stack );
+  warn "$@ -- " . $stack->as_string;
+  $s->response->Clear();
+  $s->global_asa->can('Script_OnError')->( $stack );
   
-  return 0;
+  return 500;
 }# end _handle_error()
-
-
-#==============================================================================
-sub _find_handler_package
-{
-  my ($s, $uri) = @_;
-  
-  if( $uri =~ m/^\/handlers\// )
-  {
-    # (Try to) load up the handler:
-    my ($handler_pkg) = $uri =~ m/^\/handlers\/([^\?]+)/;
-    $handler_pkg =~ s/[^a-z0-9]/::/ig;
-    eval "use $handler_pkg";
-    if( $@ )
-    {
-      # Failed to load the handler:
-      warn "ERROR: Cannot load Handler '$handler_pkg': $@";
-      return { STATUS => 500 };
-    }
-    else
-    {
-      return $handler_pkg;
-    }# end if()
-  }# end if()
-}# end _find_handler_package()
-
-
-#==============================================================================
-sub _setup_cgi
-{
-  my ($s, $handler_pkg) = @_;
-  
-  if(
-    # We are handling a file upload with a subclass of Apache2::ASP::Handler:
-    defined($ENV{CONTENT_TYPE}) && 
-    ( $ENV{CONTENT_TYPE} =~ m@multipart/form\-data@ ) && 
-    $handler_pkg &&
-    $handler_pkg->isa('Apache2::ASP::Handler')
-  )
-  {
-    # Make sure the handler is of the right type:
-    if( ! $handler_pkg->isa('Apache2::ASP::UploadHandler') )
-    {
-      warn "ERROR: Package '$handler_pkg' must inherit from 'Apache2::ASP::UploadHandler'";
-      return 500;
-    }# end if()
-    
-    # Set up the hook:
-    return Apache2::ASP::CGI->new( $s->{r}, sub {
-      my ($upload, $data) = @_;
-      my $length_received = defined($data) ? length($data) : 0;
-      $s->{r}->pnotes( total_loaded => ($s->{r}->pnotes('total_loaded') || 0) + $length_received);
-      my $percent_complete = sprintf("%.2f", $s->{r}->pnotes('total_loaded') / $ENV{CONTENT_LENGTH} * 100 );
-      
-      # Mark our start time, so we can make our calculations:
-      my $start_time = $s->{r}->pnotes('upload_start_time');
-      if( ! $start_time )
-      {
-        $start_time = gettimeofday();
-        $s->{r}->pnotes('upload_start_time' => $start_time);
-      }# end if()
-      
-      # Calculate elapsed, total expected and remaining time, etc:
-      my $elapsed_time        = gettimeofday() - $start_time;
-      my $bytes_per_second    = $s->{r}->pnotes('total_loaded') / $elapsed_time;
-      $bytes_per_second       ||= 1;
-      my $total_expected_time = int( ($ENV{CONTENT_LENGTH} - $length_received) / $bytes_per_second );
-      my $time_remaining      = int( (100 - $percent_complete) * $total_expected_time / 100 );
-      $time_remaining         = 0 if $time_remaining < 0;
-      
-      my $Upload = {
-        upload              => $upload,
-        percent_complete    => $percent_complete,
-        elapsed_time        => $elapsed_time,
-        total_expected_time => $total_expected_time,
-        time_remaining      => $time_remaining,
-        length_received     => $length_received,
-        content_length      => $ENV{CONTENT_LENGTH},
-        data                => $data,
-      };
-      
-      # Init the upload:
-      my $did_init = $s->{r}->pnotes('did_init');
-      if( ! $did_init )
-      {
-        $s->{r}->pnotes( did_init => 1 );
-        $handler_pkg->upload_start(
-          $Session, $Request, $Response, $Server, $Application, $Upload
-        );
-        
-        # End the upload if we are done:
-        $s->{r}->push_handlers(PerlCleanupHandler => sub {
-          delete($Session->{$_})
-            foreach keys(%$Upload);
-          $Session->save;
-        });
-      }# end if()
-      
-      if( $length_received <= 0 )
-      {
-        $handler_pkg->upload_end(
-          $Session, $Request, $Response, $Server, $Application, $Upload
-        );
-      }# end if()
-      
-      # Call the hook:
-      $handler_pkg->upload_hook(
-        $Session, $Request, $Response, $Server, $Application, $Upload
-      );
-    });
-  }
-  else
-  {
-    return Apache2::ASP::CGI->new( $s->{r} );
-  }# end if()
-}# end _setup_cgi()
-
 
 1;# return true:
 
@@ -577,10 +81,12 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP - ASP for a mod_perl2 environment.
+Apache2::ASP - Perl extension for ASP on mod_perl2.
 
 =head1 SYNOPSIS
 
+=head2 In your ASP script
+
   <html>
     <body>
       <%= "Hello, World!" %>
@@ -592,205 +98,26 @@ Apache2::ASP - ASP for a mod_perl2 environment.
       %>
     </body>
   </html>
-
-=head1 DESCRIPTION
-
-Apache2::ASP is a new implementation of the ASP web programming for the mod_perl2 
-environment.  Its aim is high performance, stability, scalability and ease of use.
-
-If you have used L<Apache::ASP> already then you are already familiar with the basic
-idea of ASP under Apache.
-
-=head1 INTRODUCTION
-
-=head2 What is Apache2::ASP?
-
-Apache2::ASP is a web programming environment that helps simplify 
-web programming with Perl under mod_perl2.  Apache2::ASP allows 
-you to easily embed Perl into web pages using the "<%" and "%>"
-tags that are familiar to anyone who has used ASP or JSP in the past.
-
-=head2 What does Apache2::ASP offer?
-
-Apache2::ASP offers programmers the ability to program web pages without
-spending time on details like session state management, file uploads
-or template systems.
-
-=head1 ASP OBJECTS
-
-Like other ASP web programming environments, Apache2::ASP provides the
-following global objects:
-
-=head2 $Request
-
-Represents the incoming HTTP request.  Has methods to handle form data,
-file uploads, read cookies, etc.
-
-Learn more by reading the L<Apache2::ASP::Request> documentation.
-
-=head2 $Response
-
-Represents the outbound HTTP communication to the client.  Has methods to
-send content, redirect, set cookies, etc.
-
-Learn more by reading the L<Apache2::ASP::Response> documentation.
-
-=head2 $Session
-
-Represents data that should persist beyond the lifetime of a single request.
-For example, the user's logged in state, user id, etc.
-
-The contents of the C<$Session> object are stored within an SQL database.
-
-Learn more by reading the L<Apache2::ASP::Session> documentation.
-
-=head2 $Server
-
-Represents the webserver itself and offers several utility methods that don't
-fit anywhere else.
-
-Learn more by reading the L<Apache2::ASP::Server> documentation.
-
-=head2 $Application
-
-Represents data that should be shared and persisted throughout the entire 
-web application.  For example, database connection strings, the number of active
-users, etc.
-
-The contents of the C<$Application> object are stored within an SQL database.
-
-Learn more by reading the L<Apache2::ASP::Application> documentation.
 
 =head1 INSTALLATION
 
-  % perl Makefile.PL
-  % make
-  % make test
-  % make install
+For installation instructions, please refer to L<Apache2::ASP::Manual::Intro>.
 
-Then, in your httpd.conf:
-  
-  # Declare this important variable:
-  PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /path/to/your/website
-  PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT /path/to/your/UPLOADED_MEDIA_FILES
+=head1 INTRODUCTION
 
-  # Needed for CGI::Apache2::Wrapper to work properly:
-  LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
-  
-  # Set the directory index:
-  DirectoryIndex index.asp
-  
-  # Load up some important modules:
-  PerlModule Apache::DBI
-  PerlModule DBI
-  PerlModule DBD::mysql # or whatever database you will keep your session data in
-  PerlModule Apache2::ASP
-  PerlModule Apache2::Directive
-  PerlModule Apache2::RequestRec
-  PerlModule Apache2::RequestIO
-  PerlModule Apache2::Connection
-  PerlModule Apache2::SubRequest
-  
-  # Configuration for MediaManager:
-  PerlModule Apache2::ASP::URLFilter
-  PerlTransHandler Apache2::ASP::URLFilter
-  
-  # All *.asp files are handled by Apache2::ASP:
-  <Files ~ (\.asp$)>
-    SetHandler      perl-script
-    PerlHandler     Apache2::ASP
-  </Files>
-  
-  # All requests to /handlers/* will be handled by their respective handler:
-  <Location /handlers>
-    SetHandler          perl-script
-    PerlResponseHandler Apache2::ASP
-  </Location>
+For an introduction to B<Apache2::ASP>, please see L<Apache2::ASP::Manual::Intro>.
 
-Then, in C</path/to/your/website/conf> add the file C<apache2-asp-config.xml>.
-It will contain data like this:
+=head1 DESCRIPTION
 
-  <apache2-asp-config>
-    <db_user>mydbusername</db_user>
-    <db_pass>secret!password</db_pass>
-    <db_driver>mysql</db_driver>
-    <db_name>my_session_database</db_name>
-    <db_host>localhost</db_host>
-    <session_cookie_domain>.mywebsite.com</session_cookie_domain>
-    <session_cookie_name>session-id</session_cookie_name>
-  </apache2-asp-config>
+Apache2::ASP is a mod_perl2-specific subclass of L<Apache2::ASP::Base>.
 
-Then, in your database, create a table with the following structure:
+=head1 METHODS
 
-  CREATE TABLE sessions (
-    session_id CHAR(32) PRIMARY KEY NOT NULL,
-    session_data BLOB,
-    created_on DATETIME,
-    modified_on DATETIME
-  );
+=head2 handler( $r )
 
-Also create a table with the following structure:
+Used by mod_perl - you can safely ignore this one for now.
 
-  CREATE TABLE asp_applications (
-    application_id VARCHAR(100) PRIMARY KEY NOT NULL,
-    application_data BLOB
-  );
-
-Simply restart Apache and installation is complete.  Now you need some ASP scripts.
-
-If your website is in C</var/www/html> then create a file "C<index.asp>" in C</var/www/html>.
-
-Your C<index.asp> could contain something like the following:
-
-  <html>
-    <body>
-      <%= "Hello, World!" %>
-      <br>
-      <%
-        for( 1...10 ) {
-          $Response->Write( "Hello from ASP ($_)<br>" );
-        }
-      %>
-    </body>
-  </html>
-
-Then point your browser to C<http://yoursite.com/index.asp> and see what you get.
-
-If everything was configured correctly, the output would look like:
-
-  Hello, World! 
-  Hello from ASP (1)
-  Hello from ASP (2)
-  Hello from ASP (3)
-  Hello from ASP (4)
-  Hello from ASP (5)
-  Hello from ASP (6)
-  Hello from ASP (7)
-  Hello from ASP (8)
-  Hello from ASP (9)
-  Hello from ASP (10)
-
-If you get an error instead, check out your error log to find out why.
-
-=head2 Directory Structure
-
-You might be wondering, "What does the directory structure for an Apache2::ASP website look like?"
-
-Well, it looks like this:
-
-  .
-  |-- conf
-  |   |-- apache2-asp-config.xml
-  |   `-- httpd.conf
-  |-- etc
-  |   |-- other_files_needed_by_the_site.txt
-  |   `-- giant_word_dictionary.txt
-  |--handlers
-  |  |--MyHandler.pm
-  |  `--MyOtherHandler.pm
-  `-- www
-      |-- GlobalASA.pm
-      `-- index.asp
+If you are really interested in what goes on in there, please read the source.
 
 =head1 BUGS
 

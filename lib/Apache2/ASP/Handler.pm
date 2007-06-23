@@ -3,31 +3,68 @@ package Apache2::ASP::Handler;
 
 use strict;
 use warnings 'all';
-use vars qw( %modes );
+
+use vars qw(
+  %modes
+  $Request $Response
+  $Session $Application
+  $Server $Form
+  $Config
+);
 
 #==============================================================================
 sub run
 {
-  my ($s, $Session, $Request, $Response, $Server, $Application) = @_;
+  my ($s, $asp, @args) = @_;
   
   # Call our extension hooks:
   if( my $mode = $Request->Form('mode') )
   {
-    if( exists($modes{ $mode }) && defined($modes{ $mode }) )
+    if( defined($modes{ $mode }) )
     {
       return $modes{$mode}->( @_ );
     }
     else
     {
-      $Response->Write("Unknown mode '$mode'.");
+      $asp->response->Write("Unknown mode '$mode'.");
     }# end if()
   }
   else
   {
-    $Response->Write("This is the default handler response.");
+    $asp->response->Write("This is the default handler response.");
   }# end if()
   
+  $asp->response->Flush;
 }# end run()
+
+
+#==============================================================================
+sub init_asp_objects
+{
+  my ($s, $asp) = @_;
+  
+  $Session      = $asp->session;
+  $Server       = $asp->server;
+  $Request      = $asp->request;
+  $Response     = $asp->response;
+  $Form         = $asp->request->Form;
+  $Application  = $asp->application;
+  $Config       = $asp->config;
+  
+  no strict 'refs';
+  foreach my $pkg( ( $s, @{"$s\::ISA"} ) )
+  {
+    ${"$pkg\::Session"}     = $Session;
+    ${"$pkg\::Server"}      = $Server;
+    ${"$pkg\::Request"}     = $Request;
+    ${"$pkg\::Response"}    = $Response;
+    ${"$pkg\::Form"}        = $Form;
+    ${"$pkg\::Application"} = $Application;
+    ${"$pkg\::Config"}      = $Config;
+  }# end foreach()
+  
+  return 1;
+}# end init_page_class()
 
 
 #==============================================================================
@@ -56,10 +93,10 @@ Apache2::ASP::Handler - Base class for all Apache2::ASP handlers
   use base 'Apache2::ASP::Handler';
   
   sub run {
-    my ($s, $Session, $Request, $Response, $Server, $Application) = @_;
+    my ($s, $asp, @args) = @_;
     
-    $Response->Write("Hello, world!.");
-  }# end run()
+    $asp->response->Write("Hello, world!.");
+  }# end process_request()
   
   1;# return true:
 
@@ -74,9 +111,13 @@ the ASP objects (C<$Request>, C<$Response>, C<$Session>, C<$Server> and C<$Appli
 Handlers are useful for things like form processing when no HTML content is
 sent back to the client (because the client is redirected to another ASP instead).
 
-=head1 PROTECTED METHODS
+=head1 METHODS
 
 The following methods are intended for subclasses of C<Apache2::ASP::Handler>.
+
+=head2 run( $self, $asp, @args)
+
+Works just like the example in the synopsis.
 
 =head2 register_mode( %args )
 

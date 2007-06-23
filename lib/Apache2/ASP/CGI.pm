@@ -4,18 +4,12 @@ package Apache2::ASP::CGI;
 use strict;
 use warnings;
 use base 'CGI::Apache2::Wrapper';
+use CGI::Util ();
 
 #==============================================================================
 sub new
 {
   my ($class, $r, $upload_hook) = @_;
-  
-  # Default to 100Mb uploads:
-  my %options = ();
-  if( $ENV{APACHE2_ASP_MAX_UPLOAD} )
-  {
-    $options{POST_MAX} = $ENV{APACHE2_ASP_MAX_UPLOAD};
-  }# end if()
   
   my $s = $class->SUPER::new( $r );
   if( ref($upload_hook) eq 'CODE' )
@@ -27,16 +21,77 @@ sub new
     $s->req(
       $req
     );
-# This causes the logs to warn of "Conflicting data":
-#    $s->req->read_limit( $ENV{CONTENT_LENGTH} );
   }
   else
   {
-    $s->req(Apache2::Request->new($r));
+    $s->req( Apache2::Request->new( $r ) );
   }# end if()
   
   return $s;
 }# end new()
 
+
+#==============================================================================
+sub escape
+{
+  my ($s, $str) = @_;
+  
+  return CGI::Util::escape( $str );
+}# end escape()
+
+
+#==============================================================================
+sub unescape
+{
+  my ($s, $str) = @_;
+  
+  return CGI::Util::unescape( $str );
+}# end unescape()
+
+
 1;# return true:
 
+__END__
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::CGI - A wrapper for CGI utility functions.
+
+=head1 DESCRIPTION
+
+Uses L<CGI::Apache2::Wrapper> behind the scenes.  Handles file uploads and parsing form data.
+
+Generally only used within C<Apache2::ASP> classes, so casual users don't have to worry about
+this module too much.
+
+=head1 METHODS
+
+=head2 new( $r [, \&upload_hook] )
+
+Returns a new C<Apache2::ASP::CGI> object - with or without an upload hook specified.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut

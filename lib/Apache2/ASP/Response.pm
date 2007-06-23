@@ -6,28 +6,76 @@ use warnings 'all';
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
 
+use Apache2::ASP::ApacheRequest;
+
 
 #==============================================================================
 sub new
 {
-  my ($s, $r, $q, $ASP) = @_;
+  my ($s, $asp) = @_;
   
   return bless {
-    _asp            => $ASP,
+    asp            => $asp,
     _buffer         => '',
-    r               => $r,
-    q               => $q,
+    r               => $asp->r,
+    q               => $asp->q,
     _headers        => [ {name => 'connection', value => 'close'} ],
-    _sent_header    => 0,
-    _sent_status    => 0,
+    _sent_headers   => 0,
     Buffer          => 1,
     ContentType     => 'text/html',
     Status          => '200 OK',
     ApacheStatus    => Apache2::Const::OK,
     Expires         => 0,
     ExpiresAbsolute => time2str(time),
-  }, ref($s) || $s;
+  }, $s;
 }# end new()
+
+
+#==============================================================================
+sub Buffer
+{
+  my $s = shift;
+  if( @_ )
+  {
+    return $s->{Buffer} = shift;
+  }
+  else
+  {
+    return $s->{Buffer};
+  }# end if()
+}# end Buffer()
+
+
+#==============================================================================
+sub Expires
+{
+  my $s = shift;
+  if( @_ )
+  {
+    $s->{Expires} = shift;
+    $s->ExpiresAbsolute( time2str( time() + $s->{Expires} ) );
+    return $s->{Expires};
+  }
+  else
+  {
+    return $s->{Expires};
+  }# end if()
+}# end Expires()
+
+
+#==============================================================================
+sub ExpiresAbsolute
+{
+  my $s = shift;
+  if( @_ )
+  {
+    return $s->{ExpiresAbsolute} = shift;
+  }
+  else
+  {
+    return $s->{ExpiresAbsolute};
+  }# end if()
+}# end Expires()
 
 
 #==============================================================================
@@ -42,11 +90,25 @@ sub AddHeader
 
 
 #==============================================================================
+sub Headers
+{
+  my $s = shift;
+  
+  return {
+    map {
+      $_->{name} => $_->{value}
+    } @{$s->{_headers}}
+  };
+}# end Headers()
+
+
+#==============================================================================
 sub Cookies
 {
   my ($s, $name, $value) = @_;
   
-  return $s->AddHeader( $name => $value );
+  no warnings 'uninitialized';
+  return $s->AddHeader( "Set-Cookie" => "$name=" . $s->{q}->escape("$value") );
 }# end Cookies()
 
 
@@ -76,13 +138,12 @@ sub Flush
   my $s = shift;
   
   my $buffer = delete( $s->{_buffer} );
-  $s->{_asp}->{_global_asa}->Script_OnFlush( \$buffer )
-    if $s->{_asp}->{_global_asa};
-  
-  if( ! $s->{_sent_header} )
+  if( $s->{asp}->global_asa )
   {
-    $s->_print_headers();
+    $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer );
   }# end if()
+  
+  $s->_print_headers();
   
   no warnings 'uninitialized';
   $s->{r}->print( $buffer );
@@ -96,8 +157,7 @@ sub End
   my $s = shift;
   $s->Flush;
   # Cancel execution and force the server to stop processing this request.
-  $s->{_connection} ||= $s->{r}->connection;
-  my $sock = $s->{_connection}->client_socket;
+  my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
 }# end End()
 
@@ -114,12 +174,8 @@ sub Clear
 sub Redirect
 {
   my ($s, $location) = @_;
-  if( $s->{_sent_status} )
-  {
-    die "Response.Redirect: Cannot redirect after status has been sent.";
-  }# end if()
   
-  if( $s->{_sent_header} )
+  if( $s->{_sent_headers} )
   {
     die "Response.Redirect: Cannot redirect after headers have been sent.";
   }# end if()
@@ -136,90 +192,69 @@ sub Redirect
 #==============================================================================
 sub Include
 {
-  # Parse and execute the supplied filename or scalar reference:
   my ($s, $script, @args) = @_;
   
-  my $code;
-  if( ref($script) )
+  my $uri = $script;
+  my $root = $s->{asp}->config->www_root;
+  $uri =~ s/^$root//;
+  my $r = Apache2::ASP::ApacheRequest->new(
+    r => $s->{asp}->r,
+    status => '200 OK',
+    filename => $script,
+    uri      => $uri
+  );
+  my $asp = ref($s->{asp})->new( $s->{asp}->config );
+  my $ref = $asp->setup_request( $r, $s->{asp}->q );
+  eval {
+    $ref->( 1, @args );
+    $s->Write( $r->buffer );
+    $s->Flush;
+  };
+  if( $@ )
   {
-    $code = $script;
-  }
-  else
-  {
-    open my $ifh, '<', $script;
-    local $/ = undef;
-    my $contents = <$ifh>;
-    $code = \$contents;
-    close($ifh);
+    die "Cannot Include script '$script': $@";
   }# end if()
-  $s->{_asp}->{_is_sub_request} = 1;
-  $s->{_asp}->execute_script( $code, @args );
-  $s->{_asp}->{_is_sub_request} = 0;
 }# end Include()
 
 
 #==============================================================================
 sub TrapInclude
 {
-  # Parse and execute the supplied filename or scalar reference, then return the output:
-  my ($s, $script) = @_;
+  my ($s, $script, @args) = @_;
   
-  my $code;
-  if( ref($script) )
+  my $uri = $script;
+  my $root = $s->{asp}->config->www_root;
+  $uri =~ s/^$root//;
+  my $r = Apache2::ASP::ApacheRequest->new(
+    r => $s->{asp}->r,
+    status => '200 OK',
+    filename => $script,
+    uri      => $uri
+  );
+  my $asp = ref($s->{asp})->new( $s->{asp}->config );
+  my $ref = $asp->setup_request( $r, $s->{asp}->q );
+  
+  my $include = eval {
+    $ref->( 1, @args );
+    $asp->response->End;
+#    $s->{asp}->subrequest( $script, @args );
+    return $r->buffer;
+  };
+  if( $@ )
   {
-    $code = $$script;
-  }
-  else
-  {
-    open my $ifh, '<', $script;
-    local $/ = undef;
-    my $contents = <$ifh>;
-    $code = $contents;
-    close($ifh);
+    die "Cannot TrapInclude script '$script': $@";
   }# end if()
-  return $s->{_asp}->handle_sub_request( $code );
-}# end TrapInclude()
+  
+  return $include;
+}# end Include()
 
 
 #==============================================================================
 sub IsClientConnected
 {
   my $s = shift;
-  $s->{_connection} ||= $s->{r}->connection;
-  return $s->{_connection}->aborted;
+  return ! $s->{r}->connection->aborted;
 }# end IsClientConnected()
-
-
-#==============================================================================
-sub _set_status
-{
-  my $s = shift;
-  if( $s->{_status} =~ m/200/ )
-  {
-    $s->{ApacheStatus} = Apache2::Const::OK;
-    $s->{r}->status(  );
-  }
-  elsif( $s->{_status} =~ m/301/ )
-  {
-    $s->{ApacheStatus} = Apache2::Const::REDIRECT;
-  }
-  elsif( $s->{_status} =~ m/404/ )
-  {
-    $s->{ApacheStatus} = Apache2::Const::NOT_FOUND;
-  }
-  elsif( $s->{_status} =~ m/500/ )
-  {
-    $s->{ApacheStatus} = Apache2::Const::SERVER_ERROR;
-  }
-  else
-  {
-    # Default to 200 OK:
-    $s->{ApacheStatus} = Apache2::Const::OK;
-  }# end if()
-  
-  $s->{r}->status( $s->{ApacheStatus} );
-  $s->{_sent_status} = 1;
-}# end _set_status()
 
 
 #==============================================================================
@@ -227,7 +262,7 @@ sub _print_headers
 {
   my $s = shift;
   
-  return if $s->{_set_headers};
+  return if $s->{_sent_headers};
   
   $s->{r}->content_type( $s->{ContentType} || 'text/html' );
   my ($status) = $s->{Status} =~ m/^(\d+)/;
@@ -238,12 +273,11 @@ sub _print_headers
   {
     $headers->{ $header->{name} } = $header->{value};
   }# end while()
-  $headers->{Expires} = $s->{ExpiresAbsolute} || time2str(time() + $s->{Expires});
+  $headers->{Expires} = $s->{ExpiresAbsolute};
   
   $s->{r}->headers_out( $headers );
   
-  $s->{_sent_header} = 1;
-  $s->{_sent_status}  = 1;
+  $s->{_sent_headers} = 1;
 }# end _print_headers()
 
 
@@ -324,6 +358,8 @@ The global C<$Response> object is an instance of C<Apache2::ASP::Response>.
 
 =head1 PUBLIC METHODS
 
+=head2 new( $asp )
+
 =head2 AddHeader( $name, $value )
 
 Adds a new header to the HTTP response
@@ -337,6 +373,10 @@ For example, the following:
 Sends the following in the HTTP response:
 
   funny-factor: funny
+
+=head2 Headers( )
+
+Returns a name/value hash of all the HTTP headers that have been set via C<AddHeader>.
 
 =head2 Cookies( $name, $value )
 
@@ -387,9 +427,44 @@ Executes the ASP script located at C<$path> and returns its results as a string.
 
 Checks to see if the client is still connected.  Returns 1 if connected, 0 if not.
 
+=head2 Expires( [$minutes] )
+
+Set/get the number of minutes between now and when the content will expire.
+
+Negative values are permitted.
+
+Default is C<0>.
+
+=head2 ExpiresAbsolute( [$http_datetime] )
+
+Set/get the date in HTTP date format when the content will expire.
+
+Default is now.
+
+=head2 Buffer( [$bool] )
+
+Gets/sets the buffering behavior.  Default value is C<1>.
+
+  # Turn off buffering, forcing output to be flushed to the client immediately:
+  $Response->Buffer(0);
+  
+  # Turn on buffering.  Wait until the request is finished before the buffer is sent:
+  $Response->Buffer(1);
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
-John Drago L<jdrago_999@yahoo.com>
+John Drago L<mailto:jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -399,3 +474,4 @@ This software is free software.  It may be used and distributed under the
 same terms as Perl itself.
 
 =cut
+

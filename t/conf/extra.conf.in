@@ -1,4 +1,9 @@
 
+# Uncomment the following lines
+# to get dprofpp data in @ServerRoot@/logs/dprof
+#SetEnv PERL5OPT -d:DProf
+#PerlModule Apache::DProf
+
 # Needed for file uploads to work properly:
 LoadModule apreq_module /usr/local/apache2/modules/mod_apreq2.so
 
@@ -7,28 +12,19 @@ DirectoryIndex index.asp
 
 # Declare some important variables:
 PerlSetEnv APACHE2_ASP_APPLICATION_ROOT @ServerRoot@
-PerlSetEnv APACHE2_ASP_MEDIA_MANAGER_UPLOAD_ROOT @ServerRoot@/MEDIA
 
 PerlRequire @ServerRoot@/httpd_startup.pl
 
 # Load up some important modules:
-PerlModule Apache::DBI
 PerlModule DBI
 PerlModule DBD::SQLite
 PerlModule Apache2::ASP
-PerlModule Apache2::Directive
-PerlModule Apache2::RequestRec
-PerlModule Apache2::RequestIO
-PerlModule Apache2::Connection
-PerlModule Apache2::SubRequest
-
-# Specify which Session manager you want:
-PerlSetEnv APACHE2_ASP_SESSION_MANAGER Apache2::ASP::Session::MySQL
-PerlSetEnv APACHE2_ASP_APPLICATION_MANAGER Apache2::ASP::Application::MySQL
+PerlModule Apache2::ASP::PostConfigHandler
+PerlPostConfigHandler Apache2::ASP::PostConfigHandler
 
 # Configuration for MediaManager:
-PerlModule Apache2::ASP::URLFilter
-PerlTransHandler Apache2::ASP::URLFilter
+PerlModule        Apache2::ASP::TransHandler
+PerlTransHandler  Apache2::ASP::TransHandler
 
 # All *.asp files are handled by Apache2::ASP
 <Files ~ (\.asp$)>
@@ -36,8 +32,13 @@ PerlTransHandler Apache2::ASP::URLFilter
   PerlResponseHandler Apache2::ASP
 </Files>
 
+# Prevent anyone from getting your GlobalASA.pm
+<Files ~ (\.pm$)>
+  Order allow,deny
+  Deny from all
+</Files>
+
 <Location /handlers>
   SetHandler          perl-script
   PerlResponseHandler Apache2::ASP
 </Location>
-

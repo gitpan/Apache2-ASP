@@ -14,20 +14,20 @@ use Apache::TestConfig ();
 # Prerequisites:
 my %require = (
   'Apache::Test'          => "",
-  'Cwd' =>                => "",
-  'CGI::Apache2::Wrapper' => 0.21,
-  'XML::Simple' =>        => "",
+  'XML::Simple'           => "",
+  'CGI::Apache2::Wrapper' => "",
+  'CGI'                   => "",
   'Devel::StackTrace'     => "",
-  'Test::More'            => "",
-  'HTTP::Date'            => 1.47,
-  'DBI'                   => 1.50,
+  'Cwd'                   => "",
   'Digest::MD5'           => "",
-  'Apache2::Const'        => 2.000002,
-  'DBD::SQLite'           => 1.13,
+  'DBI'                   => "",
+  'DBD::SQLite'           => "",
   'Storable'              => "",
+  'HTTP::Date'            => "",
+  'DateTime::Duration'    => "",
+  'MIME::Types'           => "",
   'Mail::Sendmail'        => "",
-  'Time::HiRes'           => "",
-  "MIME::Types"           => "",
+  'Sys::Hostname'         => "",
 );
 my @scripts = qw( t/TEST );
 

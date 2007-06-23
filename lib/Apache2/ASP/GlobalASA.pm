@@ -10,43 +10,53 @@ use vars qw($Request $Response $Session $Application $Server $Form);
 #==============================================================================
 sub new
 {
-  my $s = shift;
-  return bless { }, ref($s) || $s;
+  my ($class, $asp) = @_;
+  my $s = bless {
+    asp => $asp
+  }, $class;
+  
+  $s->_init_globals();
+  return $s;
 }# end new()
 
 
 #==============================================================================
-sub init_globals
+sub _init_globals
 {
-  my ($s) = shift;
-  our ($Request,$Response,$Session,$Form,$Application,$Server) = @_;
+  my ($s) = @_;
   
-  # Export the variables to the custom GlobalASA package:
-  if( $INC{'GlobalASA.pm'} )
-  {
-    $GlobalASA::Request     = $Request;
-    $GlobalASA::Response    = $Response;
-    $GlobalASA::Session     = $Session;
-    $GlobalASA::Form        = $Form;
-    $GlobalASA::Application = $Application;
-    $GlobalASA::Server      = $Server;
-  }# end if()
+  no strict 'refs';
+  my $class = ref($s);
+  ${"$class\::Request"}     = $s->{asp}->request;
+  ${"$class\::Response"}    = $s->{asp}->response;
+  ${"$class\::Session"}     = $s->{asp}->session;
+  ${"$class\::Form"}        = $s->{asp}->request->Form;
+  ${"$class\::Application"} = $s->{asp}->application;
+  ${"$class\::Server"}      = $s->{asp}->server;
+  ${"$class\::Config"}    = $s->{asp}->config;
   
   return 1;
-}# end init_globals()
+}# end _init_globals()
+
+
+#==============================================================================
+sub Application_OnStart
+{
+  
+}# end Application_OnStart()
 
 
 #==============================================================================
 sub Script_OnParse
 {
-  
+  my ($script_ref) = @_;
 }# end Script_OnParse()
 
 
 #==============================================================================
 sub Script_OnFlush
 {
-  
+  my ($ref) = @_;
 }# end Script_OnFlush()
 
 
@@ -63,11 +73,10 @@ sub Script_OnEnd
   
 }# end Script_OnEnd()
 
-
 #==============================================================================
 sub Script_OnError
 {
-  
+  my ($stacktrace) = @_;
 }# end Script_OnError()
 
 
@@ -76,10 +85,6 @@ sub Session_OnStart
 {
   
 }# end Session_OnStart()
-
-
-#==============================================================================
-sub AUTOLOAD { }
 
 
 #==============================================================================
@@ -96,6 +101,8 @@ __END__
 Apache2::ASP::GlobalASA - Base class for your GlobalASA
 
 =head1 SYNOPSIS
+
+Place a file named "GlobalASA.pm" at the root of your web directory:
 
   package GlobalASA;
   use base 'Apache2::ASP::GlobalASA';
@@ -136,9 +143,24 @@ Apache2::ASP::GlobalASA - Base class for your GlobalASA
 
 =head1 DESCRIPTION
 
+The C<Apache2::ASP::GlobalASA> class is mostly analogous to the C<Global.asa> or 
+C<Global.asx> of Microsoft ASP and ASP.Net web applications.
+
+Simply by overriding a few methods you can completely change the behavior of your
+web application.
+
 =head1 OVERRIDABLE METHODS
 
-=head2 Script_OnParse( )
+=head2 new( $asp )
+
+Returns a new GlobalASA object.
+
+=head2 Application_OnStart( )
+
+Called just before setting up the C<$Session> object, but only if it has never been called
+for this application before.
+
+=head2 Script_OnParse( $source_ref )
 
 Called after a script's contents have been read from disk, but before
 it has been parsed by C<Apache2::ASP::Parser>.

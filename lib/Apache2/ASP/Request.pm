@@ -7,12 +7,33 @@ use warnings;
 #==============================================================================
 sub new
 {
-  my ($s, $r, $q) = @_;
+  my ($class, $asp) = @_;
   
-  return bless {
-    q => $q,
-    r => $r,
-  }, ref($s) || $s;
+  my $s = bless {
+    asp => $asp,
+    q => $asp->{q},
+    r => $asp->{r},
+  }, $class;
+  
+  {
+    no warnings 'uninitialized';
+    $s->{cookies} = {
+      map { 
+        my ($k,$v) = split /\=/, $_;
+        chomp($k);
+        ($k => $asp->{q}->unescape($v) )
+      } split /;/, $ENV{HTTP_COOKIE}
+    };
+  }
+  
+  foreach my $cookie ( keys(%{ $s->{cookies} }) )
+  {
+    next unless $s->{cookies}->{$cookie} =~ m/\=/;
+    my %vals = map { my($k,$v) = split /\=/, $_; chomp($k); ($k => $s->{q}->unescape($v)) } split /&/, $s->{cookies}->{$cookie};
+    $s->{cookies}->{$cookie} = \%vals;
+  }# end foreach()
+  
+  return $s;
 }# end new()
 
 
@@ -21,18 +42,16 @@ sub Cookies
 {
   my ($s, $name, $key ) = @_;
   
-  my $cookie = $s->{q}->cookie( $name );
+  return unless exists($s->{cookies}->{$name});
   
-  no warnings 'uninitialized';
-  return $cookie unless defined($key);
-  
-  $cookie = $s->{q}->unescape( $cookie );
-  my %info = map {
-    my ($k,$v) = split /\=/, $_;
-    $k => $v;
-  } split( /&/, $cookie );
-  
-  return $info{$key};
+  if( defined($key) )
+  {
+    return $s->{cookies}->{$name}->{$key};
+  }
+  else
+  {
+    return $s->{cookies}->{$name};
+  }# end if()
 }# end Cookies()
 
 
@@ -44,7 +63,7 @@ sub Form
   {
     my $arg = shift;
     my $val = $s->{q}->param( $arg );
-    return defined($val) ? $val : '';
+    return defined($val) ? $val : undef;
   }
   else
   {
@@ -61,6 +80,7 @@ sub FileUpload
   
   my $ifh = $s->{q}->upload($field);
   my $upInfo = $s->{q}->uploadInfo( $ifh );
+  no warnings 'uninitialized';
   my %info = (
     ContentType           => $upInfo->{'Content-Type'},
     FileHandle            => $ifh,
@@ -69,25 +89,36 @@ sub FileUpload
     'Mime-Header'         => $upInfo->{type},
   );
   
-  if( $field && wantarray )
+  if( $field )
   {
-    return $info{ $arg };
-  }
-  elsif( $field && ( ! wantarray ) )
-  {
-    return $ifh;
+    if( wantarray )
+    {
+      return %info;
+    }
+    else
+    {
+      if( $arg )
+      {
+        return $info{ $arg };
+      }
+      else
+      {
+        return $ifh;
+      }# end if()
+    }# end if()
   }
   else
   {
     die "FileUpload() called without arguments";
   }# end if()
+  
 }# end FileUpload()
 
 
 #==============================================================================
 sub QueryString
 {
-  defined($ENV{HTTP_QUERYSTRING}) ? $ENV{HTTP_QUERYSTRING} : "";
+  $ENV{HTTP_QUERYSTRING};
 }# end Form()
 
 
@@ -163,6 +194,8 @@ The global C<$Request> object is an instance of C<Apache2::ASP::Request>.
 
 =head1 PUBLIC METHODS
 
+=head2 new( $asp )
+
 =head2 Cookies( $name [, $key] )
 
 Given the C<$name> only, returns the whole value of the cookie.
@@ -207,9 +240,20 @@ Called without a C<$key>, returns a sorted list of all keys in C<%ENV>.
 
 Called with a C<$key>, returns the value associated with that element in C<%ENV>.
 
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
-John Drago L<jdrago_999@yahoo.com>
+John Drago L<mailto:jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -219,3 +263,4 @@ This software is free software.  It may be used and distributed under the
 same terms as Perl itself.
 
 =cut
+

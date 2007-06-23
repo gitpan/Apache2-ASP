@@ -1,9 +1,28 @@
-<apache2-asp-config>
-  <db_user>root</db_user>
-  <db_pass>j@p@n</db_pass>
-  <db_driver>mysql</db_driver>
-  <db_name>besa_dev</db_name>
-  <db_host>localhost</db_host>
-  <session_cookie_domain>localhost</session_cookie_domain>
-  <session_cookie_name>session-id</session_cookie_name>
-</apache2-asp-config>
+<?xml version="1.0" ?>
+<config>
+  <web_application>
+    <domain_re>^.*$</domain_re>
+    <do_reload_on_script_change>1</do_reload_on_script_change>
+    <application_name>DefaultApp</application_name>
+    <application_root>@ServerRoot@</application_root>
+    <handler_root>@ServerRoot@/handlers</handler_root>
+    <media_manager_upload_root>@ServerRoot@/MEDIA</media_manager_upload_root>
+    <www_root>@ServerRoot@/htdocs</www_root>
+    <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
+    <application_state>
+      <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
+      <password></password>
+      <username></username>
+    </application_state>
+    <session_state>
+      <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
+      <cookie_domain>localhost</cookie_domain>
+      <cookie_name>session-id</cookie_name>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
+      <password></password>
+      <username></username>
+      <session_timeout>30</session_timeout>
+    </session_state>
+  </web_application>
+</config>
