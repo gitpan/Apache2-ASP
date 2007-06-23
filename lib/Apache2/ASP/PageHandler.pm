@@ -81,13 +81,13 @@ sub asp_has_changed
   
   my $pm_time   = (stat($package_filename))[9];
   my $asp_time;
-  if( $ASP_Times{ $asp_filename } )
+  if( $s->{asp}->application->{_asp_times}->{$asp_filename} )
   {
-    $asp_time = $ASP_Times{ $asp_filename };
+    $asp_time = $s->{asp}->application->{_asp_times}->{$asp_filename};
   }
   else
   {
-    $asp_time  = (stat($asp_filename))[9];
+    return 1;
   }# end if()
   
   return $asp_time && $pm_time && ($asp_time > $pm_time);
@@ -136,7 +136,7 @@ sub compile_asp
   print $ofh $page_code;
   close($ofh);
   
-  $ASP_Times{$asp_filename} = time();
+  $s->{asp}->application->{_asp_times}->{$asp_filename} = time();
   
   return 1;
 }# end compile_asp()

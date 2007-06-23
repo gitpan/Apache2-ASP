@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.05 2007-06-23
+  - $Application->save() is now called at the end of each (non-error) request.
+
 1.04 2007-06-23
   - GlobalASA::Script_OnFlush is only called when the current handler
     isa Apache2::ASP::PageHandler.

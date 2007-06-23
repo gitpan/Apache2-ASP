@@ -82,6 +82,7 @@ sub setup_request
     {
       $s->global_asa->can('Script_OnEnd')->();
       $s->session->save();
+      $s->application->save();
     }# end if()
     
     return $s->response->{ApacheStatus};
