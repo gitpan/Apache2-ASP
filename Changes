@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.07 2007-06-23
+  - Fixed a bug that caused 404 errors to return a blank page instead of the standard
+    '404 Not Found' message.
+  - Adjusted POD so that Apache2::ASP::Manual::Intro shows up correctly.
+
 1.06 2007-06-23
   - Fixed a bug in Apache2::ASP::PageHandler that caused a bug in which changed ASP
     scripts would not be reloaded by other Apache processes after the first Apache

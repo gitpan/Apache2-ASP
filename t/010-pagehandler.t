@@ -71,9 +71,9 @@ my $config = Apache2::ASP::Config->new();
     my $asp = prepare_asp( "/does-not-exist.asp" );
     my $handler = $asp->_resolve_request_handler( "/does-not-exist.asp" );
 #    $asp->_init_asp_objects( $handler );
-    dies_ok
+    lives_ok
       { $handler->run( $asp ) }
-      "Fails when the page does not exist.";
+      "Lives when the page does not exist.";
   }
 }
 

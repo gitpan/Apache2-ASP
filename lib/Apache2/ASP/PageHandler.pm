@@ -31,6 +31,13 @@ sub run
   my $asp_filename = $s->{asp}->config->www_root . $s->{asp}->{r}->uri;
   my $package_filename = $dir . '/' . $package_name . '.pm';
   
+  # Make sure the ASP exists in the first place:
+  if( ! $s->asp_exists( $asp_filename ) )
+  {
+    $s->{asp}->response->{Status} = 404;
+    return;
+  }# end if()
+  
   # Create or recreate the *.pm file?
   if( ! $s->pm_exists($package_filename) )
   {
@@ -40,7 +47,7 @@ sub run
   elsif( $s->pm_exists($package_filename) )
   {
     # *.pm exists:
-#    if( $asp->config->do_reload_on_script_change )
+    if( $asp->config->do_reload_on_script_change )
     {
       # See if the *.asp is newer:
       if( $s->asp_has_changed( $package_filename, $asp_filename, $full_package_name ) )
@@ -72,7 +79,7 @@ sub run
   $s->{asp}->response->Flush;
   
   # Done!
-  1;
+  0;
 }# end run()
 
 
@@ -81,10 +88,9 @@ sub asp_has_changed
 {
   my ($s, $package_filename, $asp_filename, $full_package_name) = @_;
   
-  no strict 'refs';
   eval { require $package_filename };
-  warn "Can't pre-require $package_filename: $@"
-    if $@;
+  return 1 if $@;
+  no strict 'refs';
   if( my $pm_time = ${"$full_package_name\::TIMESTAMP"} )
   {
     my $asp_time = (stat($asp_filename))[9];

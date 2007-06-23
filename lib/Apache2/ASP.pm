@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.06;
+our $VERSION = 1.07;
 
 use strict;
 use warnings 'all';
@@ -56,7 +56,7 @@ sub handler : method
   }# end if()
   
   # 0 = OK, everything else means errors of some kind:
-  return $status;
+  return $status == 200 ? 0 : $status;
 }# end handler()
 
 

@@ -1,15 +1,9 @@
 
-package Apache2::ASP::Manual::Intro;
-
-1;
-
-__END__
-
 =pod
 
 =head1 NAME
 
-Apache2::ASP - ASP for a mod_perl2 environment.
+Apache2::ASP::Manual::Intro - Introduction to Apache2::ASP
 
 =head1 SYNOPSIS
 
@@ -290,4 +284,3 @@ This software is free software.  It may be used and distributed under the
 same terms as Perl itself.
 
 =cut
-

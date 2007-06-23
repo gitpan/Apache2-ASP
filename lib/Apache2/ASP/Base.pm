@@ -85,7 +85,7 @@ sub setup_request
       $s->application->save();
     }# end if()
     
-    return $s->response->{ApacheStatus};
+    return $s->response->{Status};
   };# end sub { }
   
   return $subref;

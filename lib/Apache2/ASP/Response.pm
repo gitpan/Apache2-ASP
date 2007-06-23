@@ -23,7 +23,7 @@ sub new
     _sent_headers   => 0,
     Buffer          => 1,
     ContentType     => 'text/html',
-    Status          => '200 OK',
+    Status          => 200,
     ApacheStatus    => Apache2::Const::OK,
     Expires         => 0,
     ExpiresAbsolute => time2str(time),

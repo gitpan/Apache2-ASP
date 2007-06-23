@@ -21,7 +21,7 @@ lib/Apache2/ASP/GlobalConfig.pm
 lib/Apache2/ASP/ApplicationStateManager.pm
 lib/Apache2/ASP/SessionStateManager.pm
 lib/Apache2/ASP/GlobalASA.pm
-lib/Apache2/ASP/Manual/Intro.pm
+lib/Apache2/ASP/Manual/Intro.pod
 lib/Apache2/ASP/UploadHandler.pm
 lib/Apache2/ASP/UploadHook.pm
 lib/Apache2/ASP/UploadHookArgs.pm
