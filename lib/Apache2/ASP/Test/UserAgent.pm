@@ -151,6 +151,15 @@ sub _setup_cgi
   $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
   $ENV{SERVER_NAME}         = $ENV{HTTP_HOST} = 'localhost';
   
+  if( $req->uri =~ m/^\/handlers/ )
+  {
+#    $ENV{SCRIPT_FILENAME} = 
+  }
+  else
+  {
+    $ENV{SCRIPT_FILENAME} = $s->{asp}->config->www_root . $req->uri;
+  }# endif()
+  
   # User-Agent:
   $req->header( 'User-Agent' => 'apache2-asp-test-useragent v1.0' );
   

@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.12 2007-06-29
+  - Stabilized off-line web application testing API.
+
 1.11 2007-06-29
   - Apache2::ASP::Test::MockRequest was missing Cwd::cwd().
 

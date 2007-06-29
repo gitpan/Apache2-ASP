@@ -79,6 +79,7 @@ sub lookup_uri
   return ref($s)->new(
     cgi         => $s->{cgi},
     req         => $s->{req},
+    filename    => $here . $path,
   );
 }# end lookup_uri()
 
