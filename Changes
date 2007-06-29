@@ -1,5 +1,19 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.08 2007-06-26??????
+  - Fixed bug "Upload hook failed: Can't call method "isa" on an undefined value at ..."
+  - Fixed bug that resulted in multiple cookies being created on the initial request,
+    when the first ASP script to be rendered contained Include() or TrapInclude() calls.
+  - Added HTML::FillInForm as a dependency.
+  - Added built-in "sticky forms" for all ASP scripts, exclusive of UploadHandler subclasses.
+  - Began new offline test framework.
+  - Added Apache2::ASP::Test::UserAgent.
+  - Added Apache2::ASP::Test::MockRequest.
+  - Updated Apache2::ASP::Request to work within the new test framework.
+  - Removed some tests that need to be rewritten with the new test framework.
+  - Updated some other tests to work with the new test framework as they are.
+  - Added dependencies HTTP::Request::AsCGI, HTML::FillInForm and CGI::Simple.
+
 1.07 2007-06-23
   - Fixed a bug that caused 404 errors to return a blank page instead of the standard
     '404 Not Found' message.

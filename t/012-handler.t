@@ -21,8 +21,8 @@ my $config = Apache2::ASP::Config->new();
 # Pretend like we're doing a real request:
 {
   my $uri = '/handlers/TestHandler';
-  my ($r, $subref) = prepare_asp( $uri );
-  lives_ok { $subref->( 0 ) };
+  my ($r, $asp) = prepare_asp( $uri );
+  lives_ok { $asp->execute( 0 ) };
   is( $r->{buffer}, 'This is the default handler response.' );
 }
 
@@ -50,7 +50,7 @@ sub prepare_asp
   # Setup our ASP object:
   $ENV{HTTP_QUERYSTRING} = 'field1=value1&field2=value2&filename=C:\\MyFile.txt';
   my $asp = Apache2::ASP->new( $config );
-  my $subref = $asp->setup_request( $r );
+  $asp->setup_request( $r );
   
   my $Session = $asp->session;
   $Session->save();
@@ -59,7 +59,7 @@ sub prepare_asp
     'HTTP_COOKIE' => $config->session_state->cookie_name . '=' . $Session->{SessionID} . ';name=value;name2=val1%3D1%26val2%3D2'
   });
   
-  return ($r, $subref);
+  return ($r, $asp);
 }# end prepare_asp()
 
 

@@ -38,10 +38,10 @@ my $r = Mock->new(
 my $asp = Apache2::ASP::Base->new( $config );
 
 # Try executing some page:
-my $subref = $asp->setup_request( $r );
+$asp->setup_request( $r );
 lives_ok
-  { $subref->( 0 ) }
-  '$subref->( 0 ) lives';
+  { $asp->execute( 0 ) }
+  '$asp->execute( 0 ) lives';
 like( $r->buffer, qr/Hello, World\!/, '$subref->() works' );
 $r->buffer('');
 

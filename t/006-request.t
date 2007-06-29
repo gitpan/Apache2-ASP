@@ -2,47 +2,27 @@
 
 use strict;
 use warnings 'all';
-use lib './t';
-use Mock;
-#use Devel::Cover;
 use Test::More 'no_plan';
 use Test::Exception;
-use Apache2::ASP;
-use Apache2::ASP::Config;
 
-# Start out simple:
 use_ok('Apache2::ASP::Request');
 
-# Initialize the config:
+use Apache2::ASP::Base;
+use Apache2::ASP::Config;
+use Apache2::ASP::Test::UserAgent;
+
 my $config = Apache2::ASP::Config->new();
+my $asp = Apache2::ASP::Base->new( $config );
+my $ua = Apache2::ASP::Test::UserAgent->new( $asp );
 
-# A fake Apache2::RequestRec object:
-my $r = Mock->new(
-  filename    => 'htdocs/index.asp',
-  uri         => '/index.asp',
-  headers_out => { },
-  headers_in  => { },
-  cookie      => 'name=value',
-);
+$ua->add_cookie( name => 'value' );
+$ua->add_cookie( name2 => 'val1=1&val2=2' );
+$ua->get( '/index.asp?field1=value1' );
 
-# Setup our ASP object:
-$ENV{HTTP_QUERYSTRING} = 'field1=value1&field2=value2&filename=C:\\MyFile.txt';
-my $asp = Apache2::ASP->new( $config );
-$asp->setup_request( $r );
-$asp->{q} = $asp->{r};
+my $Request = $ua->asp->request;
 
-my $Session = Apache2::ASP::SessionStateManager::SQLite->new( $asp );
-$Session->save();
-$ENV{HTTP_COOKIE} = $config->session_state->cookie_name . '=' . $Session->{SessionID} . ';name=value;name2=val1%3D1%26val2%3D2';
-#$asp->{r}->headers_in({
-#  'HTTP_COOKIE' => $config->session_state->cookie_name . '=' . $Session->{SessionID} . ';name=value;name2=val1%3D1%26val2%3D2'
-#});
 
-# Pretend like we're doing a real request:
-my $handler = $asp->_resolve_request_handler( '/index.asp' );
-#$asp->_init_asp_objects( $handler );
 
-my $Request = Apache2::ASP::Request->new( $asp );
 
 # COOKIES!
 can_ok( $Request, 'Cookies' );
@@ -96,5 +76,3 @@ my @vars = $Request->ServerVariables;
     { $Request->FileUpload }
     "\$Request->FileUpload without arguments fails";
 }
-
-

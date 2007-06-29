@@ -167,9 +167,20 @@ sub write_session_cookie
   my $s = shift;
   
   my $state = $_asp->config->session_state;
+  my $cookiename = $state->cookie_name;
   $_asp->response->AddHeader(
-    'Set-Cookie' => $state->cookie_name . "=$s->{SessionID}; path=/; domain=" . $state->cookie_domain
+    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/; domain=" . $state->cookie_domain
   );
+  
+  # If we weren't given an HTTP cookie value, set it here.
+  # This prevents subsequent calls to 'parse_session_id()' to fail:
+  $ENV{HTTP_COOKIE} ||= '';
+  if( $ENV{HTTP_COOKIE} !~ m/\b$cookiename\=.*?\b/ )
+  {
+    my @cookies = split /;/, $ENV{HTTP_COOKIE};
+    push @cookies, "$cookiename=$s->{SessionID}";
+    $ENV{HTTP_COOKIE} = join ';', @cookies;
+  }# end if()
   
   1;
 }# end write_session_cookie()

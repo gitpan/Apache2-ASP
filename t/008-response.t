@@ -7,49 +7,19 @@ use Mock;
 #use Devel::Cover;
 use Test::More 'no_plan';
 use Test::Exception;
-use Apache2::ASP;
+use Apache2::ASP::Base;
 use Apache2::ASP::Config;
+use Apache2::ASP::Test::UserAgent;
 use HTTP::Date qw( time2str );
 
 # Start out simple:
 use_ok('Apache2::ASP::Response');
 
-# Initialize the config:
 my $config = Apache2::ASP::Config->new();
-
-# A fake Apache2::RequestRec object:
-my $r = Mock->new(
-  filename      => 'htdocs/index.asp',
-  uri           => '/index.asp',
-  headers_out   => { },
-  headers_in    => { },
-  cookie        => 'name=value',
-  content_type  => 'text/html',
-  status        => '200 OK',
-  connection    => Mock->new(
-    client_socket => Mock->new(
-      close => 1,
-    ),
-    aborted => 0
-  )
-);
-
-# Setup our ASP object:
-$ENV{HTTP_QUERYSTRING} = 'field1=value1&field2=value2&filename=C:\\MyFile.txt';
-my $asp = Apache2::ASP->new( $config );
-$asp->setup_request( $r );
-$asp->{q} = $asp->{r};
-
-my $Session = Apache2::ASP::SessionStateManager::SQLite->new( $asp );
-$Session->save();
-$ENV{HTTP_COOKIE} = $config->session_state->cookie_name . '=' . $Session->{SessionID};
-#$asp->{r}->headers_in({
-#  'HTTP_COOKIE' => $config->session_state->cookie_name . '=' . $Session->{SessionID}
-#});
-
-# Pretend like we're doing a real request:
-my $handler = $asp->_resolve_request_handler( '/index.asp' );
-#$asp->_init_asp_objects( $handler );
+my $asp = Apache2::ASP::Base->new( $config );
+my $ua = Apache2::ASP::Test::UserAgent->new( $asp );
+$ua->get( '/index.asp' );
+$asp = $ua->asp;
 
 # Is it what we think it is?
 my $Response = $asp->response;
@@ -60,19 +30,21 @@ isa_ok( $Response, 'Apache2::ASP::Response' );
 $Response->Clear;
 
 # Can we redirect?
+$Response->{_sent_headers} = 0;
 $Response->Redirect( "/new/url.asp" );
-is( $r->{status}, 302 );
-is( $r->headers_out->{Location}, '/new/url.asp' );
+is( $asp->r->{status}, 302 );
+is( $asp->r->headers_out->{Location}, '/new/url.asp' );
 
 # Refresh our ASP objects:
 #$asp->_init_asp_objects( $handler );
 $Response = $asp->response;
+$asp->r->{buffer} = '';
 
 # Try writing:
 my $test_string = 'test string';
 $Response->Write($test_string);
 $Response->Flush;
-is( $r->{buffer}, $test_string );
+is( $asp->r->{buffer}, $test_string );
 $Response->Write( undef );
 $Response->Flush;
 
@@ -82,7 +54,9 @@ $Response->Flush;
 
 # Try adding a header:
 $Response->AddHeader( 'x-myheader' => 'myvalue' );
-is( $Response->{_headers}->[0]->{name}, 'x-myheader' );
+my $headers = $Response->Headers;
+my ($header) = grep { $_ eq 'x-myheader' } keys( %$headers );
+is( $header, 'x-myheader' );
 
 # Try adding a cookie:
 $Response->Cookies( 'mycookie' => 'cookievalue' );
@@ -94,10 +68,12 @@ throws_ok
   qr/Response\.Redirect: Cannot redirect after headers have been sent\./;
 
 # Is the client connected?
+$Response->{r}->connection->aborted( 0 );
 ok( $Response->IsClientConnected );
-$r->connection->aborted( 1 );
-is( $Response->IsClientConnected, '' );
-$r->connection->aborted( 0 );
+#
+#
+#$Response->{r}->connection->aborted( 1 );
+#is( $Response->IsClientConnected, '' );
 
 # Can we Include something?
 #lives_ok

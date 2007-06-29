@@ -23,8 +23,8 @@ my $config = Apache2::ASP::Config->new();
 # Pretend like we're doing a real request:
 {
   my $uri = '/handlers/TestUploadHandler';
-  my ( $asp, $subref ) = prepare_asp( $uri );
-  $subref->( );
+  my ( $asp ) = prepare_asp( $uri );
+  $asp->execute( );
   my $handler = $asp->_resolve_request_handler( $uri );
 #  $asp->_init_asp_objects( $handler );
   
@@ -106,7 +106,7 @@ sub prepare_asp
   
   $asp->setup_request( $r );
   
-  return ( $asp, $subref );
+  return ( $asp );
 }# end prepare_asp()
 
 

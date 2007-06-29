@@ -28,6 +28,10 @@ my %require = (
   'MIME::Types'           => "",
   'Mail::Sendmail'        => "",
   'Sys::Hostname'         => "",
+  'HTML::FillInForm'      => "",
+  'HTTP::Request::AsCGI'  => "", # For Apache2::ASP::Test::*
+  'CGI::Simple'           => "", # For Apache2::ASP::Test::*
+  'HTML::Form'            => "", # For Apache2::ASP::Test::*
 );
 my @scripts = qw( t/TEST );
 

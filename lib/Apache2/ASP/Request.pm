@@ -15,23 +15,30 @@ sub new
     r => $asp->{r},
   }, $class;
   
+  my $unescape = $s->{q}->can('unescape') ? sub{ $s->{q}->unescape( @_ ) } : sub{ $s->{q}->url_decode( @_ ) };
+  
   {
     no warnings 'uninitialized';
     $s->{cookies} = {
       map { 
         my ($k,$v) = split /\=/, $_;
         chomp($k);
-        ($k => $asp->{q}->unescape($v) )
+        ($k => $v . '' )
       } split /;/, $ENV{HTTP_COOKIE}
     };
   }
   
-  foreach my $cookie ( keys(%{ $s->{cookies} }) )
+  while( my ($key,$data) = each( %{ $s->{cookies} } ) )
   {
-    next unless $s->{cookies}->{$cookie} =~ m/\=/;
-    my %vals = map { my($k,$v) = split /\=/, $_; chomp($k); ($k => $s->{q}->unescape($v)) } split /&/, $s->{cookies}->{$cookie};
-    $s->{cookies}->{$cookie} = \%vals;
-  }# end foreach()
+    next unless $data =~ m/\%3D/i;
+    $data = $unescape->( $data );
+    my %info = map {
+      my ($k,$v) = split /\=/, $_;
+      chomp($k);
+      ( $k => $v )
+    } split /&/, $data;
+    $s->{cookies}->{ $key } = \%info;
+  }# end while()
   
   return $s;
 }# end new()
@@ -43,8 +50,7 @@ sub Cookies
   my ($s, $name, $key ) = @_;
   
   return unless exists($s->{cookies}->{$name});
-  
-  if( defined($key) )
+  if( defined($key) && ref($s->{cookies}->{$name}) )
   {
     return $s->{cookies}->{$name}->{$key};
   }
@@ -63,11 +69,31 @@ sub Form
   {
     my $arg = shift;
     my $val = $s->{q}->param( $arg );
-    return defined($val) ? $val : undef;
+    if( defined($val) )
+    {
+      return $val;
+    }
+    else
+    {
+      if( my $last = $s->{asp}->session->{__lastArgs} )
+      {
+        if( my $page_args = $last )
+        {
+          return $page_args->{ $arg };
+        }# end if()
+      }# end if()
+    }# end if()
   }
   else
   {
-    my %info = map { $_ => $s->{q}->param( $_ ) } $s->{q}->param;
+    no warnings 'uninitialized';
+    my $page_args = { };
+    if( my $last = $s->{asp}->session->{__lastArgs} )
+    {
+      $page_args = ref($last) ? $last : { };
+    }# end if()
+    
+    my %info = ( %$page_args, map { $_ => $s->{q}->param( $_ ) } $s->{q}->param );
     return \%info;
   }# end if()
 }# end Form()
@@ -77,17 +103,33 @@ sub Form
 sub FileUpload
 {
   my ($s, $field, $arg) = @_;
-  
   my $ifh = $s->{q}->upload($field);
-  my $upInfo = $s->{q}->uploadInfo( $ifh );
-  no warnings 'uninitialized';
-  my %info = (
-    ContentType           => $upInfo->{'Content-Type'},
-    FileHandle            => $ifh,
-    BrowserFile           => $s->Form->{ $field } . "",
-    'Content-Disposition' => $upInfo->{'Content-Disposition'},
-    'Mime-Header'         => $upInfo->{type},
-  );
+  my %info = ();
+  my $upInfo = { };
+  
+  if( $s->{q}->isa('CGI::Simple') )
+  {
+    no warnings 'uninitialized';
+    %info = (
+      ContentType           => $s->{q}->upload_info( $field, 'mime' ),
+      FileHandle            => $ifh,
+      BrowserFile           => $s->Form->{ $field } . "",
+      'Content-Disposition' => 'attachment',
+      'Mime-Header'         => $s->{q}->upload_info( $field, 'mime' ),
+    );
+  }
+  else
+  {
+    $upInfo = $s->{q}->uploadInfo( $ifh );
+    no warnings 'uninitialized';
+    %info = (
+      ContentType           => $upInfo->{'Content-Type'},
+      FileHandle            => $ifh,
+      BrowserFile           => $s->Form->{ $field } . "",
+      'Content-Disposition' => $upInfo->{'Content-Disposition'},
+      'Mime-Header'         => $upInfo->{type},
+    );
+  }# end if()
   
   if( $field )
   {

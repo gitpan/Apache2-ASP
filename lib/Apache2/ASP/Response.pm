@@ -5,8 +5,11 @@ use strict;
 use warnings 'all';
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
+use HTML::FillInForm;
 
 use Apache2::ASP::ApacheRequest;
+
+our $MAX_BUFFER_LENGTH = 1024 ** 2;
 
 
 #==============================================================================
@@ -108,7 +111,8 @@ sub Cookies
   my ($s, $name, $value) = @_;
   
   no warnings 'uninitialized';
-  return $s->AddHeader( "Set-Cookie" => "$name=" . $s->{q}->escape("$value") );
+  my $escape = $s->{q}->can('escape') ? sub { $s->{q}->escape(@_) } : sub { $s->{q}->url_encode(@_) };
+  return $s->AddHeader( "Set-Cookie" => "$name=" . $escape->("$value") );
 }# end Cookies()
 
 
@@ -121,13 +125,17 @@ sub Write
   $str =~ s/_____TILDE_____/\~/g;
   
   no warnings 'uninitialized';
+  $s->{_buffer} .= $str;
   if( $s->{Buffer} )
   {
-    $s->{_buffer} .= $str;
+    if( length($s->{_buffer}) >= $MAX_BUFFER_LENGTH )
+    {
+      $s->Flush;
+    }# end if()
   }
   else
   {
-    $s->{r}->print( $str );
+    $s->Flush;
   }# end if()
 }# end Write()
 
@@ -138,9 +146,23 @@ sub Flush
   my $s = shift;
   
   my $buffer = delete( $s->{_buffer} );
-  if( $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && ( ! $s->{is_subrequest} ) && $s->{asp}->global_asa )
+
+  if( $s->{asp}->{handler} && $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && $s->{asp}->global_asa )
   {
-    $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer );
+    if( defined($buffer) && length($buffer) )
+    {
+      my $fif = HTML::FillInForm->new();
+      $buffer .= "\n";
+      $buffer = $fif->fill(
+        scalarref => \$buffer,
+        fdat      => $s->{asp}->session->{__lastArgs} || { }
+      );
+      no warnings 'uninitialized';
+      $buffer =~ s/\n$//;
+    }# end if()
+    
+    $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer )
+      unless $s->{is_subrequest};
   }# end if()
   
   $s->_print_headers();
@@ -204,9 +226,9 @@ sub Include
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
-  my $ref = $asp->setup_request( $r, $s->{asp}->q );
+  $asp->setup_request( $r, $s->{asp}->q );
   eval {
-    $ref->( 1, @args );
+    $asp->execute( 1, @args );
     $s->Write( $r->buffer );
     $s->Flush;
   };
@@ -232,10 +254,10 @@ sub TrapInclude
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
-  my $ref = $asp->setup_request( $r, $s->{asp}->q );
+  $asp->setup_request( $r, $s->{asp}->q );
   
   my $include = eval {
-    $ref->( 1, @args );
+    $asp->execute( 1, @args );
     $asp->response->End;
     return $r->buffer;
   };
@@ -268,10 +290,10 @@ sub _print_headers
   $s->{r}->status( $status );
   
   my $headers = $s->{r}->headers_out;
-  while( my $header = shift @{$s->{_headers}} )
+  foreach my $header ( @{$s->{_headers}} )
   {
     $headers->{ $header->{name} } = $header->{value};
-  }# end while()
+  }# end foreach()
   $headers->{Expires} = $s->{ExpiresAbsolute};
   
   $s->{r}->headers_out( $headers );

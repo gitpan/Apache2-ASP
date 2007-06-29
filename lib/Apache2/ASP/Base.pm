@@ -47,49 +47,56 @@ sub setup_request
   my $handler = $s->resolve_request_handler( $s->r->uri );
   $s->{handler} = $handler;
   
-  # Now execute the request handler:
-  my $subref = sub {
-    my ($is_subrequest, @args) = @_;
-    
-    if( ! $is_subrequest )
-    {
-      # Prevent multiple *OnStart events from being raised during the same request:
-      $s->global_asa->can('Application_OnStart')->() 
-        unless $s->application->{__did_init}++;
-      $s->application->save;
-      $s->global_asa->can('Session_OnStart')->()
-        unless $s->session->{__did_init}++;
-      $s->session->save;
-      
-      # Now that we've initialized our other objects, we can safely call Script_OnStart()
-      $s->global_asa->can('Script_OnStart')->();
-    }# end if()
-    
-    $handler->init_asp_objects( $s );
-    eval {
-      $handler->run( $s, @args );
-      $s->response->Flush;
-    };
-    if( $@ )
-    {
-      $s->global_asa->can('Script_OnError')->( Devel::StackTrace->new() );
-      $s->response->Flush;
-      return $s->response->{ApacheStatus} = 500;
-    }# end if()
-    
-    $s->response->Flush;
-    if( ! $is_subrequest )
-    {
-      $s->global_asa->can('Script_OnEnd')->();
-      $s->session->save();
-      $s->application->save();
-    }# end if()
-    
-    return $s->response->{Status};
-  };# end sub { }
-  
-  return $subref;
+  return 1;
 }# end setup_request()
+
+
+#==============================================================================
+sub execute
+{
+  my ($s, $is_subrequest, @args) = @_;
+  
+  if( ! $is_subrequest )
+  {
+    # Prevent multiple *OnStart events from being raised during the same request:
+    $s->global_asa->can('Application_OnStart')->() 
+      unless $s->application->{__did_init}++;
+    $s->application->save;
+    $s->global_asa->can('Session_OnStart')->()
+      unless $s->session->{__did_init}++;
+    $s->session->save;
+    
+    # Now that we've initialized our other objects, we can safely call Script_OnStart()
+    $s->global_asa->can('Script_OnStart')->();
+  }# end if()
+  
+  $s->{handler}->init_asp_objects( $s );
+  
+  # Store the "lastArgs" in the session here, before they are used in Response.Flush:
+  $s->session->{__lastArgs} = $s->request->Form
+    if $s->{handler}->isa('Apache2::ASP::PageHandler') || $s->{handler}->isa('Apache2::ASP::FormHandler');
+  
+  eval {
+    $s->{handler}->run( $s, @args );
+    $s->response->Flush;
+  };
+  if( $@ )
+  {
+    $s->global_asa->can('Script_OnError')->( Devel::StackTrace->new() );
+    $s->response->Flush;
+    return $s->response->{ApacheStatus} = 500;
+  }# end if()
+  
+  if( ! $is_subrequest )
+  {
+    $s->global_asa->can('Script_OnEnd')->();
+    $s->session->save();
+    $s->application->save();
+  }# end if()
+  $s->response->Flush;
+  
+  return $s->response->{Status};
+}# end execute()
 
 
 #==============================================================================

@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.07;
+our $VERSION = 1.08;
 
 use strict;
 use warnings 'all';
@@ -47,8 +47,8 @@ sub handler : method
   }# end if()
   
   # Get our subref and execute it:
-  my $handler = $s->setup_request( $r, $s->{q} );
-  my $status = eval { $handler->( ) };
+  $s->setup_request( $r, $s->{q} );
+  my $status = eval { $s->execute() };
   if( $@ )
   {
     warn "ERROR AFTER CALLING \$handler->( ): $@";
@@ -56,7 +56,7 @@ sub handler : method
   }# end if()
   
   # 0 = OK, everything else means errors of some kind:
-  return $status == 200 ? 0 : $status;
+  return $status eq '200' ? 0 : $status;
 }# end handler()
 
 
