@@ -3,7 +3,7 @@ package Apache2::ASP::SessionStateManager;
 
 use strict;
 use warnings 'all';
-use DBI;
+use base 'Ima::DBI';
 use Digest::MD5 'md5_hex';
 use DateTime::Duration;
 use Storable qw( freeze thaw );
@@ -16,8 +16,15 @@ sub new
 {
   my ($class, $asp) = @_;
   
-  my $s = bless {}, $class;
+  my $s = bless {asp => $asp}, $class;
   $_asp = $asp;
+  __PACKAGE__->set_db('Sessions', $_asp->config->session_state->dsn,
+    $_asp->config->session_state->username,
+    $_asp->config->session_state->password, {
+      RaiseError  => 1,
+      AutoCommit  => 1,
+    }
+  ) unless __PACKAGE__->can('db_Sessions');
   
   # Setup our maximum session timeout:
   my $dt = DateTime::Duration->new( minutes => $_asp->config->session_state->session_timeout );
@@ -191,17 +198,7 @@ sub dbh
 {
   my $s = shift;
   
-  return $_dbh
-    if $_dbh && eval { $_dbh->ping };
-  
-  return $_dbh = DBI->connect(
-    $_asp->config->session_state->dsn,
-    $_asp->config->session_state->username,
-    $_asp->config->session_state->password, {
-      RaiseError  => 1,
-      AutoCommit  => 1,
-    }
-  );
+  return $s->db_Sessions;
 }# end dbh()
 
 

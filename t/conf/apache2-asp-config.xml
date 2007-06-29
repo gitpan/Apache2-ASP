@@ -11,7 +11,7 @@
     <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
     <application_state>
       <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
-      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
       <password></password>
       <username></username>
     </application_state>
@@ -19,7 +19,7 @@
       <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
       <cookie_domain>localhost</cookie_domain>
       <cookie_name>session-id</cookie_name>
-      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_sessions</dsn>
       <password></password>
       <username></username>
       <session_timeout>30</session_timeout>

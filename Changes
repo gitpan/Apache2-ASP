@@ -1,6 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
-1.08 2007-06-26??????
+1.09 2007-06-29
+  - Added POD for Apache2::ASP::Test::UserAgent.
+  - ApplicationStateManager and SessionStateManager are both Ima::DBI subclasses.
+  - Added dependency Ima::DBI.
+  - Removed dependency Apache::DBI.
+
+1.08 2007-06-28
   - Fixed bug "Upload hook failed: Can't call method "isa" on an undefined value at ..."
   - Fixed bug that resulted in multiple cookies being created on the initial request,
     when the first ASP script to be rendered contained Include() or TrapInclude() calls.

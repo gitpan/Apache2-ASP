@@ -156,6 +156,17 @@ sub _global_asa_class
   }# endif()
 }# end _global_asa_class()
 
+
+#==============================================================================
+sub DESTROY
+{
+  my $s = shift;
+  foreach(qw/ r q session application request response server global_asa /)
+  {
+    eval { $s->$_->DESTROY };
+  }# end foreach()
+}# end DESTROY()
+
 1;# return true:
 
 __END__

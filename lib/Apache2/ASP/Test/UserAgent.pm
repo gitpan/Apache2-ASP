@@ -32,9 +32,6 @@ sub submit_form
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
 
-#use Data::Dumper;
-#warn "\n\tFORM: " . Dumper({ $cgi->Vars });
-
   my $r = Apache2::ASP::Test::MockRequest->new(
     req => $req,
     cgi => $cgi
@@ -127,7 +124,7 @@ sub _setup_response
   my ($s, $response_code) = @_;
   my $response = HTTP::Response->new( $response_code );
   $response->content( $s->{asp}->r->buffer );
-#warn "CONTENT: '" . $s->{asp}->r->buffer . "'";
+  
   $response->header( 'Content-Type' => $s->{asp}->response->{ContentType} );
   foreach my $header ( $s->{asp}->response->Headers )
   {
@@ -196,29 +193,123 @@ __END__
 
 =pod
 
+=head1 NAME
+
+Apache2::ASP::Test::UserAgent - User-agent for testing Apache2::ASP web applications
+
 =head1 SYNOPOSIS
 
   use Apache2::ASP::Test::UserAgent;
   
   my $ua = Apache2::ASP::Test::UserAgent->new( $asp );
-  my $res = $ua->get( '/index.asp?abc=123' );
-  if( $res->is_success )
+  
+  my $response = $ua->get( '/index.asp' );
+  
+  my $response = $ua->post( '/handlers/FormHandler', [
+    username  => 'admin',
+    password  => 's3cr3t',
+  ]);
+  
+  my $response = $ua->upload( '/handlers/UploadHandler', [
+    title     => 'this is my file',
+    filename  => ['/path/to/file.txt']
+  ]);
+  
+  # $response is a regular HTTP::Response object, so...:
+  if( $response->is_success )
   {
-    is( $res->content, 'Hello, World!' );
+    # Everything worked out OK.
   }
   else
   {
-    die $res->status_line;
+    # Request failed.
   }# end if()
   
-  # Other request styles:
-  my $post_res = $ua->post( '/handlers/FormHandler', [
-    field1 => 'w00t!!',
-    checkbox => [ a...z ],
-  ]);
-  my $upload_res = $ua->upload( '/handlers/UploadHandler', [
-    field1 => 'w00t!!',
-    some_filename => ['/path/to/file.txt']
-  ]);
+  # Deal with forms:
+  use HTML::Form;
+  my $response = $ua->get( '/some-form.asp' );
+  my $form = HTML::Form->parse( $response->content, '/some-form.asp' );
+  $form->find_input( 'username' )->value( 'admin' );
+  $form->find_input( 'password' )->value( 's3cr3t' );
+  my $after_response = $ua->submit_form( $form );
+
+=head1 DESCRIPTION
+
+C<Apache2::ASP::Test::UserAgent> offers the ability to test your web applications without requiring
+a running Apache webserver or direct human interaction.
+
+Simply by using L<Devel::Cover> you can easily generate code-coverage reports on your ASP scripts.  
+Such coverage reports can be used to tell you what code is executed during your tests.
+
+=head1 PUBLIC PROPERTIES
+
+=head1 asp
+
+Returns the L<Apache2::ASP> object currently in use by the C<Apache2::ASP::Test::UserAgent> object.
+
+=head1 PUBLIC METHODS
+
+=head2 new( $asp )
+
+Constructor.  The C<$asp> argument should be an C<Apache2::ASP::Base> object.
+
+Returns a new C<Apache2::ASP::Test::UserAgent> object.
+
+=head2 add_cookie( $name, $value )
+
+Appends a cookie to be sent on all future requests.
+
+=head2 get( $url )
+
+Makes a C<GET> request to C<$url> via L<Apache2::ASP::Base>.
+
+Content-encoding is C<application/x-www-form-urlencoded>.
+
+Returns an L<HTTP::Response> object.
+
+=head2 post( $url, $content )
+
+Makes a C<POST> request to C<$url> via L<Apache2::ASP::Base>, sending C<$content> as its request data.
+
+Content-encoding is C<application/x-www-form-urlencoded>.
+
+Returns an L<HTTP::Response> object.
+
+=head2 upload( $url, $content )
+
+Makes a C<POST> request to C<$url> via L<Apache2::ASP::Base>, sending C<$content> as its request data.
+
+Content-encoding is C<multipart/form-data>.
+
+Returns an L<HTTP::Response> object.
+
+=head2 submit_form( $form )
+
+C<$form> should be a valid C<HTML::Form> object.  The C<$form> is submitted via its C<click()> method, 
+and the resulting L<HTTP::Request> object is processed.
+
+Returns a L<HTTP::Response> object.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
 
 =cut

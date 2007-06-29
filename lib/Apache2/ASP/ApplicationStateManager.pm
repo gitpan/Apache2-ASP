@@ -3,7 +3,7 @@ package Apache2::ASP::ApplicationStateManager;
 
 use strict;
 use warnings 'all';
-use DBI;
+use base 'Ima::DBI';
 use Storable qw( freeze thaw );
 
 
@@ -15,6 +15,15 @@ sub new
   my $s = bless {
     asp => $asp,
   }, $class;
+  
+  __PACKAGE__->set_db('Apps', 
+    $s->{asp}->config->application_state->dsn,
+    $s->{asp}->config->application_state->username,
+    $s->{asp}->config->application_state->password, {
+      RaiseError  => 1,
+      AutoCommit  => 1,
+    }
+  ) unless __PACKAGE__->can('db_Apps');
   
   if( my $res = $s->retrieve )
   {
@@ -101,16 +110,7 @@ sub dbh
 {
   my $s = shift;
   
-  return $s->{dbh}
-    if $s->{dbh} && eval { $s->{dbh}->ping };
-  
-  return $s->{dbh} = DBI->connect(
-    $s->{asp}->config->application_state->dsn,
-    $s->{asp}->config->application_state->username,
-    $s->{asp}->config->application_state->password, {
-      RaiseError  => 1,
-    }
-  );
+  return $s->db_Apps;
 }# end dbh()
 
 

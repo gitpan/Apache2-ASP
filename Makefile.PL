@@ -21,7 +21,7 @@ my %require = (
   'Cwd'                   => "",
   'Digest::MD5'           => "",
   'DBI'                   => "",
-  'DBD::SQLite'           => "",
+  'DBD::SQLite'           => "",    # Default state-persistence backend for testing.
   'Storable'              => "",
   'HTTP::Date'            => "",
   'DateTime::Duration'    => "",
@@ -29,9 +29,11 @@ my %require = (
   'Mail::Sendmail'        => "",
   'Sys::Hostname'         => "",
   'HTML::FillInForm'      => "",
-  'HTTP::Request::AsCGI'  => "", # For Apache2::ASP::Test::*
-  'CGI::Simple'           => "", # For Apache2::ASP::Test::*
-  'HTML::Form'            => "", # For Apache2::ASP::Test::*
+  'HTML::Form'            => "",
+  'HTTP::Request::AsCGI'  => "",    # For Apache2::ASP::Test::*
+  'CGI::Simple'           => "",    # For Apache2::ASP::Test::*
+  'HTML::Form'            => "",    # For Apache2::ASP::Test::*
+  'Ima::DBI'              => 0.35,  # For sessions & applications.
 );
 my @scripts = qw( t/TEST );
 

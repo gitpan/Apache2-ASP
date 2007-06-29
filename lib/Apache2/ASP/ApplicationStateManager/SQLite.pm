@@ -3,6 +3,7 @@ package Apache2::ASP::ApplicationStateManager::SQLite;
 
 use base 'Apache2::ASP::ApplicationStateManager';
 
+
 1;# return true:
 
 __END__
