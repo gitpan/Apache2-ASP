@@ -3,6 +3,7 @@ package Apache2::ASP::Test::MockRequest;
 
 use strict;
 use warnings 'all';
+use Cwd 'cwd';
 
 
 #==============================================================================

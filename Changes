@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.11 2007-06-29
+  - Apache2::ASP::Test::MockRequest was missing Cwd::cwd().
+
 1.09 2007-06-29
   - Added POD for Apache2::ASP::Test::UserAgent.
   - ApplicationStateManager and SessionStateManager are both Ima::DBI subclasses.
