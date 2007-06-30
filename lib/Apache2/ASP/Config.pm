@@ -24,6 +24,12 @@ sub new
   }# end if()
   bless $s->{session_state}, $class;
   bless $s->{application_state}, $class;
+  if( $s->{settings} )
+  {
+    bless $s->{settings}, $class;
+    $s->settings->_fixup_path( 'lib' );
+    push @INC, $s->settings->lib;
+  }# end if()
   
   return $s;
 }# end new()

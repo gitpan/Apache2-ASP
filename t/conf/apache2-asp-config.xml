@@ -24,5 +24,11 @@
       <username></username>
       <session_timeout>30</session_timeout>
     </session_state>
+    <settings>
+      <lib>@ServerRoot@/lib</lib>
+      <dsn>DBI:mysql:dstack_dev:localhost</dsn>
+      <password>j@p@n</password>
+      <username>root</username>
+    </settings>
   </web_application>
 </config>

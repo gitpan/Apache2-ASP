@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.13 2007-06-30
+  - Apache2::ASP::Config is subclassable.
+  - Added <settings> element in config XML file.
+  - Added $Config->settings->(lib|dsn|username|password) to $Config object.
+  - $Config->settings->lib is added to @INC automatically.
+
 1.12 2007-06-29
   - Stabilized off-line web application testing API.
 
