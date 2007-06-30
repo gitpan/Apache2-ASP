@@ -73,8 +73,33 @@ sub execute
   $s->{handler}->init_asp_objects( $s );
   
   # Store the "lastArgs" in the session here, before they are used in Response.Flush:
-  $s->session->{__lastArgs} = $s->request->Form
-    if $s->{handler}->isa('Apache2::ASP::PageHandler') || $s->{handler}->isa('Apache2::ASP::FormHandler');
+  if( ! $is_subrequest )
+  {
+    if( $s->{handler}->isa('Apache2::ASP::FormHandler') )
+    {
+      # FormHandlers tend to redirect to ASP scripts, so pass along the Form data:
+      $s->session->{__lastArgs} = $s->request->Form;
+    }
+    elsif( $s->{handler}->isa('Apache2::ASP::PageHandler') )
+    {
+      # If we are posting to the same page, store the Form data:
+      no warnings 'uninitialized';
+      my $handler = $s->resolve_request_handler( $s->session->{__lastPage} );
+      if( 
+          ( $s->session->{__lastPage} eq $s->r->uri ) ||
+          $handler->isa('Apache2::ASP::FormHandler')
+      )
+      {
+        # Last page was a form handler:
+        $s->session->{__lastArgs} = $s->request->Form;
+      }
+      else
+      {
+        # Clear them out:
+        $s->session->{__lastArgs} = { };
+      }# endif()
+    }# end if()
+  }# end if()
   
   eval {
     $s->{handler}->run( $s, @args );
@@ -90,6 +115,10 @@ sub execute
   if( ! $is_subrequest )
   {
     $s->global_asa->can('Script_OnEnd')->();
+    
+    # Using __lastPage instead of HTTP_REFERER prevents us from losing that data
+    # after a JavaScript-initialized request:
+    $s->session->{__lastPage} = $s->r->uri;
     $s->session->save();
     $s->application->save();
   }# end if()

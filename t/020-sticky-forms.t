@@ -13,7 +13,7 @@ my $config = Apache2::ASP::Config->new();
 my $asp = Apache2::ASP::Base->new( $config );
 my $ua = Apache2::ASP::Test::UserAgent->new( $asp );
 
-ok( $ua->get( '/index.asp' )->is_success, 'GET /index.asp is good' );
+ok( $ua->get( '/sticky.asp' )->is_success, 'GET /sticky.asp is good' );
 
 my $val1 = 0;
 my $val2 = 0;

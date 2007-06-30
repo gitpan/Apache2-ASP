@@ -19,6 +19,7 @@ sub new
     asp         => $asp,
     session_id  => 0,
     cookies     =>  { },
+    referer     => '',
   }, $class;
 }# end new()
 
@@ -148,12 +149,14 @@ sub _setup_cgi
   $s->{c}->DESTROY
     if $s->{c};
   $s->{asp} = ref($s->{asp})->new( $s->{asp}->config );
+  $req->referer( $s->{referer} );
+  ($s->{referer}) = $req->uri =~ m/.*?(\/[^\?]+)/;
   $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
-  $ENV{SERVER_NAME}         = $ENV{HTTP_HOST} = 'localhost';
+  $ENV{SERVER_NAME} = $ENV{HTTP_HOST} = 'localhost';
   
   if( $req->uri =~ m/^\/handlers/ )
   {
-#    $ENV{SCRIPT_FILENAME} = 
+    # Do nothing...
   }
   else
   {
