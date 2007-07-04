@@ -193,6 +193,12 @@ It should look like this:
         <username>root</username>
         <session_timeout>30</session_timeout>
       </session_state>
+      <settings>
+        <lib>@ServerRoot/lib</lib>
+        <dsn>DBI:mysql:dbname:hostname</dsn>
+        <username>my-username</username>
+        <password>swordfish</password>
+      </settings>
     </web_application>
   </config>
 
@@ -201,7 +207,25 @@ If it doesn't look like that, an exception will be thrown.
 Those little C<@ServerRoot@> tags are replaced with the value of C<$ENV{APACHE2_ASP_APPLICATION_ROOT}>
 when the XML file is loaded up and parsed.
 
+For more information about setting up the config file and where it goes, please read
+L<Apache2::ASP::Manual::ConfigXML>.
+
 =head1 METHODS
+
+=head2 find_current_config( )
+
+Returns the current L<Apache2::ASP::Config> object in use.  This is determined 
+by calling C<domain_config> and passing in either C<$ENV{HTTP_HOST}> or the value
+returned by C<Sys::Hostname::hostname()>.  See L<Sys::Hostname> for details on how it works.
+
+=head2 domain_config( $hostname )
+
+Returns the L<Apache2::ASP::Config> object whose <domain_re> matches C<$hostname>.
+
+=head2 web_applications( )
+
+Returns a list of L<Apache2::ASP::Config> objects - one per <web_application> element
+in the XML config file.
 
 =head1 BUGS
 

@@ -1,0 +1,267 @@
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Manual::HttpdConf - Documentation about httpd.conf for Apache2::ASP
+
+=head1 DESCRIPTION
+
+To run Apache2::ASP under Apache, you need to set up the Apache configuration properly.
+
+Apache configuration takes place in its C<httpd.conf> file.
+
+Although you I<could> simply place your configuration in the main C<httpd.conf> file,
+it is recommended that you instead use your local C<httpd.conf> file located under your
+application's root in C<conf/httpd.conf>.
+
+To include your local C<httpd.conf> file in the global C<httpd.conf>, simply add the 
+following line near the bottom of your global C<httpd.conf>:
+
+  # Config for Apache2::ASP application:
+  Include /path/to/your/app/conf/httpd.conf
+
+The comment is important as well.
+
+=head1 EXAMPLE
+
+The following is an example C<httpd.conf>:
+
+  # !IMPORTANT!
+  # This is the libapreq2 config entry:
+  LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
+  
+  # !IMPORTANT!
+  # This must be set before Apache2::ASP::PostConfigHandler is run:
+  PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /var/www
+  
+  # Load up some important modules:
+  PerlModule Apache2::ASP
+  PerlModule Apache2::ASP::PostConfigHandler
+  PerlPostConfigHandler Apache2::ASP::PostConfigHandler
+  
+  # Configuration for MediaManager:
+  PerlModule Apache2::ASP::TransHandler
+  
+  # Main website:
+  <VirtualHost *:80>
+    # !IMPORTANT!
+    # ServerName is not *required* for Apache2::ASP
+    # but is included here in the example, just as an example.
+    # *IF* you do include the ServerName directive, make sure it is correct!
+    ServerName    whatever.com
+    
+    # Where your *.asp scripts live:
+    DocumentRoot  /var/www/html
+    
+    # Set the directory index, so that /foldername/ will map to /foldername/index.asp:
+    DirectoryIndex index.asp
+    
+    # Apache2::ASP::TransHandler converts /media/filename.txt urls so that they
+    # really mean /handlers/MediaManager?file=filename.txt
+    PerlTransHandler  Apache2::ASP::TransHandler
+    
+    # !IMPORTANT! Prevent anyone from viewing your GlobalASA.pm
+    <Files ~ (\.pm$)>
+      Order allow,deny
+      Deny from all
+    </Files>
+    
+    # All *.asp files are handled by Apache2::ASP
+    <Files ~ (\.asp$)>
+      SetHandler  perl-script
+      PerlHandler Apache2::ASP
+    </Files>
+    
+    # All requests to /handlers/* will be handled by their respective handler:
+    <Location /handlers>
+      SetHandler  perl-script
+      PerlHandler Apache2::ASP
+    </Location>
+    
+  </VirtualHost>
+
+=head1 WALKTHROUGH
+
+Here, we'll walk through the configuration step-by-step so that you know what
+each directive is for.
+
+  # !IMPORTANT!
+  # This is the libapreq2 config entry:
+  LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
+
+Apache2::ASP uses L<CGI::Apache2::Wrapper> which requires L<Apache2::Request>.
+L<Apache2::Request> is part of the C<libapreq2> distribution.
+
+B<Only add this directive> if you have B<not> already loaded up C<mod_apreq2.so>
+somewhere else in your global C<httpd.conf> file.
+
+C<------------------------------------------------------------------------------->
+
+  # !IMPORTANT!
+  # This must be set before Apache2::ASP::PostConfigHandler is run:
+  PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /var/www
+
+This line sets C<$ENV{APACHE2_ASP_APPLICATION_ROOT}> to the value C</var/www>
+
+Well, of course you already knew that.
+
+This is important because L<Apache2::ASP::GlobalConfig> has only limited abilities
+in guessing where you might have placed your web application.  If this value is
+completely wrong, you might get an error in your server's error log that looks like
+this:
+
+  Cannot find configuration file anywhere!  It should be found at $ENV{APACHE2_ASP_APPLICATION_ROOT}/conf/apache2-asp-config.xml
+
+Don't panic - just make sure that you have set C<APACHE2_ASP_APPLICATION_ROOT> correctly
+to the top-level path of your B<application> not your website's html directory.
+
+While you're at it, make sure you take a look at the B<DIRECTORY STRUCTURE> section
+of L<Apache2::ASP::Manual::Installation::Linux> or  L<Apache2::ASP::Manual::Installation::Windows>.
+
+C<------------------------------------------------------------------------------->
+
+  # Load up some important modules:
+  PerlModule Apache2::ASP
+  PerlModule Apache2::ASP::PostConfigHandler
+
+First we simply load up C<Apache2::ASP> and C<Apache2::ASP::PostConfigHandler>.
+
+Then, you see the line:
+
+  PerlPostConfigHandler Apache2::ASP::PostConfigHandler
+
+C<PerlPostConfigHandler> may stand out as something very foreign to you.  That's ok.
+
+We're just telling the Apache webserver to execute L<Apache2::ASP::PostConfigHandler>'s C<handler()>
+method once its done reading the C<httpd.conf> files, but B<before> it has spawned any child threads or processes.
+
+L<Apache2::ASP::PostConfigHandler> is in charge of loading up your C<conf/apache2-asp-config.xml> file
+B<once> (and only once).
+
+C<------------------------------------------------------------------------------->
+
+  # Configuration for MediaManager:
+  PerlModule Apache2::ASP::TransHandler
+
+L<Apache2::ASP::TransHandler> has the simple job of converting URLs that look like this:
+
+  /media/yourfile.jpg
+
+Into URLs that look like this:
+
+  /handlers/MediaManager?file=yourfile.jpg
+
+So here we load up it up via C<PerlModule> but we haven't yet done anything with it.  That comes several lines later.
+
+C<------------------------------------------------------------------------------->
+
+  # Main website:
+  <VirtualHost *:80>
+
+We make a VirtualHost here.  If you're not sure what that is, go ahead and Google it sometime.
+
+The main idea is that all the other configuration directives we use within the C<VirtualHost> tags
+will not affect any other C<VirtualHost> configurations on your server.
+
+C<------------------------------------------------------------------------------->
+
+    # !IMPORTANT!
+    # ServerName is not *required* for Apache2::ASP
+    # but is included here in the example, just as an example.
+    # *IF* you do include the ServerName directive, make sure it is correct!
+    ServerName    whatever.com
+
+This is pretty self-explanatory.  Change I<whatever.com> to whatever you are calling your
+website's hostname when you type its hostname into your browser.  If you're not sure, just Google it.
+
+C<------------------------------------------------------------------------------->
+
+    # Where your *.asp scripts live:
+    DocumentRoot  /var/www/html
+
+This should be pretty clear as well.
+
+C<------------------------------------------------------------------------------->
+
+    # Set the directory index, so that /foldername/ will map to /foldername/index.asp:
+    DirectoryIndex index.asp
+
+Use C<index.asp> because we're doing an Apache2::ASP website.
+
+C<------------------------------------------------------------------------------->
+
+    # Apache2::ASP::TransHandler converts /media/filename.txt urls so that they
+    # really mean /handlers/MediaManager?file=filename.txt
+    PerlTransHandler  Apache2::ASP::TransHandler
+
+We've already loaded up L<Apache2::ASP::TransHandler> but this line says "only do the
+url-translation for B<this> website."
+
+C<------------------------------------------------------------------------------->
+
+    # !IMPORTANT! Prevent anyone from viewing your GlobalASA.pm
+    <Files ~ (\.pm$)>
+      Order allow,deny
+      Deny from all
+    </Files>
+
+If you don't do this, someone could read your C<GlobalASA.pm> as plaintext.  Probably not a good thing.
+
+C<------------------------------------------------------------------------------->
+
+    # All *.asp files are handled by Apache2::ASP
+    <Files ~ (\.asp$)>
+      SetHandler  perl-script
+      PerlHandler Apache2::ASP
+    </Files>
+
+Tells Apache that any requests that look like C<.asp> should be handled by L<Apache2::ASP>.
+
+C<------------------------------------------------------------------------------->
+
+    # All requests to /handlers/* will be handled by their respective handler:
+    <Location /handlers>
+      SetHandler  perl-script
+      PerlHandler Apache2::ASP
+    </Location>
+
+Tells Apache that any requests to C<yoursite.com/handlers/*> should be handled by L<Apache2::ASP>.
+
+Remember, L<Apache2::ASP> will just prepare the ASP environment and then call your Handler module
+which would be located under your C</handlers> directory.
+
+For Linux installations see L<Apache2::ASP::Manual::Installation::Linux>.
+
+For Windows installations see L<Apache2::ASP::Manual::Installation::Windows>.
+
+C<------------------------------------------------------------------------------->
+
+  </VirtualHost>
+
+Tells Apache that none of the configuration options we've set within the C<VirtualHost> tags above
+should affect any of the other C<VirtualHost> setups you have on the same server.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut

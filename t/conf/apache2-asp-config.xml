@@ -26,9 +26,9 @@
     </session_state>
     <settings>
       <lib>@ServerRoot@/lib</lib>
-      <dsn>DBI:mysql:dstack_dev:localhost</dsn>
-      <password>j@p@n</password>
-      <username>root</username>
+      <dsn>DBI:mysql:databasename:localhost</dsn>
+      <username>my-username</username>
+      <password>swordfish</password>
     </settings>
   </web_application>
 </config>

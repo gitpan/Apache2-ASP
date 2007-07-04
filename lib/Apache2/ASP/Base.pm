@@ -134,6 +134,7 @@ sub resolve_request_handler
 {
   my ($s, $uri) = @_;
   
+  no warnings 'uninitialized';
   if( $uri =~ m/^\/handlers\// )
   {
     # (Try to) load up the handler:
@@ -147,6 +148,7 @@ sub resolve_request_handler
     }
     else
     {
+      $handler =~ s/\//::/g;
       return $handler;
     }# end if()
   }
@@ -177,7 +179,7 @@ sub _global_asa_class
   if( -f $s->config->www_root . '/GlobalASA.pm' )
   {
     require $s->config->www_root . '/GlobalASA.pm';
-    return 'GlobalASA';
+    return $s->config->application_name . '::GlobalASA';
   }
   else
   {
@@ -192,6 +194,7 @@ sub DESTROY
   my $s = shift;
   foreach(qw/ r q session application request response server global_asa /)
   {
+    next unless $s->{ $_ };
     eval { $s->$_->DESTROY };
   }# end foreach()
 }# end DESTROY()

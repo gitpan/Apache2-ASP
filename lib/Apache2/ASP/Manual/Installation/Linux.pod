@@ -1,0 +1,195 @@
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Manual::Installation::Linux - Installation instructions for Linux
+
+=head1 DESCRIPTION
+
+This document describes how to install Apache2::ASP on Linux.
+
+=head1 PREREQUISITES
+
+=head2 Step 1: Install Apache HTTPD v2.0 or newer
+
+Fedora Core 6 and RHEL4+ both come with Apache2.  
+
+You will also need to install the devel libraries.  Specifically, you will need 
+the executable C<apxs>, because it is required to compile mod_perl2 and libapreq2.
+
+=head2 Step 2: Install mod_perl2
+
+Available at L<http://perl.apache.org/>.  Because of the strange environment requirements
+of mod_perl2's test suite, installation via CPAN is discouraged.
+
+Instead of installing via CPAN, simply download the latest stable tar.gz archive, extract it
+and install it like any other Perl module.
+
+The only catch is that you can only C<make test> as a non-root user.  Then switch back to root
+so you can C<make install>.
+
+=head2 Step 3: Install libapreq2
+
+Available at L<http://httpd.apache.org/apreq/>.
+
+Running C<make test> may also require running as a non-root user.
+
+=head1 INSTALLATION
+
+Once you've installed the prerequisites (see above) you are all set to install Apache2::ASP.
+
+Unfortunately the regular CPAN install won't work.  Again, the test suite cannot be run as root
+unless the C<nobody> user can write to the C<t/> directory.
+
+Simply download the latest tar.gz file from CPAN and run the following commands:
+
+  % tar -zxvf Apache2-ASP-1.xx.tar.gz
+  % cd Apache2-ASP-1.xx
+  % perl Makefile.PL
+  % make
+  % make test
+  % make install
+
+Now, when you run the command:
+
+  % perl -MApache2::ASP -e 'print "Hello, World!\n"'
+
+You should see:
+
+  Hello, World!
+
+If instead you see something like:
+
+  Can't locate Apache2/ASP.pm in @INC (@INC contains: /usr/lib/perl5/5.8.3/i386-linux-thread-multi
+  /usr/lib/perl5/5.8.3 /usr/lib/perl5/site_perl/5.8.3/i386-linux-thread-multi /usr/lib/perl5/site_
+  perl/5.8.2/i386-linux-thread-multi /usr/lib/perl5/site_perl/5.8.1/i386-linux-thread-multi /usr/l
+  ib/perl5/site_perl/5.8.0/i386-linux-thread-multi /usr/lib/perl5/site_perl/5.8.3 /usr/lib/perl5/s
+  ite_perl/5.8.2 /usr/lib/perl5/site_perl/5.8.1 /usr/lib/perl5/site_perl/5.8.0 /usr/lib/perl5/site
+  _perl /usr/lib/perl5/vendor_perl/5.8.3/i386-linux-thread-multi /usr/lib/perl5/vendor_perl/5.8.2/
+  i386-linux-thread-multi /usr/lib/perl5/vendor_perl/5.8.1/i386-linux-thread-multi /usr/lib/perl5/
+  vendor_perl/5.8.0/i386-linux-thread-multi /usr/lib/perl5/vendor_perl/5.8.3 /usr/lib/perl5/vendor
+  _perl/5.8.2 /usr/lib/perl5/vendor_perl/5.8.1 /usr/lib/perl5/vendor_perl/5.8.0 /usr/lib/perl5/ven
+  dor_perl .).
+  BEGIN failed--compilation aborted.
+
+Then Apache2::ASP was not successfully installed.  Repeat the installation process again, but this
+time, B<pay attention>!.
+
+Installing Apache2::ASP is only part of the deal.  You also need to configure a website to run on it.
+
+=head1 DIRECTORY STRUCTURE
+
+Assuming your server root is C</var/www> and your C<DocumentRoot> is C</var/www/html> then your directory
+structure would look like this:
+
+  /var/www
+  |
+  +-/html
+  | `- index.asp (All ASP scripts go here, along with images, css, javascript, etc.)
+  |
+  +-/handlers
+  | +- MyHandler.pm    (Accessible as http://yoursite.com/handlers/MyHandler)
+  | `- OtherHandler.pm (Accessible as http://yoursite.com/handlers/OtherHandler)
+  |
+  +-/conf
+  | +- httpd.conf  (to be included by /etc/httpd/conf/httpd.conf)
+  | `- apache2-asp-config.xml
+  |
+  +-/lib
+  | `- Your application classes go here (i.e. Class::DBI or DBIx::Class modules)
+  |
+  +-/MEDIA
+  | `- (Apache must have read/write permissions for this directory)
+  |
+  +-/PAGE_CACHE
+  | `- (Apache must have read/write permissions for this directory)
+  |
+  +-/t
+    `- (your test files will go here)
+
+=head2 /conf
+
+The C</conf> directory should contain only configuration files.
+
+Specifically, it should contain the L<Apache2::ASP::Manual::ConfigXML|XML Config File> 
+and the L<Apache2::ASP::Manual::HttpdConf|httpd.conf> file.
+
+=head2 /handlers
+
+Your Handlers go here.  All of them.
+
+Learn more about what Handlers are by reading the following pages:
+
+=over 4
+
+=item Start with L<Apache2::ASP::Manual::Handlers>
+
+=item L<Apache2::ASP::Handler>
+
+=item L<Apache2::ASP::UploadHandler>
+
+=item L<Apache2::ASP::FormHandler>
+
+=item L<Apache2::ASP::MediaManager>
+
+=back
+
+=head2 /html
+
+All of your ASP scripts, images, CSS, JavaScript, SWF, PDF and other files go here, 
+just like a regular website.
+
+In addition to your ASP scripts you can also place your C<GlobalASA.pm> file in this 
+directory.
+
+Learn more about the C<GlobalASA.pm> file by reading L<Apache2::ASP::GlobalASA> and
+L<Apache2::ASP::Manual::GlobalASA>.
+
+=head2 /MEDIA
+
+This is where uploaded files are stored.
+
+B<NOTE:> Your webserver must be able to both B<read> and B<write> to this directory.
+
+=head2 /PAGE_CACHE
+
+This is where compiled ASP scripts are stored.
+
+"What are compiled ASP scripts?" you ask?  When L<Apache2::ASP::PageHandler> prepares 
+your ASP script for execution the first time around, it converts it from ASP markup to 
+a first-class Perl module.  Learn more by reading L<Apache2::ASP::Manual::ASP_Compilation>.
+
+=head2 /lib
+
+Any Perl module that is not a Handler should go here.  This includes (for example) your
+L<Class::DBI> or L<DBIx::Class> modules (or what have you) as well as any other custom,
+non-CPAN modules that your web application requires.
+
+This directory is automatically added to C<@INC> by L<Apache2::ASP::Config> so you don't 
+have to do it yourself.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

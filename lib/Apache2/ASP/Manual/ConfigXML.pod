@@ -1,0 +1,303 @@
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Manual::ConfigXML - Documentation about the XML config file
+
+=head1 DESCRIPTION
+
+One benefit of keeping all of your application's configuration data in one
+place is ease of maintenance.  Anyone who has had to deal with an application
+that used hard-coded database connection strings, hostnames or file paths 
+would agree that an application can be rendered unmaintainable by poor 
+configuration.
+
+=head1 FILE NAME
+
+The default filename of the XML config file is C<apache2-asp-config.xml>
+
+=head1 CONTENTS
+
+The following is an example of the contents of C<apache2-asp-config.xml> on B<Linux>:
+
+  <?xml version="1.0" ?>
+  <config>
+    <web_application>
+      <domain_re>^.*$</domain_re>
+      <do_reload_on_script_change>1</do_reload_on_script_change>
+      <application_name>DefaultApp</application_name>
+      <application_root>@ServerRoot@</application_root>
+      <handler_root>@ServerRoot@/handlers</handler_root>
+      <media_manager_upload_root>@ServerRoot@/MEDIA</media_manager_upload_root>
+      <www_root>@ServerRoot@/htdocs</www_root>
+      <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
+      <application_state>
+        <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
+        <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
+        <password></password>
+        <username></username>
+      </application_state>
+      <session_state>
+        <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
+        <cookie_domain>localhost</cookie_domain>
+        <cookie_name>session-id</cookie_name>
+        <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_sessions</dsn>
+        <password></password>
+        <username></username>
+        <session_timeout>30</session_timeout>
+      </session_state>
+      <settings>
+        <!-- lib is required -->
+        <lib>@ServerRoot@/lib</lib>
+        <!-- the rest are completely arbitrary -->
+        <dsn>DBI:mysql:databasename:localhost</dsn>
+        <username>my-username</username>
+        <password>swordfish</password>
+      </settings>
+    </web_application>
+  </config>
+
+The following is an example of the C<apache2-asp-config.xml> file on B<Windows>:
+
+  <?xml version="1.0" ?>
+  <config>
+    <web_application>
+      <domain_re>.*</domain_re>
+      <do_reload_on_script_change>1</do_reload_on_script_change>
+      <application_name>DefaultApp</application_name>
+      <application_root>@ServerRoot@</application_root>
+      <handler_root>@ServerRoot@\handlers</handler_root>
+      <media_manager_upload_root>@ServerRoot@\MEDIA</media_manager_upload_root>
+      <www_root>@ServerRoot@/htdocs</www_root>
+      <page_cache_root>@ServerRoot@\PAGE_CACHE</page_cache_root>
+      <application_state>
+        <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
+        <dsn>DBI:SQLite:dbname=apache2-asp/tmp/sessiontest</dsn>
+        <password>j@p@n</password>
+        <username>root</username>
+      </application_state>
+      <session_state>
+        <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
+        <cookie_domain>127.0.0.1</cookie_domain>
+        <cookie_name>session-id</cookie_name>
+        <dsn>DBI:SQLite:dbname=apache2-asp/tmp/sessiontest</dsn>
+        <password>j@p@n</password>
+        <username>root</username>
+        <session_timeout>30</session_timeout>
+      </session_state>
+      <settings>
+        <!-- lib is required -->
+        <lib>@ServerRoot@\lib</lib>
+        <!-- the rest are completely arbitrary -->
+        <dsn>DBI:mysql:databasename:hostname</dsn>
+        <password>j@p@n</password>
+        <username>root</username>
+      </settings>
+    </web_application>
+  </config>
+
+=head1 DTD
+
+This is the DTD for the XML config file:
+
+  <!ELEMENT application_name ( #PCDATA ) >
+  
+  <!ELEMENT application_root ( #PCDATA ) >
+  
+  <!ELEMENT application_state ( manager, dsn, password, username ) >
+  
+  <!ELEMENT config ( web_application ) >
+  
+  <!ELEMENT cookie_domain ( #PCDATA ) >
+  
+  <!ELEMENT cookie_name ( #PCDATA ) >
+  
+  <!ELEMENT do_reload_on_script_change ( #PCDATA ) >
+  
+  <!ELEMENT domain_re ( #PCDATA ) >
+  
+  <!ELEMENT dsn ( #PCDATA ) >
+  
+  <!ELEMENT handler_root ( #PCDATA ) >
+  
+  <!ELEMENT lib ( #PCDATA ) >
+  
+  <!ELEMENT manager ( #PCDATA ) >
+  
+  <!ELEMENT media_manager_upload_root ( #PCDATA ) >
+  
+  <!ELEMENT page_cache_root ( #PCDATA ) >
+  
+  <!ELEMENT password ( #PCDATA ) >
+  
+  <!ELEMENT session_state ( manager, cookie_domain, cookie_name, dsn, password, username, session_timeout ) >
+  
+  <!ELEMENT session_timeout ( #PCDATA ) >
+  
+  <!ELEMENT settings ( lib ) >
+  
+  <!ELEMENT username ( #PCDATA ) >
+  
+  <!ELEMENT web_application ( domain_re, do_reload_on_script_change, application_name, application_root, handler_root, media_manager_upload_root, www_root, page_cache_root, application_state, session_state, settings ) >
+  
+  <!ELEMENT www_root ( #PCDATA ) >
+
+And this is the XML schema for the config file:
+
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="application_name">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="application_root">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="application_state">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="manager" />
+          <xs:element ref="dsn" />
+          <xs:element ref="password" />
+          <xs:element ref="username" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+    <xs:element name="config">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="web_application" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+    <xs:element name="cookie_domain">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="cookie_name">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="do_reload_on_script_change">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="domain_re">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="dsn">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="handler_root">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="lib">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="manager">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="media_manager_upload_root">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="page_cache_root">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="password">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="session_state">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="manager" />
+          <xs:element ref="cookie_domain" />
+          <xs:element ref="cookie_name" />
+          <xs:element ref="dsn" />
+          <xs:element ref="password" />
+          <xs:element ref="username" />
+          <xs:element ref="session_timeout" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+    <xs:element name="session_timeout">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="settings">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="lib" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+    <xs:element name="username">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+    <xs:element name="web_application">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="domain_re" />
+          <xs:element ref="do_reload_on_script_change" />
+          <xs:element ref="application_name" />
+          <xs:element ref="application_root" />
+          <xs:element ref="handler_root" />
+          <xs:element ref="media_manager_upload_root" />
+          <xs:element ref="www_root" />
+          <xs:element ref="page_cache_root" />
+          <xs:element ref="application_state" />
+          <xs:element ref="session_state" />
+          <xs:element ref="settings" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+    <xs:element name="www_root">
+      <xs:complexType mixed="true" />
+    </xs:element>
+  
+  </xs:schema>
+
+=head1 PARSING
+
+As of 2007-07-03, the XML config file is parsed by L<XML::Simple>.  Anything that breaks XML::Simple
+will break Apache2::ASP::Config.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

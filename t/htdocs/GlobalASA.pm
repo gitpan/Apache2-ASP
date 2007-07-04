@@ -1,5 +1,5 @@
 
-package GlobalASA;
+package DefaultApp::GlobalASA;
 
 use strict;
 no warnings 'redefine';

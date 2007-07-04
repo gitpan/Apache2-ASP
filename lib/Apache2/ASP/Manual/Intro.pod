@@ -97,14 +97,64 @@ Encapsulates all the configuration information for your web application.
 
 Learn more by reading the L<Apache2::ASP::Config> documentation.
 
-=head1 INSTALLATION
+=head1 INSTALLATION - STEP 1 - LINUX
 
+=head2 CPAN
+
+  % perl -MCPAN -e shell
+  cpan> install Apache2::ASP
+  ...
+  cpan> quit
+
+Then you're done and can skip ahead to L<Directory Structure>.
+
+=head2 Command Line
+
+If (for whatever reason) the CPAN installation doesn't work for you, simply extract
+Apache2-ASP-xxx.tar.gz, then cd to that directory and run the following commands:
+
+  % su non-root-user
   % perl Makefile.PL
   % make
   % make test
+  % exit
   % make install
 
-Then, in your httpd.conf:
+Because Apache2::ASP makes use of the L<Apache::Test> framework, you cannot run the tests
+as root unless the "nobody" user can create files in the current directory.  That's life.
+
+=head2 Directory Structure
+
+You might be wondering, "What does the directory structure for an Apache2::ASP website look like?"
+
+Well, it looks like this:
+
+  .
+  |-- conf (+r)
+  |   |-- apache2-asp-config.xml
+  |   `-- httpd.conf
+  |-- etc (+r)
+  |   |
+  |   `-- Any other files needed by the site.
+  |-- MEDIA (+rw)
+  |-- PAGE_CACHE (+rw) - Compiled ASP scripts will be placed here automatically.
+  |-- tmp (+rw)
+  |   |
+  |   `-- SQLite database files go here.
+  |-- lib (+r)
+  |   |
+  |   `-- your *.pm modules go here (i.e. Class::DBI or DBIx::Class modules, but *not* Handlers).
+  |--handlers (+r)
+  |  |--MyHandler.pm
+  |  `--MyOtherHandler.pm
+  `-- www (+r)
+      |-- GlobalASA.pm
+      `-- index.asp
+
+=head2 httpd.conf
+
+You need to add the following to your httpd.conf
+
   
   # Needed for CGI::Apache2::Wrapper to work properly:
   LoadModule apreq_module    /usr/local/apache2/modules/mod_apreq2.so
@@ -116,9 +166,6 @@ Then, in your httpd.conf:
   PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /path/to/your/web/application
   
   # Load up some important modules:
-  PerlModule Apache::DBI
-  PerlModule DBI
-  PerlModule DBD::mysql
   PerlModule Apache2::ASP
   PerlModule Apache2::ASP::PostConfigHandler
   PerlPostConfigHandler Apache2::ASP::PostConfigHandler
@@ -151,6 +198,8 @@ Then, in your httpd.conf:
     DocumentRoot  /path/to/your/web/application/htdocs
   </VirtualHost>
 
+=head2 XML Config File
+
 Then create a directory at C</path/to/your/website/PAGE_CACHE> at the root of your application.  The Apache server process
 should be able to read and write in this directory.
 
@@ -160,7 +209,8 @@ It will contain data like this:
   <?xml version="1.0" ?>
   <config>
     <web_application>
-      <domain_re>^.*my\-website\.com$</domain_re>
+      <!-- This should be a regex that matches your site. -->
+      <domain_re>.*</domain_re>
       <do_reload_on_script_change>1</do_reload_on_script_change>
       <application_name>DefaultApp</application_name>
       <application_root>@ServerRoot@</application_root>
@@ -171,21 +221,36 @@ It will contain data like this:
       <application_state>
         <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
         <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
-        <password></password>
         <username></username>
+        <password></password>
       </application_state>
       <session_state>
         <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
         <cookie_domain>localhost</cookie_domain>
         <cookie_name>session-id</cookie_name>
         <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
-        <password></password>
         <username></username>
+        <password></password>
         <session_timeout>30</session_timeout>
       </session_state>
+      <settings>
+        <lib>@ServerRoot@/lib</lib>
+        <dsn>DBI:mysql:databasename:localhost</dsn>
+        <username>abc</username>
+        <password>123</password>
+      </settings>
     </web_application>
     <!-- You can specify more web_application elements below. -->
   </config>
+
+=head1 INSTALLATION - STEP 1 - WINDOWS
+
+Although performance is poor on Windows, it works fine for testing or developing.
+I would not recommend running a production web application on Windows however.
+
+
+
+=head1 INSTALLATION - STEP 2
 
 Then, in your database, create a table with the following structure:
 
@@ -203,7 +268,7 @@ Also create a table with the following structure:
     application_data BLOB
   );
 
-Simply restart Apache and installation is complete.  Now you need some ASP scripts.
+Simply (re)start Apache and installation is complete.  Now you need some ASP scripts.
 
 If your website is in C</var/www/html> then create a file "C<index.asp>" in C</var/www/html>.
 
@@ -238,28 +303,6 @@ If everything was configured correctly, the output would look like:
   Hello from ASP (10)
 
 If you get an error instead, check out your error log to find out why.
-
-=head2 Directory Structure
-
-You might be wondering, "What does the directory structure for an Apache2::ASP website look like?"
-
-Well, it looks like this:
-
-  .
-  |-- conf (+r)
-  |   |-- apache2-asp-config.xml
-  |   `-- httpd.conf
-  |-- etc (+r)
-  |   |-- other_files_needed_by_the_site.txt
-  |   `-- giant_word_dictionary.txt
-  |-- MEDIA (+rw)
-  |-- PAGE_CACHE (+rw)
-  |--handlers (+r)
-  |  |--MyHandler.pm
-  |  `--MyOtherHandler.pm
-  `-- www (+r)
-      |-- GlobalASA.pm
-      `-- index.asp
 
 =head1 BUGS
 

@@ -13,26 +13,26 @@ use Apache::TestConfig ();
 
 # Prerequisites:
 my %require = (
-  'Apache::Test'          => "",
-  'XML::Simple'           => "",
-  'CGI::Apache2::Wrapper' => "",
-  'CGI'                   => "",
-  'Devel::StackTrace'     => "",
-  'Cwd'                   => "",
-  'Digest::MD5'           => "",
-  'DBI'                   => "",
-  'DBD::SQLite'           => "",    # Default state-persistence backend for testing.
-  'Storable'              => "",
-  'HTTP::Date'            => "",
-  'DateTime::Duration'    => "",
-  'MIME::Types'           => "",
-  'Mail::Sendmail'        => "",
-  'Sys::Hostname'         => "",
-  'HTML::FillInForm'      => "",
-  'HTML::Form'            => "",
-  'HTTP::Request::AsCGI'  => "",    # For Apache2::ASP::Test::*
-  'CGI::Simple'           => "",    # For Apache2::ASP::Test::*
-  'HTML::Form'            => "",    # For Apache2::ASP::Test::*
+  'Apache::Test'          => 0,
+  'XML::Simple'           => 0,
+  'CGI::Apache2::Wrapper' => 0,
+  'CGI'                   => 0,
+  'Devel::StackTrace'     => 0,
+  'Cwd'                   => 0,
+  'Digest::MD5'           => 0,
+  'DBI'                   => 0,
+  'DBD::SQLite'           => 0,     # Default state-persistence backend for testing.
+  'Storable'              => 0,
+  'HTTP::Date'            => 0,
+  'DateTime::Duration'    => 0,
+  'MIME::Types'           => 0,
+  'Mail::Sendmail'        => 0,
+  'Sys::Hostname'         => 0,
+  'HTML::FillInForm'      => 0,
+  'HTML::Form'            => 0,
+  'HTTP::Request::AsCGI'  => 0,     # For Apache2::ASP::Test::*
+  'CGI::Simple'           => 0,     # For Apache2::ASP::Test::*
+  'HTML::Form'            => 0,     # For Apache2::ASP::Test::*
   'Ima::DBI'              => 0.35,  # For sessions & applications.
 );
 my @scripts = qw( t/TEST );

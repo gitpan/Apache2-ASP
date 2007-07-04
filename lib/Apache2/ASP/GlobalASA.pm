@@ -102,9 +102,7 @@ Apache2::ASP::GlobalASA - Base class for your GlobalASA
 
 =head1 SYNOPSIS
 
-Place a file named "GlobalASA.pm" at the root of your web directory:
-
-  package GlobalASA;
+  package DefaultApp::GlobalASA;
   use base 'Apache2::ASP::GlobalASA';
   use vars qw($Request $Response $Session $Application $Server $Form);
   

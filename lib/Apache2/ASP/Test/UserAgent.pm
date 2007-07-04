@@ -253,6 +253,12 @@ a running Apache webserver or direct human interaction.
 Simply by using L<Devel::Cover> you can easily generate code-coverage reports on your ASP scripts.  
 Such coverage reports can be used to tell you what code is executed during your tests.
 
+=head1 IMPORTANT BUG
+
+After creating an instance of C<Apache2::ASP::Test::UserAgent> you cannot print to C<STDOUT>.
+
+B<However> you can C<warn> just fine.
+
 =head1 PUBLIC PROPERTIES
 
 =head1 asp

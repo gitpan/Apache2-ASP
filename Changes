@@ -1,5 +1,19 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.15 2007-07-03
+  - Added several new pages to the Manual.
+  - /handlers/My_Handler and /handlers/My/Handler both map to My::Handler
+    for the package and /handlers/My/Handler.pm for the filename.
+  - Updated documentation in several places.
+  - Local GlobalASA.pm class is now required to use web_application.application_name + '::GlobalASA'
+    as its package name.  So if web_application.application_name = "DefaultApp" then
+    it would say:
+    package DefaultApp::GlobalASA;
+    use base 'Apache2::ASP::GlobalASA';
+    ...
+  - Multiple Apache2::ASP web applications can now be run on the same machine.
+  - Successfully installed on Windows, but it requires some work.  And performance is bad.
+
 1.14 2007-06-30
   - $Form data is only forwarded if a page is posting back to itself 
     (i.e. - paging through a recordset) or if the form was posted to
