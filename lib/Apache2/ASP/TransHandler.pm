@@ -11,7 +11,7 @@ sub handler : method
   my ($class, $r) = @_;
   
   # Get our config:
-  $ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBALCONFIG}->find_current_config();
+  $ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBALCONFIG}->find_current_config( $r );
   
   # Fixup the request URI:
   my $filename = $r->filename;

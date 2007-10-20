@@ -3,6 +3,8 @@ package Apache2::ASP::Config;
 
 use strict;
 use warnings 'all';
+use Apache2::Directive ();
+use Sys::Hostname ();
 
 
 #==============================================================================
@@ -39,7 +41,7 @@ sub new
 # Sanity checks to make sure the configuration will work:
 sub validate_config
 {
-  my $s = shift;
+  my ($s, $domain) = @_;
   
   die "web_application configuration is not defined"
     unless keys(%$s);
@@ -50,7 +52,7 @@ sub validate_config
   die "web_application.application_root is not defined"
     unless defined($s->{application_root});
   
-  $s->_fixup_path( 'application_root' );
+  $s->_fixup_path( 'application_root', $domain );
   
   die "web_application.domain_re is not defined"
     unless defined($s->{domain_re});
@@ -68,7 +70,7 @@ sub validate_config
   die "web_application.page_cache_root is not defined"
     unless defined($s->{page_cache_root});
   
-  $s->_fixup_path( 'page_cache_root' );
+  $s->_fixup_path( 'page_cache_root', $domain );
 
 # Maybe enable these validations later, once we have tests for them:
 #  mkdir $s->page_cache_root unless -d $s->page_cache_root;
@@ -90,7 +92,7 @@ sub validate_config
   die "web_application.www_root is not defined"
     unless defined($s->{www_root});
     
-  $s->_fixup_path( 'www_root' );
+  $s->_fixup_path( 'www_root', $domain );
   
   die "web_application.www_root '@{[ $s->www_root ]}' does not exist"
     unless -d $s->www_root;
@@ -101,7 +103,7 @@ sub validate_config
   die "web_application.handler_root is not defined"
     unless defined($s->{handler_root});
   
-  $s->_fixup_path( 'handler_root' );
+  $s->_fixup_path( 'handler_root', $domain );
   
   die "web_application.handler_root '@{[ $s->handler_root ]}' does not exist"
     unless -d $s->handler_root;
@@ -114,7 +116,7 @@ sub validate_config
   die "web_application.media_manager_upload_root is not defined"
     unless defined($s->{media_manager_upload_root});
   
-  $s->_fixup_path( 'media_manager_upload_root' );
+  $s->_fixup_path( 'media_manager_upload_root', $domain );
   
   die "web_application.media_manager_upload_root '@{[ $s->media_manager_upload_root ]}' does not exist"
     unless -d $s->media_manager_upload_root;
@@ -173,16 +175,50 @@ sub validate_config
 
 
 #==============================================================================
+sub _application_path
+{
+  my ($s, $domain) = @_;
+  
+  my ($tree) = eval { Apache2::Directive::conftree() };
+  return $ENV{APACHE2_ASP_APPLICATION_ROOT} unless $tree;
+  
+  my @vhosts = $tree->lookup('VirtualHost');
+  my $dir;
+  if( @vhosts )
+  {
+    no warnings 'uninitialized';
+    my ($host) = grep {
+      $_->{ServerName} eq $domain
+      ||
+      $_->{ServerAlias} eq $domain
+    } @vhosts;
+    $dir = $host->{DocumentRoot};
+  }
+  else
+  {
+    $dir = $tree->lookup('DocumentRoot');
+  }# end if()
+  $dir =~ s/"//g;
+  
+  my @parts = split /\//, $dir;
+  pop(@parts);
+  return join '/', @parts;
+}# end _application_path()
+
+
+#==============================================================================
 # Do any preprocessing on a path-based value:
 sub _fixup_path
 {
-  my ($s, $field) = @_;
+  my ($s, $field, $domain) = @_;
   
-  my $fixed = $s->{$field};
   my $original = $s->{"$field\_original"} ? $s->{"$field\_original"} : $s->{$field};
-  $fixed =~ s/\@ServerRoot\@/$ENV{APACHE2_ASP_APPLICATION_ROOT}/g;
+  my $fixed = $original;
+  my $root = $s->_application_path( $domain ? $domain : $ENV{HTTP_HOST} ? $ENV{HTTP_HOST} : Sys::Hostname::hostname() );
+  $fixed =~ s/\@ServerRoot\@/$root/g;
   $s->{"$field\_original"} = $original;
   $s->{"$field\_expanded"} = $fixed;
+  
   $s->{$field} = $fixed;
 }# end _fixup_path()
 

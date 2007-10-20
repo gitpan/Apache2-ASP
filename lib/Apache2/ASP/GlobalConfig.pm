@@ -7,6 +7,7 @@ use Apache2::ASP::Config;
 use XML::Simple ();
 use Sys::Hostname ();
 use Cwd 'cwd';
+use Apache2::RequestUtil ();
 
 my $CONFIG_PATH = 'conf/apache2-asp-config.xml';
 
@@ -32,11 +33,24 @@ sub new
 #==============================================================================
 sub find_current_config
 {
-  my $s = shift;
+  my ($s, $r) = @_;
   
-  my $domain = $ENV{HTTP_HOST} || Sys::Hostname::hostname();
+  my $domain;
+  if( $r )
+  {
+    $domain = $r->headers_in->{Host};
+  }
+  else
+  {
+    $domain = $ENV{HTTP_HOST} || Sys::Hostname::hostname();
+  }# end if()
   
-  return $s->domain_config( $domain );
+  die "\$ENV{HTTP_HOST} not defined and no Apache2::RequestRec object found."
+    unless $domain;
+  
+  my $config = $s->domain_config( $domain );
+  $config->validate_config( $domain );
+  return $config;
 }# end find_current_config()
 
 

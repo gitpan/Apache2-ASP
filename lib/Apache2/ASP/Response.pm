@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
-use HTML::FillInForm;
+#use HTML::FillInForm;
 
 use Apache2::ASP::ApacheRequest;
 
@@ -149,18 +149,18 @@ sub Flush
 
   if( $s->{asp}->{handler} && $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && $s->{asp}->global_asa )
   {
-    if( defined($buffer) && length($buffer) )
-    {
-      my $fif = HTML::FillInForm->new();
-      $buffer .= "\n";
-      $buffer = $fif->fill(
-        scalarref => \$buffer,
-        fdat      => $s->{asp}->session->{__lastArgs} || { }
-      );
-      no warnings 'uninitialized';
-      $buffer =~ s/\n$//;
-    }# end if()
-    
+#    if( defined($buffer) && length($buffer) )
+#    {
+#      my $fif = HTML::FillInForm->new();
+#      $buffer .= "\n";
+#      $buffer = $fif->fill(
+#        scalarref => \$buffer,
+#        fdat      => $s->{asp}->session->{__lastArgs} || { }
+#      );
+#      no warnings 'uninitialized';
+#      $buffer =~ s/\n$//;
+#    }# end if()
+#    
     $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer )
       unless $s->{is_subrequest};
   }# end if()

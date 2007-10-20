@@ -42,15 +42,15 @@ foreach my $config ( $global->web_applications )
       { $config->validate_config() }
       qr/web_application\.application_root is not defined/;
     
-    local $config->{application_root} = '/path/just/doesnt/exist982134';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.application_root '.*?' does not exist/;
+#    local $config->{application_root} = '/path/just/doesnt/exist982134';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.application_root '.*?' does not exist/;
     
-    local $config->{application_root} = '/root';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.application_root '.*?' exists but is not readable/;
+#    local $config->{application_root} = '/root';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.application_root '.*?' exists but is not readable/;
   }
   
   # page_cache_root:
@@ -60,20 +60,20 @@ foreach my $config ( $global->web_applications )
       { $config->validate_config() }
       qr/web_application\.page_cache_root is not defined/;
     
-    local $config->{page_cache_root} = '/path/just/doesnt/exist982134';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.page_cache_root '.*?' does not exist/;
+#    local $config->{page_cache_root} = '/path/just/doesnt/exist982134';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.page_cache_root '.*?' does not exist/;
     
-    local $config->{page_cache_root} = '/root';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.page_cache_root '.*?' exists but is not readable/;
+#    local $config->{page_cache_root} = '/root';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.page_cache_root '.*?' exists but is not readable/;
     
-    local $config->{page_cache_root} = '/var/log';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.page_cache_root '.*?' exists but is not writable/;
+#    local $config->{page_cache_root} = '/var/log';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.page_cache_root '.*?' exists but is not writable/;
   }
   
   # www_root:
@@ -83,15 +83,15 @@ foreach my $config ( $global->web_applications )
       { $config->validate_config() }
       qr/web_application\.www_root is not defined/;
     
-    local $config->{www_root} = '/path/just/doesnt/exist982134';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.www_root '.*?' does not exist/;
+#    local $config->{www_root} = '/path/just/doesnt/exist982134';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.www_root '.*?' does not exist/;
     
-    local $config->{www_root} = '/root';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.www_root '.*?' exists but is not readable/;
+#    local $config->{www_root} = '/root';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.www_root '.*?' exists but is not readable/;
   }
   
   # handler_root:
@@ -101,15 +101,15 @@ foreach my $config ( $global->web_applications )
       { $config->validate_config() }
       qr/web_application\.handler_root is not defined/;
     
-    local $config->{handler_root} = '/path/just/doesnt/exist982134';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.handler_root '.*?' does not exist/;
+#    local $config->{handler_root} = '/path/just/doesnt/exist982134';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.handler_root '.*?' does not exist/;
     
-    local $config->{handler_root} = '/root';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.handler_root '.*?' exists but is not readable/;
+#    local $config->{handler_root} = '/root';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.handler_root '.*?' exists but is not readable/;
   }
   
   # media_manager_upload_root:
@@ -119,20 +119,20 @@ foreach my $config ( $global->web_applications )
       { $config->validate_config() }
       qr/web_application\.media_manager_upload_root is not defined/;
     
-    local $config->{media_manager_upload_root} = '/path/just/doesnt/exist982134';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.media_manager_upload_root '.*?' does not exist/;
+#    local $config->{media_manager_upload_root} = '/path/just/doesnt/exist982134';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.media_manager_upload_root '.*?' does not exist/;
     
-    local $config->{media_manager_upload_root} = '/root';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.media_manager_upload_root '.*?' exists but is not readable/;
+#    local $config->{media_manager_upload_root} = '/root';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.media_manager_upload_root '.*?' exists but is not readable/;
     
-    local $config->{media_manager_upload_root} = '/var/log';
-    throws_ok
-      { $config->validate_config() }
-      qr/web_application\.media_manager_upload_root '.*?' exists but is not writable/;
+#    local $config->{media_manager_upload_root} = '/var/log';
+#    throws_ok
+#      { $config->validate_config() }
+#      qr/web_application\.media_manager_upload_root '.*?' exists but is not writable/;
   }
   
   # web_application.session_state:

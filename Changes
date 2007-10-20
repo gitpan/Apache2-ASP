@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.16 2007-10-20
+  - Adjusted Apache2::ASP::Config and Apache2::ASP::GlobalConfig to properly support
+    support running multiple websites under one Apache instance.
+  - Removed "sticky forms" support.
+
 1.15 2007-07-03
   - Added several new pages to the Manual.
   - /handlers/My_Handler and /handlers/My/Handler both map to My::Handler

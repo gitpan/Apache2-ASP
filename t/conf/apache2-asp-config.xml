@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <config>
   <web_application>
-    <domain_re>^.*$</domain_re>
+    <domain_re>.*</domain_re>
     <do_reload_on_script_change>1</do_reload_on_script_change>
     <application_name>DefaultApp</application_name>
     <application_root>@ServerRoot@</application_root>
