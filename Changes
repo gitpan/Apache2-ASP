@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.18 2007-10-20
+  - Added before_run() and after_run() methods to Apache2::ASP::Handler.
+    These methods can be overridden by subclasses and executed before and
+    after the "run()" method is called.
+
 1.17 2007-10-20
   - Updates for Apache2::ASP::Test::UserAgent.
   - Updates for Apache2::ASP::Test::MockRequest.

@@ -102,7 +102,7 @@ sub execute
 #  }# end if()
   
   eval {
-    $s->{handler}->run( $s, @args );
+    $s->run_handler( $s->{handler}, @args );
     $s->response->Flush;
   };
   if( $@ )
@@ -126,6 +126,16 @@ sub execute
   
   return $s->response->{Status};
 }# end execute()
+
+
+#==============================================================================
+sub run_handler
+{
+  my ($s, $handler, @args) = @_;
+  $handler->before_run( $s, @args );
+  $handler->run( $s, @args );
+  $handler->after_run( $s, @args );
+}# end run_handler()
 
 
 #==============================================================================
