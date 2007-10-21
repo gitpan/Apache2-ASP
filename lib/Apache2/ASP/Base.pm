@@ -72,35 +72,6 @@ sub execute
   
   $s->{handler}->init_asp_objects( $s );
   
-#  # Store the "lastArgs" in the session here, before they are used in Response.Flush:
-#  if( ! $is_subrequest )
-#  {
-#    if( $s->{handler}->isa('Apache2::ASP::FormHandler') )
-#    {
-#      # FormHandlers tend to redirect to ASP scripts, so pass along the Form data:
-#      $s->session->{__lastArgs} = $s->request->Form;
-#    }
-#    elsif( $s->{handler}->isa('Apache2::ASP::PageHandler') )
-#    {
-#      # If we are posting to the same page, store the Form data:
-#      no warnings 'uninitialized';
-#      my $handler = $s->resolve_request_handler( $s->session->{__lastPage} );
-#      if( 
-#          ( $s->session->{__lastPage} eq $s->r->uri ) ||
-#          $handler->isa('Apache2::ASP::FormHandler')
-#      )
-#      {
-#        # Last page was a form handler:
-#        $s->session->{__lastArgs} = $s->request->Form;
-#      }
-#      else
-#      {
-#        # Clear them out:
-#        $s->session->{__lastArgs} = { };
-#      }# endif()
-#    }# end if()
-#  }# end if()
-  
   eval {
     $s->run_handler( $s->{handler}, @args );
     $s->response->Flush;
@@ -132,6 +103,7 @@ sub execute
 sub run_handler
 {
   my ($s, $handler, @args) = @_;
+  
   $handler->before_run( $s, @args );
   $handler->run( $s, @args );
   $handler->after_run( $s, @args );

@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.18;
+our $VERSION = 1.19;
 
 use strict;
 use warnings 'all';
@@ -27,6 +27,7 @@ sub handler : method
   
   # We function best as an object:
   my $s = $class->SUPER::new( $ENV{APACHE2_ASP_CONFIG} );
+  $s->{r} = $r;
   
   # What Apache2::ASP::Handler is going to handle this request?
   my $handler_class = $s->resolve_request_handler( $r->uri );
