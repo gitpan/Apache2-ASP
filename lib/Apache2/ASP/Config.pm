@@ -28,6 +28,11 @@ sub new
   bless $s->{application_state}, $class;
   if( $s->{settings} )
   {
+    foreach( keys(%{ $s->{settings} }) )
+    {
+      $s->{settings}->{$_} = '' 
+        if ref($s->{settings}->{$_});
+    }# end if()
     bless $s->{settings}, $class;
     $s->settings->_fixup_path( 'lib' );
     push @INC, $s->settings->lib;

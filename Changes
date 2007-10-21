@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.17 2007-10-20
+  - Updates for Apache2::ASP::Test::UserAgent.
+  - Updates for Apache2::ASP::Test::MockRequest.
+
 1.16 2007-10-20
   - Adjusted Apache2::ASP::Config and Apache2::ASP::GlobalConfig to properly support
     support running multiple websites under one Apache instance.

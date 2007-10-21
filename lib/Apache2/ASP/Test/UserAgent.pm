@@ -187,7 +187,7 @@ sub _setup_cgi
     # Manually inject the Querystring data into the CGI object:
     my $qs_cgi = CGI::Simple->new( $ENV{QUERY_STRING} );
     $cgi->param( $_ => $qs_cgi->param( $_ ) ) foreach $qs_cgi->param;
-    eval { undef($qs_cgi); $qs_cgi->DESTROY };
+    eval{ $qs_cgi->DESTROY };
     
     # Done:
     return $cgi;

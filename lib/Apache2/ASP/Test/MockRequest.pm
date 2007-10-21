@@ -44,10 +44,17 @@ sub args
 #==============================================================================
 sub uri
 {
-  my ($s) = @_;
+  my ($s) = shift;
   
-  my ($uri) = split /\?/, $s->{req}->uri;
-  return $uri;
+  if( @_ )
+  {
+    $s->{req}->uri( shift(@_) );
+  }
+  else
+  {
+    my ($uri) = split /\?/, $s->{req}->uri;
+    return $uri;
+  }# end if()
 }# end uri()
 
 
@@ -66,6 +73,17 @@ sub buffer
   my $s = shift;
   return $s->{buffer};
 }# end buffer()
+
+
+#==============================================================================
+sub filename
+{
+  my ($s) = @_;
+  
+  return if $s->{disable_lookup_uri};
+  my $here = cwd();
+  return $here . $s->uri;
+}# end filename()
 
 
 #==============================================================================
@@ -135,7 +153,21 @@ sub AUTOLOAD
   my ($method) = $AUTOLOAD =~ m/::([^:]+)$/;
   
   # If we can't handle the request, try passing it on to our request:
-  if( ! exists( $s->{$method} ) )
+  if( exists( $s->{$method} ) )
+  {
+    # Are we in 'setter' or 'getter' mode?
+    if( @_ )
+    {
+      # Setter:
+      return $s->{$method} = shift;
+    }
+    else
+    {
+      # Getter:
+      return $s->{$method};
+    }# end if()
+  }
+  else
   {
     no warnings 'uninitialized';
     if( $s->{cgi}->can($method) )
@@ -152,17 +184,6 @@ sub AUTOLOAD
     }# end if()
   }# end if()
   
-  # Are we in 'setter' or 'getter' mode?
-  if( @_ )
-  {
-    # Setter:
-    return $s->{$method} = shift;
-  }
-  else
-  {
-    # Getter:
-    return $s->{$method};
-  }# end if()
 }# end AUTOLOAD()
 
 sub DESTROY { }
