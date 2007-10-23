@@ -177,7 +177,8 @@ sub DESTROY
   foreach(qw/ r q session application request response server global_asa /)
   {
     next unless $s->{ $_ };
-    eval { $s->$_->DESTROY };
+    undef( $s->{ $_ } );
+    delete( $s->{ $_ } );
   }# end foreach()
 }# end DESTROY()
 

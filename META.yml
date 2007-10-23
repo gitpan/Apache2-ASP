@@ -1,10 +1,11 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache2-ASP
-version:      1.19
+version:      1.2
 version_from: lib/Apache2/ASP.pm
 installdirs:  site
 requires:
+    Apache2::Directive:            0
     Apache::Test:                  0
     CGI:                           0
     CGI::Apache2::Wrapper:         0
@@ -15,7 +16,6 @@ requires:
     DBI:                           0
     Devel::StackTrace:             0
     Digest::MD5:                   0
-    HTML::FillInForm:              0
     HTML::Form:                    0
     HTTP::Date:                    0
     HTTP::Request::AsCGI:          0

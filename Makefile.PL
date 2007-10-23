@@ -3,13 +3,16 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 use lib qw( ../blib/lib lib );
+BEGIN {
+  eval q~
 use Apache::Test;
-
 use Apache::TestMM qw( test clean ); # enable 'make test'
 use Apache::TestRun;
 use Apache::TestTrace;
 use Apache::TestReport;
 use Apache::TestConfig ();
+  ~;
+}
 
 # Prerequisites:
 my %require = (
@@ -28,7 +31,7 @@ my %require = (
   'MIME::Types'           => 0,
   'Mail::Sendmail'        => 0,
   'Sys::Hostname'         => 0,
-  'HTML::FillInForm'      => 0,
+  'Apache2::Directive'    => 0,
   'HTML::Form'            => 0,
   'HTTP::Request::AsCGI'  => 0,     # For Apache2::ASP::Test::*
   'CGI::Simple'           => 0,     # For Apache2::ASP::Test::*
