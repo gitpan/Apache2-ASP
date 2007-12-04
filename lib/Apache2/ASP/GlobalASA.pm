@@ -4,7 +4,7 @@ package Apache2::ASP::GlobalASA;
 use strict;
 use warnings 'all';
 
-use vars qw($Request $Response $Session $Application $Server $Form);
+use vars qw($Request $Response $Session $Application $Server $Form $Config);
 
 
 #==============================================================================
@@ -27,13 +27,13 @@ sub _init_globals
   
   no strict 'refs';
   my $class = ref($s);
-  ${"$class\::Request"}     = $s->{asp}->request;
-  ${"$class\::Response"}    = $s->{asp}->response;
-  ${"$class\::Session"}     = $s->{asp}->session;
-  ${"$class\::Form"}        = $s->{asp}->request->Form;
-  ${"$class\::Application"} = $s->{asp}->application;
-  ${"$class\::Server"}      = $s->{asp}->server;
-  ${"$class\::Config"}    = $s->{asp}->config;
+  $Request      = ${"$class\::Request"}     = $s->{asp}->request;
+  $Response     = ${"$class\::Response"}    = $s->{asp}->response;
+  $Session      = ${"$class\::Session"}     = $s->{asp}->session;
+  $Form         = ${"$class\::Form"}        = $s->{asp}->request->Form;
+  $Application  = ${"$class\::Application"} = $s->{asp}->application;
+  $Server       = ${"$class\::Server"}      = $s->{asp}->server;
+  $Config       = ${"$class\::Config"}      = $s->{asp}->config;
   
   return 1;
 }# end _init_globals()
@@ -76,7 +76,10 @@ sub Script_OnEnd
 #==============================================================================
 sub Script_OnError
 {
-  my ($stacktrace) = @_;
+  my ($error) = @_;
+  $Response->Write(qq{<pre class="fatal_error">$error</pre>});
+  warn $error;
+  $Response->End;
 }# end Script_OnError()
 
 

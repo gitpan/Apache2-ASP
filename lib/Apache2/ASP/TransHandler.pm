@@ -15,13 +15,15 @@ sub handler : method
   
   # Fixup the request URI:
   my $filename = $r->filename;
+
   if( -d $filename )
   {
     # See if there is an index.asp here:
     if( -f $filename . "index.asp" )
     {
       $r->filename( $filename . "index.asp" );
-      return $class->handler( $r );
+      $r->uri( $r->uri . "/index.asp" );
+      return -1;
     }
     else
     {

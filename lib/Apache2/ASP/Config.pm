@@ -5,6 +5,7 @@ use strict;
 use warnings 'all';
 use Apache2::Directive ();
 use Sys::Hostname ();
+our %AppPath = ();
 
 
 #==============================================================================
@@ -12,7 +13,7 @@ sub new
 {
   my ($class, $data) = @_;
   my $s;
-
+  
   if( $data )
   {
     $s = bless $data, $class;
@@ -26,17 +27,8 @@ sub new
   }# end if()
   bless $s->{session_state}, $class;
   bless $s->{application_state}, $class;
-  if( $s->{settings} )
-  {
-    foreach( keys(%{ $s->{settings} }) )
-    {
-      $s->{settings}->{$_} = '' 
-        if ref($s->{settings}->{$_});
-    }# end if()
-    bless $s->{settings}, $class;
-    $s->settings->_fixup_path( 'lib' );
-    push @INC, $s->settings->lib;
-  }# end if()
+  
+  $s->_init_settings();
   
   return $s;
 }# end new()
@@ -149,9 +141,9 @@ sub validate_config
       if $@;
   }# end if()
   
-  $s->{session_state}->{username} = undef
+  $s->{session_state}->{username} = ''
     if ref($s->{session_state}->{username});
-  $s->{session_state}->{password} = undef
+  $s->{session_state}->{password} = ''
     if ref($s->{session_state}->{password});
   
   die "web_application.application_state is not defined"
@@ -171,12 +163,33 @@ sub validate_config
       if $@;
   }# end if()
   
-  $s->{application_state}->{username} = undef
+  $s->{application_state}->{username} = ''
     if ref($s->{application_state}->{username});
-  $s->{application_state}->{password} = undef
+  $s->{application_state}->{password} = ''
     if ref($s->{application_state}->{password});
   
+  $s->_init_settings();
 }# end validate_config()
+
+
+#==============================================================================
+sub _init_settings
+{
+  my $s = shift;
+  
+  if( $s->{settings} )
+  {
+    foreach( keys(%{ $s->{settings} }) )
+    {
+      $s->{settings}->{$_} = '' 
+        if ref($s->{settings}->{$_});
+    }# end if()
+    bless $s->{settings}, ref($s);
+    $s->settings->_fixup_path( 'lib', $ENV{HTTP_HOST} );
+    push @INC, $s->settings->lib
+      unless grep { $_ eq $s->settings->lib } @INC;
+  }# end if()
+}# end _init_settings()
 
 
 #==============================================================================
@@ -184,6 +197,8 @@ sub _application_path
 {
   my ($s, $domain) = @_;
   
+  return $AppPath{ $domain }
+    if $AppPath{ $domain };
   my ($tree) = eval { Apache2::Directive::conftree() };
   return $ENV{APACHE2_ASP_APPLICATION_ROOT} unless $tree;
   
@@ -207,7 +222,7 @@ sub _application_path
   
   my @parts = split /\//, $dir;
   pop(@parts);
-  return join '/', @parts;
+  return $AppPath{ $domain } = join '/', @parts;
 }# end _application_path()
 
 

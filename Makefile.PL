@@ -1,4 +1,4 @@
-use 5.008008;
+use 5.008005;
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
@@ -17,6 +17,7 @@ use Apache::TestConfig ();
 # Prerequisites:
 my %require = (
   'Apache::Test'          => 0,
+  'Devel::StackTrace'     => 0,
   'XML::Simple'           => 0,
   'CGI::Apache2::Wrapper' => 0,
   'CGI'                   => 0,

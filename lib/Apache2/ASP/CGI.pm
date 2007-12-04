@@ -12,6 +12,7 @@ sub new
   my ($class, $r, $upload_hook) = @_;
   
   my $s = $class->SUPER::new( $r );
+  $s->{r} = $r;
   if( ref($upload_hook) eq 'CODE' )
   {
     my $req = Apache2::Request->new(

@@ -78,7 +78,7 @@ sub execute
   };
   if( $@ )
   {
-    $s->global_asa->can('Script_OnError')->( Devel::StackTrace->new() );
+    $s->global_asa->can('Script_OnError')->( $@ );
     $s->response->Flush;
     return $s->response->{ApacheStatus} = 500;
   }# end if()

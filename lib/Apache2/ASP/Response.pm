@@ -226,6 +226,13 @@ sub Include
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
+  $asp->{ $_ } = $s->{asp}->{ $_ }
+    foreach grep { exists($s->{asp}->{$_}) }
+      qw/
+        service
+        subservice
+        registry_member
+      /;
   $asp->setup_request( $r, $s->{asp}->q );
   eval {
     $asp->execute( 1, @args );
@@ -254,6 +261,13 @@ sub TrapInclude
     uri      => $uri
   );
   my $asp = ref($s->{asp})->new( $s->{asp}->config );
+  $asp->{ $_ } = $s->{asp}->{ $_ }
+    foreach grep { exists($s->{asp}->{$_}) }
+      qw/
+        service
+        subservice
+        registry_member
+      /;
   $asp->setup_request( $r, $s->{asp}->q );
   
   my $include = eval {
