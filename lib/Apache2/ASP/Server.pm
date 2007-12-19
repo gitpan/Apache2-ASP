@@ -28,6 +28,7 @@ sub new
 sub URLEncode
 {
   my $toencode = $_[1];
+  no warnings 'uninitialized';
   $toencode =~ s/([^a-zA-Z0-9_\-.])/uc sprintf("%%%02x",ord($1))/esg;
   $toencode;
 }# end URLEncode()
@@ -37,6 +38,7 @@ sub URLEncode
 sub HTMLEncode
 {
   my ($s, $str) = @_;
+  no warnings 'uninitialized';
   $str =~ s/&/&amp;/g;
   $str =~ s/</&lt;/g;
   $str =~ s/>/&gt;/g;
@@ -50,6 +52,7 @@ sub HTMLEncode
 sub HTMLDecode
 {
   my ($s, $str) = @_;
+  no warnings 'uninitialized';
   $str =~ s/&lt;/</g;
   $str =~ s/&gt;/>/g;
   $str =~ s/&quot;/"/g;

@@ -49,6 +49,10 @@ sub find_current_config
     unless $domain;
   
   my $config = $s->domain_config( $domain );
+  unless( $config )
+  {
+    ($config) = $s->web_applications;
+  }# end unless()
   $config->validate_config( $domain );
   return $config;
 }# end find_current_config()

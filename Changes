@@ -1,5 +1,17 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.22 2007-12-18
+  - Fixed a bug that caused changes in the $Session object made
+    from within $Response->Include() and $Response->TrapInclude() to not persist.
+  - Removed warnings like this:
+    Use of uninitialized value in substitution (s///) at /usr/lib/perl5/site_perl/5.8.5/Apache2/ASP/Server.pm line 40.
+  - $Session->save() does not (wastefully) persist $s->{asp} any longer.
+  - Apache2::ASP::Request was handling cookies wrong.  This behavior has been improved.
+    Still does not handle expiration yet (this can be done with $Response->AddHeader(...) ).
+  - Improved (fixed) problems associated with running multiple Apache2::ASP-powered websites
+    under the same Apache server under different VirtualHosts.  Now expects PerlOptions +Parent 
+    and PerlSetEnv APACHE2_ASP_APPLICATION_ROOT /path/to/your/root inside of <VirtualHost> directives.
+
 1.21 2007-12-04
   - Bugfixes to Apache2::ASP::Request and Apache2::ASP::Response.
   - *Recommended* upgrade to this version if you are running any previous version.

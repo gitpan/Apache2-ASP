@@ -197,6 +197,8 @@ sub _application_path
 {
   my ($s, $domain) = @_;
   
+  return $ENV{APACHE2_ASP_APPLICATION_ROOT};
+  
   return $AppPath{ $domain }
     if $AppPath{ $domain };
   my ($tree) = eval { Apache2::Directive::conftree() };

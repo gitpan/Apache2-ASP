@@ -37,8 +37,8 @@ sub setup_request
   $s->{response}    = Apache2::ASP::Response->new( $s );
   $s->{server}      = Apache2::ASP::Server->new( $s );
 
-  $s->{application} = $s->{config}->application_state->manager->new( $s );
-  $s->{session}     = $s->{config}->session_state->manager->new( $s );
+  $s->{application} ||= $s->{config}->application_state->manager->new( $s );
+  $s->{session}     ||= $s->{config}->session_state->manager->new( $s );
   $s->{global_asa}  = $s->_global_asa_class->new( $s );
   
   # Init objects:

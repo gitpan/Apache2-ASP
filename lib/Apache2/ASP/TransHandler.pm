@@ -4,6 +4,8 @@ package Apache2::ASP::TransHandler;
 use strict;
 use APR::Table ();
 use Apache2::RequestRec ();
+use Apache2::RequestUtil ();
+use Apache2::SubRequest ();
 use Apache2::Const -compile => ':common';
 
 sub handler : method
@@ -11,6 +13,11 @@ sub handler : method
   my ($class, $r) = @_;
   
   # Get our config:
+  if( ! $ENV{APACHE2_ASP_GLOBALCONFIG} )
+  {
+    require Apache2::ASP::PostConfigHandler;
+    Apache2::ASP::PostConfigHandler->handler( $r );
+  }# end if()
   $ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBALCONFIG}->find_current_config( $r );
   
   # Fixup the request URI:

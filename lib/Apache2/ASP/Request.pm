@@ -30,14 +30,21 @@ sub new
   
   while( my ($key,$data) = each( %{ $s->{cookies} } ) )
   {
-    next unless $data =~ m/\%3D/i;
-    $data = $unescape->( $data );
-    my %info = map {
-      my ($k,$v) = split /\=/, $_;
-      chomp($k);
-      ( $k => $v )
-    } split /&/, $data;
-    $s->{cookies}->{ $key } = \%info;
+    if( $data =~ m/\%3D/i )
+    {
+      $data = $unescape->( $data );
+      my %info = map {
+        my ($k,$v) = split /\=/, $_;
+        chomp($k);
+        ( $k => $v )
+      } split /&/, $data;
+      $s->{cookies}->{ $key } = \%info;
+    }
+    else
+    {
+      $data = $unescape->( $data );
+      $s->{cookies}->{ $key } = $data;
+    }# end if()
   }# end while()
   
   return $s;

@@ -21,7 +21,6 @@ my %require = (
   'XML::Simple'           => 0,
   'CGI::Apache2::Wrapper' => 0,
   'CGI'                   => 0,
-  'Devel::StackTrace'     => 0,
   'Cwd'                   => 0,
   'Digest::MD5'           => 0,
   'DBI'                   => 0,

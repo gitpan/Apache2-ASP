@@ -216,6 +216,8 @@ sub Include
 {
   my ($s, $script, @args) = @_;
   
+  -f $script or die "Cannot Response.Include '$script': File not found";
+  
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
   $uri =~ s/^$root//;
@@ -229,6 +231,8 @@ sub Include
   $asp->{ $_ } = $s->{asp}->{ $_ }
     foreach grep { exists($s->{asp}->{$_}) }
       qw/
+        session
+        application
         service
         subservice
         registry_member
@@ -251,6 +255,8 @@ sub TrapInclude
 {
   my ($s, $script, @args) = @_;
   
+  -f $script or die "Cannot Response.TrapInclude '$script': File not found";
+  
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
   $uri =~ s/^$root//;
@@ -264,6 +270,8 @@ sub TrapInclude
   $asp->{ $_ } = $s->{asp}->{ $_ }
     foreach grep { exists($s->{asp}->{$_}) }
       qw/
+        session
+        application
         service
         subservice
         registry_member
