@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.23 2007-12-27
+  - Apache2::ASP::Config now only adds PAGE_CACHE and $Config->handler_root to @INC
+    if they have not already been added before.
+  - Apache2::ASP::Response no longer flushes headers after Response.Include().
+
 1.22 2007-12-18
   - Fixed a bug that caused changes in the $Session object made
     from within $Response->Include() and $Response->TrapInclude() to not persist.

@@ -84,7 +84,8 @@ sub validate_config
   die "web_application.page_cache_root '@{[ $s->page_cache_root ]}' exists but is not writable"
     unless -w $s->page_cache_root;
   
-  push @INC, $s->page_cache_root;
+  push @INC, $s->page_cache_root
+    unless grep { $_ eq $s->page_cache_root } @INC;
   
   die "web_application.www_root is not defined"
     unless defined($s->{www_root});
@@ -105,7 +106,8 @@ sub validate_config
   die "web_application.handler_root '@{[ $s->handler_root ]}' does not exist"
     unless -d $s->handler_root;
   
-  push @INC, $s->handler_root;
+  push @INC, $s->handler_root
+    unless grep { $_ eq $s->handler_root } @INC;
   
   die "web_application.handler_root '@{[ $s->handler_root ]}' exists but is not readable"
     unless -r $s->handler_root;

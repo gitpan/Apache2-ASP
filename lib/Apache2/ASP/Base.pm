@@ -78,9 +78,14 @@ sub execute
   };
   if( $@ )
   {
-    $s->global_asa->can('Script_OnError')->( $@ );
-    $s->response->Flush;
-    return $s->response->{ApacheStatus} = 500;
+    my $stack = Devel::StackTrace->new;
+    $s->global_asa->can('Script_OnError')->( $stack );
+    unless( $is_subrequest )
+    {
+      $s->response->{ApacheStatus} = 500;
+      $s->response->Flush;
+    }# end unless()
+    return 500;
   }# end if()
   
   if( ! $is_subrequest )

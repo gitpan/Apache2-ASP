@@ -241,7 +241,7 @@ sub Include
   eval {
     $asp->execute( 1, @args );
     $s->Write( $r->buffer );
-    $s->Flush;
+#    $s->Flush;
   };
   if( $@ )
   {
