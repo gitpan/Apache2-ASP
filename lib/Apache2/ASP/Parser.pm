@@ -35,6 +35,7 @@ sub parse_string
   @~);\$Response->Write($1);\$Response->Write(q~@sgx;
   
   $txt =~ s@\$Response\-\>End(?:\(?[\s.]*?\)?);@return;@g;
+  $txt =~ s@\$Response\-\>Redirect\(@return \$Response\->Redirect\(@g;
   
   $txt =~ s@\$Response\-\>Write\(q\~(.*?)\~\);@
     '$Response->Write(q~' . _fix_tilde($1) . '~);'
@@ -103,7 +104,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

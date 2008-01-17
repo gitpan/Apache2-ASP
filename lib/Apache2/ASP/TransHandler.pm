@@ -92,7 +92,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

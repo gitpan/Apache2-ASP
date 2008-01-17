@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.23;
+our $VERSION = 1.24;
 
 use strict;
 use warnings 'all';
@@ -17,7 +17,7 @@ use Apache2::Directive ();
 use Apache2::Connection ();
 use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
-use Devel::StackTrace;
+#use Devel::StackTrace;
 
 
 #==============================================================================
@@ -66,10 +66,11 @@ sub _handle_error
 {
   my ($s, $err) = @_;
   
-  my $stack = Devel::StackTrace->new;
-  warn "$@ -- " . $stack->as_string;
+#  my $stack = Devel::StackTrace->new;
+#  warn "$@ -- " . $stack->as_string;
+  warn $@;
   $s->response->Clear();
-  $s->global_asa->can('Script_OnError')->( $stack );
+  $s->global_asa->can('Script_OnError')->( $@ );
   
   return 500;
 }# end _handle_error()
@@ -128,7 +129,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

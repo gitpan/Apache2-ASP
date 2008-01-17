@@ -164,6 +164,17 @@ This is useful for generating image thumbnails - i.e. C</media/file123.gif?mode=
 
 The rest is left as an exercise for the reader.
 
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
 John Drago L<jdrago_999@yahoo.com>

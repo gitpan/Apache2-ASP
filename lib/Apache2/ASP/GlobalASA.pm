@@ -217,6 +217,17 @@ The C<$error> passed in is a C<Devel::StackTrace> object.
 This is a good place to insert code to email you about the error that occurred, or print out
 a friendly error message to the client.
 
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
 John Drago L<jdrago_999@yahoo.com>

@@ -63,7 +63,7 @@ $Response->Cookies( 'mycookie' => 'cookievalue' );
 is( $Response->{_headers}->[1]->{name}, 'Set-Cookie' );
 
 # Try redirecting now, after status has been sent:
-throws_ok
+dies_ok
   { $Response->Redirect( "/new/url.asp" ) }
   qr/Response\.Redirect: Cannot redirect after headers have been sent\./;
 

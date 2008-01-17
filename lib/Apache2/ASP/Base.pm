@@ -4,7 +4,7 @@ package Apache2::ASP::Base;
 use strict;
 use warnings 'all';
 use CGI ();
-use Devel::StackTrace;
+#use Devel::StackTrace;
 
 use Apache2::ASP::PageHandler;
 use Apache2::ASP::Request;
@@ -72,20 +72,24 @@ sub execute
   
   $s->{handler}->init_asp_objects( $s );
   
-  eval {
-    $s->run_handler( $s->{handler}, @args );
-    $s->response->Flush;
-  };
-  if( $@ )
+  if( ! $s->{did_end} )
   {
-    my $stack = Devel::StackTrace->new;
-    $s->global_asa->can('Script_OnError')->( $stack );
-    unless( $is_subrequest )
-    {
-      $s->response->{ApacheStatus} = 500;
+    eval {
+      $s->run_handler( $s->{handler}, @args );
       $s->response->Flush;
-    }# end unless()
-    return 500;
+    };
+    if( $@ )
+    {
+#      my $stack = Devel::StackTrace->new;
+      warn $@;
+      $s->global_asa->can('Script_OnError')->( $@ );
+      unless( $is_subrequest )
+      {
+        $s->response->{ApacheStatus} = 500;
+        $s->response->Flush;
+      }# end unless()
+      return 500;
+    }# end if()
   }# end if()
   
   if( ! $is_subrequest )
@@ -331,7 +335,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

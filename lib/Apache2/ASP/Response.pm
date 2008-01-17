@@ -3,9 +3,9 @@ package Apache2::ASP::Response;
 
 use strict;
 use warnings 'all';
+use Carp qw( cluck confess );
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
-#use HTML::FillInForm;
 
 use Apache2::ASP::ApacheRequest;
 
@@ -181,6 +181,7 @@ sub End
   # Cancel execution and force the server to stop processing this request.
   my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
+  $s->{asp}->{did_end} = 1;
 }# end End()
 
 
@@ -199,7 +200,7 @@ sub Redirect
   
   if( $s->{_sent_headers} )
   {
-    die "Response.Redirect: Cannot redirect after headers have been sent.";
+    confess "Response.Redirect: Cannot redirect to '$location' after headers have been sent.";
   }# end if()
   
   $s->Clear();
@@ -216,7 +217,12 @@ sub Include
 {
   my ($s, $script, @args) = @_;
   
-  -f $script or die "Cannot Response.Include '$script': File not found";
+  unless( -f $script )
+  {
+    $s->Write("[ Cannot Response.Include '$script': File not found ]");
+    cluck "Cannot Response.Include '$script': File not found";
+    return;
+  }# end unless()
   
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
@@ -245,7 +251,7 @@ sub Include
   };
   if( $@ )
   {
-    die "Cannot Include script '$script': $@";
+    confess "Cannot Include script '$script': $@";
   }# end if()
 }# end Include()
 
@@ -255,7 +261,12 @@ sub TrapInclude
 {
   my ($s, $script, @args) = @_;
   
-  -f $script or die "Cannot Response.TrapInclude '$script': File not found";
+  unless( -f $script )
+  {
+    $s->Write("[ Cannot Response.TrapInclude '$script': File not found ]");
+    cluck "Cannot Response.TrapInclude '$script': File not found";
+    return;
+  }# end unless()
   
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
@@ -285,7 +296,7 @@ sub TrapInclude
   };
   if( $@ )
   {
-    die "Cannot TrapInclude script '$script': $@";
+    confess "Cannot TrapInclude script '$script': $@";
   }# end if()
   
   return $include;
@@ -501,8 +512,7 @@ It's possible that some bugs have found their way into this release.
 Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
 
 =head1 HOMEPAGE
-
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+v
 of Apache2::ASP in action.
 
 =head1 AUTHOR

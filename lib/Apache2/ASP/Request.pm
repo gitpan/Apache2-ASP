@@ -15,14 +15,23 @@ sub new
     r => $asp->{r},
   }, $class;
   
-  my $unescape = $s->{q}->can('unescape') ? sub{ $s->{q}->unescape( @_ ) } : sub{ $s->{q}->url_decode( @_ ) };
+  # Taken from CGI::Util by Lincoln Stein:
+  my $unescape = sub {
+    my $todecode = shift;
+    return undef unless defined($todecode);
+    $todecode =~ tr/+/ /;       # pluses become spaces
+    $todecode =~ s/%(?:([0-9a-fA-F]{2})|u([0-9a-fA-F]{4}))/
+    defined($1)? chr hex($1) : utf8_chr(hex($2))/ge;
+    return $todecode;
+  };
   
   {
     no warnings 'uninitialized';
     $s->{cookies} = {
-      map { 
+      map {
         my ($k,$v) = split /\=/, $_;
         chomp($k);
+        $k =~ s/^\s+//;
         ($k => $v . '' )
       } split /;/, $ENV{HTTP_COOKIE}
     };
@@ -36,14 +45,15 @@ sub new
       my %info = map {
         my ($k,$v) = split /\=/, $_;
         chomp($k);
+        $key =~ s/^\s+//;
         ( $k => $v )
       } split /&/, $data;
-      $s->{cookies}->{ $key } = \%info;
+      $s->{cookies}->{$key} = \%info;
     }
     else
     {
       $data = $unescape->( $data );
-      $s->{cookies}->{ $key } = $data;
+      $s->{cookies}->{$key} = $data;
     }# end if()
   }# end while()
   
@@ -55,8 +65,9 @@ sub new
 sub Cookies
 {
   my ($s, $name, $key ) = @_;
-  
+
   return unless exists($s->{cookies}->{$name});
+
   if( defined($key) && ref($s->{cookies}->{$name}) )
   {
     return $s->{cookies}->{$name}->{$key};
@@ -184,7 +195,7 @@ sub ServerVariables
   {
     return sort keys %ENV;
   }# end if()
-}# end ServerVariables()\
+}# end ServerVariables()
 
 
 #==============================================================================
@@ -301,7 +312,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

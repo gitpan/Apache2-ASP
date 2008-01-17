@@ -551,6 +551,17 @@ Should return a filehandle opened for appending.
 See L<Apache2::ASP::UploadHandler> for details about the C<$Upload> parameter passed to
 the C<*_create> and C<*_update> methods.
 
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
 =head1 AUTHOR
 
 John Drago L<mailto:jdrago_999@yahoo.com>

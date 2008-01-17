@@ -1,5 +1,14 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.24 2008-01-17
+  - Fixes a problem with $Request->Cookies( $name ) that caused it to return undef
+    instead of the cookie's value.
+  - When Response->Include( $nonexistent_file ) is called, a simple diagnostic is
+    printed to the buffer ("Cannot Response.Include '$file' - the file does not exist")
+    and Carp::cluck dumps a stacktrace to STDERR.
+  - If $Response->End or $Response->Redirect is called in Script_OnStart then the script
+    is no longer processed.
+
 1.23 2007-12-27
   - Apache2::ASP::Config now only adds PAGE_CACHE and $Config->handler_root to @INC
     if they have not already been added before.
