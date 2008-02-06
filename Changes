@@ -1,5 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.25 2008-02-05
+  - Added the concept of "Request Filters" as Apache2::ASP::RequestFilter.  These
+    are useful for centralizing authorization code.  Request Filters are stackable.
+  - Added config.web_application.settings.request_filters.filter and documented it in
+    the documentation for Apache2::ASP::RequestFilter.
+  - Request Filters will be considered experimental until v1.26 is released.
+
 1.24 2008-01-17
   - Fixes a problem with $Request->Cookies( $name ) that caused it to return undef
     instead of the cookie's value.

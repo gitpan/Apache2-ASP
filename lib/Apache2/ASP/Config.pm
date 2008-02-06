@@ -181,10 +181,19 @@ sub _init_settings
   
   if( $s->{settings} )
   {
-    foreach( keys(%{ $s->{settings} }) )
+    foreach my $key ( keys(%{ $s->{settings} }) )
     {
-      $s->{settings}->{$_} = '' 
-        if ref($s->{settings}->{$_});
+      if( ref($s->{settings}->{$key}) )
+      {
+        if( keys(%{ $s->{settings}->{$key} }) )
+        {
+          bless $s->{settings}->{$key}, ref($s);
+        }
+        else
+        {
+          $s->{settings}->{$key} = '';
+        }# end if()
+      }# end if()
     }# end if()
     bless $s->{settings}, ref($s);
     $s->settings->_fixup_path( 'lib', $ENV{HTTP_HOST} );

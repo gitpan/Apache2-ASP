@@ -41,8 +41,6 @@ sub setup_request
   $s->{session}     ||= $s->{config}->session_state->manager->new( $s );
   $s->{global_asa}  = $s->_global_asa_class->new( $s );
   
-  # Init objects:
-  
   # Who's going to handle this request?
   my $handler = $s->resolve_request_handler( $s->r->uri );
   $s->{handler} = $handler;
@@ -66,21 +64,42 @@ sub execute
       unless $s->session->{__did_init}++;
     $s->session->save;
     
+    my $filter_response = -1;
+    foreach my $filter ( $s->resolve_request_filters( $ENV{REQUEST_URI} ) )
+    {
+      last if $filter_response != -1;
+      $filter->init_asp_objects( $s );
+      $filter_response = eval { $s->run_filter( $filter ) };
+      if( $@ )
+      {
+        $s->global_asa->can('Script_OnError')->( $@ );
+        $s->response->{ApacheStatus} = 500;
+        $s->response->Flush;
+        return 500;
+      }# end if()
+      if( $filter_response != -1 )
+      {
+        $s->response->{ApacheStatus} = $filter_response;
+        $s->response->Flush;
+        return $filter_response;
+      }# end if()
+    }# end foreach()
+    
     # Now that we've initialized our other objects, we can safely call Script_OnStart()
     $s->global_asa->can('Script_OnStart')->();
   }# end if()
   
   $s->{handler}->init_asp_objects( $s );
   
+  my $handler_response;
   if( ! $s->{did_end} )
   {
     eval {
-      $s->run_handler( $s->{handler}, @args );
+      $handler_response = $s->run_handler( $s->{handler}, @args );
       $s->response->Flush;
     };
     if( $@ )
     {
-#      my $stack = Devel::StackTrace->new;
       warn $@;
       $s->global_asa->can('Script_OnError')->( $@ );
       unless( $is_subrequest )
@@ -104,7 +123,14 @@ sub execute
   }# end if()
   $s->response->Flush;
   
-  return $s->response->{Status};
+  if( $s->{handler}->isa('Apache2::ASP::RequestFilter') )
+  {
+    return $handler_response;
+  }
+  else
+  {
+    return $s->response->{Status};
+  }# end if()
 }# end execute()
 
 
@@ -114,9 +140,25 @@ sub run_handler
   my ($s, $handler, @args) = @_;
   
   $handler->before_run( $s, @args );
-  $handler->run( $s, @args );
+  my $res = $handler->run( $s, @args );
   $handler->after_run( $s, @args );
+  return $res;
 }# end run_handler()
+
+
+#==============================================================================
+sub run_filter
+{
+  my ($s, $handler, @args) = @_;
+  
+  $handler->before_run( $s, @args );
+  my $res = $handler->run( $s, @args );
+  $handler->after_run( $s, @args );
+  
+  # Default to -1:
+  $res = -1 unless defined($res);
+  return $res;
+}# end run_filter()
 
 
 #==============================================================================
@@ -148,6 +190,56 @@ sub resolve_request_handler
     return 'Apache2::ASP::PageHandler';
   }# end if()
 }# end _resolve_request_handler()
+
+
+#==============================================================================
+sub resolve_request_filters
+{
+  my ($s, $uri) = @_;
+  
+  # Bail out unless the config specifies any filters:
+  return unless my $filters = $s->config->settings->request_filters->filter;
+  
+  # Try to find some filters that match our URI:
+  my @matched = ();
+  foreach my $filter ( @$filters )
+  {
+    if( $filter->{uri_equals} && ( $filter->{uri_equals} eq $uri ) )
+    {
+      push( @matched, $filter->{class} );
+    }
+    elsif( $filter->{uri_match} && ( $uri =~ m/$filter->{uri_match}/ ) )
+    {
+      push( @matched, $filter->{class} );
+    }# end if()
+  }# end foreach()
+  
+  # Require all of the filters:
+  foreach my $class ( @matched )
+  {
+    (my $file = $class . ".pm") =~ s/::/\//g;
+    require $file
+      unless $INC{$file};
+    
+    # Trouble's a-brewin'
+    unless( $class->isa('Apache2::ASP::RequestFilter') )
+    {
+      if( $class->can('run') )
+      {
+        # We'll let this one by, for now:
+        warn "Filter class '$class' is specified in config but does not inherit from 'Apache2::ASP::RequestFilter'";
+      }
+      else
+      {
+        # We just can't work under these conditions!:
+        die "Filter class '$class' is specified in config but does not inherit from 'Apache2::ASP::RequestFilter' and does not define a 'run()' method.";
+      }# end if()
+    }# end unless()
+  }# end foreach()
+  
+  # Done:
+  return @matched;
+}# end resolve_request_filters()
 
 
 #==============================================================================

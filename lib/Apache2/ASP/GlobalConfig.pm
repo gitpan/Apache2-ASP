@@ -119,7 +119,7 @@ sub _load_config
   
   # Now parse the XML:
   my $xml = eval {
-    XML::Simple::XMLin( $file, ForceArray => [qw/ web_application /] )
+    XML::Simple::XMLin( $file, ForceArray => [qw/ web_application filter /] )
   } or die "Cannot load $file: $@";
   
   # Setup defaults and make sure that (array|hash)refs exist where they are expected to:

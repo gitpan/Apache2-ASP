@@ -39,6 +39,7 @@ lib/Apache2/ASP/MediaManager.pm
 lib/Apache2/ASP/ApacheRequest.pm
 lib/Apache2/ASP/Test/UserAgent.pm
 lib/Apache2/ASP/Test/MockRequest.pm
+lib/Apache2/ASP/RequestFilter.pm
 t/MEDIA/.ok
 t/httpd_startup.pl
 t/TEST.PL
