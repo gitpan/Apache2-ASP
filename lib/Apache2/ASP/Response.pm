@@ -35,6 +35,15 @@ sub new
 
 
 #==============================================================================
+sub Decline
+{
+  my $s = shift;
+
+  $s->{Status} = -1;
+}# end Decline()
+
+
+#==============================================================================
 sub Buffer
 {
   my $s = shift;
@@ -182,6 +191,7 @@ sub End
   my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
   $s->{asp}->{did_end} = 1;
+  return 0;
 }# end End()
 
 
@@ -205,10 +215,11 @@ sub Redirect
   
   $s->Clear();
   $s->{ContentType} = '';
-  $s->{Status} = '302 Found';
+  $s->{Status} = 302; # '302 Found';
   $s->AddHeader('Location' => $location);
   $s->Flush();
   $s->End;
+  return 302;
 }# end Redirect()
 
 
@@ -229,7 +240,7 @@ sub Include
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
     r => $s->{asp}->r,
-    status => '200 OK',
+    status => 200,# '200 OK',
     filename => $script,
     uri      => $uri
   );
@@ -273,7 +284,7 @@ sub TrapInclude
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
     r => $s->{asp}->r,
-    status => '200 OK',
+    status => 200,# '200 OK',
     filename => $script,
     uri      => $uri
   );
@@ -320,7 +331,8 @@ sub _print_headers
   
   $s->{r}->content_type( $s->{ContentType} || 'text/html' );
   my ($status) = $s->{Status} =~ m/^(\d+)/;
-  $s->{r}->status( $status );
+  $s->{r}->status( $status )
+    if defined( $status );
   
   my $headers = $s->{r}->headers_out;
   foreach my $header ( @{$s->{_headers}} )
