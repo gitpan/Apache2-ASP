@@ -1,5 +1,17 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.29 2008-02-06
+  - Fixed a bug that caused Response->Include to misbehave when used in
+    conjunction with RequestFilters.
+
+1.28 2008-02-06
+  - Added $Response->Decline and changed the return value of $Response->End
+    and $Response->Redirect to 0 and 302 respectively.
+  - Now inside RequestFilters you can simply say 'return $Response->Declined'
+    or 'return $Response->Redirect("/mypage.asp")' to exit the RequestFilter.
+  - Documentation for RequestFilters and Response needs to be updated to
+    reflect this change.
+
 1.27 2008-02-06
   - Moved the <request_filters> config section under config/web_application 
     instead of config/web_application/settings.

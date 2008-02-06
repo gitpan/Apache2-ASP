@@ -53,7 +53,7 @@ sub setup_request
 sub execute
 {
   my ($s, $is_subrequest, @args) = @_;
-  
+
   if( ! $is_subrequest )
   {
     # Prevent multiple *OnStart events from being raised during the same request:

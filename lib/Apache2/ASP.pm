@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.28;
+our $VERSION = 1.29;
 
 use strict;
 use warnings 'all';

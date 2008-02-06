@@ -35,12 +35,12 @@ sub new
 
 
 #==============================================================================
-sub Decline
+sub Declined
 {
   my $s = shift;
 
-  $s->{Status} = -1;
-}# end Decline()
+  return -1;
+}# end Declined()
 
 
 #==============================================================================
@@ -191,7 +191,7 @@ sub End
   my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
   $s->{asp}->{did_end} = 1;
-  return 0;
+#  return 0;
 }# end End()
 
 
@@ -227,7 +227,7 @@ sub Redirect
 sub Include
 {
   my ($s, $script, @args) = @_;
-  
+
   unless( -f $script )
   {
     $s->Write("[ Cannot Response.Include '$script': File not found ]");
