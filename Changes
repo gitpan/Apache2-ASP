@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.27 2008-02-06
+  - Moved the <request_filters> config section under config/web_application 
+    instead of config/web_application/settings.
+
 1.26 2008-02-05
   - Hotfix for config.  Was crashing unless settings.request_filters was defined.
 

@@ -17,6 +17,7 @@ lib/Apache2/ASP/Parser.pm
 lib/Apache2/ASP/SessionStateManager/MySQL.pm
 lib/Apache2/ASP/SessionStateManager/SQLite.pm
 lib/Apache2/ASP/Config.pm
+lib/Apache2/ASP/Config/Node.pm
 lib/Apache2/ASP/GlobalConfig.pm
 lib/Apache2/ASP/ApplicationStateManager.pm
 lib/Apache2/ASP/SessionStateManager.pm
@@ -81,5 +82,4 @@ t/016-uploadhandler-http.t
 t/017-mediamanager-http.t
 t/018-asp_script_coverage.t
 t/019-useragent.t
-t/020-sticky-forms.t
 

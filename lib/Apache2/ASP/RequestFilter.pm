@@ -37,17 +37,18 @@ In your apache2_asp_config.xml:
     <web_application>
     ...
       <settings>
-        <request_filters>
-          <filter>
-            <uri_match>/members_only/.*</uri_match>
-            <class>MyWebApp::MemberFilter</class>
-          </filter>
-          <filter>
-            <uri_equals>/disabled_page.asp</uri_equals>
-            <class>MyWebApp::DisabledPage</class>
-          </filter>
-        </request_filters>
+        ...
       </settings>
+      <request_filters>
+        <filter>
+          <uri_match>/members_only/.*</uri_match>
+          <class>MyWebApp::MemberFilter</class>
+        </filter>
+        <filter>
+          <uri_equals>/disabled_page.asp</uri_equals>
+          <class>MyWebApp::DisabledPage</class>
+        </filter>
+      </request_filters>
     ...
     </web_application>
   </config>

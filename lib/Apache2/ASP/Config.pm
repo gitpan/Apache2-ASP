@@ -3,6 +3,9 @@ package Apache2::ASP::Config;
 
 use strict;
 use warnings 'all';
+
+use Apache2::ASP::Config::Node;
+
 use Apache2::Directive ();
 use Sys::Hostname ();
 our %AppPath = ();
@@ -29,6 +32,7 @@ sub new
   bless $s->{application_state}, $class;
   
   $s->_init_settings();
+  $s->_init_request_filters();
   
   return $s;
 }# end new()
@@ -171,15 +175,37 @@ sub validate_config
     if ref($s->{application_state}->{password});
   
   $s->_init_settings();
+  $s->_init_request_filters();
 }# end validate_config()
+
+
+#==============================================================================
+# Return an array of filter objects:
+sub request_filters
+{
+  @{ $_[0]->{request_filters}->{filter} };
+}# end request_filters()
+
+
+#==============================================================================
+sub _init_request_filters
+{
+  my $s = shift;
+  
+  $s->{request_filters} ||= { filter => [ ] };
+  
+  my @filters = @{ $s->{request_filters}->{filter} };
+  foreach my $filter ( @filters )
+  {
+    $filter = Apache2::ASP::Config::Node->new( %$filter );
+  }# end foreach()
+}# end _init_request_filters()
 
 
 #==============================================================================
 sub _init_settings
 {
   my $s = shift;
-  
-  $s->{settings} ||= { request_filters => { filter => [ ] } };
   
   if( $s->{settings} )
   {
@@ -197,8 +223,6 @@ sub _init_settings
         }# end if()
       }# end if()
     }# end foreach()
-    
-    $s->{settings}->{request_filters} ||= { filter => [ ] };
     
     bless $s->{settings}, ref($s);
     $s->settings->_fixup_path( 'lib', $ENV{HTTP_HOST} );
