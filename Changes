@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.26 2008-02-05
+  - Hotfix for config.  Was crashing unless settings.request_filters was defined.
+
 1.25 2008-02-05
   - Added the concept of "Request Filters" as Apache2::ASP::RequestFilter.  These
     are useful for centralizing authorization code.  Request Filters are stackable.

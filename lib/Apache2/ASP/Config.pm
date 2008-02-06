@@ -179,6 +179,8 @@ sub _init_settings
 {
   my $s = shift;
   
+  $s->{settings} ||= { request_filters => { filter => [ ] } };
+  
   if( $s->{settings} )
   {
     foreach my $key ( keys(%{ $s->{settings} }) )
@@ -194,7 +196,10 @@ sub _init_settings
           $s->{settings}->{$key} = '';
         }# end if()
       }# end if()
-    }# end if()
+    }# end foreach()
+    
+    $s->{settings}->{request_filters} ||= { filter => [ ] };
+    
     bless $s->{settings}, ref($s);
     $s->settings->_fixup_path( 'lib', $ENV{HTTP_HOST} );
     push @INC, $s->settings->lib

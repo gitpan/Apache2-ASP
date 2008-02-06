@@ -198,7 +198,7 @@ sub resolve_request_filters
   my ($s, $uri) = @_;
   
   # Bail out unless the config specifies any filters:
-  return unless my $filters = $s->config->settings->request_filters->filter;
+  return unless my $filters = $s->config->settings->request_filters->{filter};
   
   # Try to find some filters that match our URI:
   my @matched = ();
