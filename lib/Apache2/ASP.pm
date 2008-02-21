@@ -1,7 +1,7 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.29;
+our $VERSION = 1.31;
 
 use strict;
 use warnings 'all';
@@ -17,7 +17,6 @@ use Apache2::Directive ();
 use Apache2::Connection ();
 use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
-#use Devel::StackTrace;
 
 
 #==============================================================================
@@ -66,11 +65,9 @@ sub _handle_error
 {
   my ($s, $err) = @_;
   
-#  my $stack = Devel::StackTrace->new;
-#  warn "$@ -- " . $stack->as_string;
-  warn $@;
+  warn $err;
   $s->response->Clear();
-  $s->global_asa->can('Script_OnError')->( $@ );
+  $s->global_asa->can('Script_OnError')->( $err );
   
   return 500;
 }# end _handle_error()

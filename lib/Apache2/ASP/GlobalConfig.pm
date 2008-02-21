@@ -217,6 +217,12 @@ It should look like this:
         <username>my-username</username>
         <password>swordfish</password>
       </settings>
+      <request_filters>
+        <filter>
+          <uri_match>/members_only/.*</uri_match>
+          <class>My::MemberFilter</class>
+        </filter>
+      </request_filters>
     </web_application>
   </config>
 

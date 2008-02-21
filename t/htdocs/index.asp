@@ -1,4 +1,1 @@
-<%
-  $Response->Write("Hello, World!");
-  $Response->End;
-%>
+<%= "Hello, World!" %>

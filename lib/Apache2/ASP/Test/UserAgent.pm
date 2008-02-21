@@ -106,6 +106,8 @@ sub upload
   
   my $req = POST $uri, Content_Type => 'form-data', Content => $argref;
   my $cgi = $s->_setup_cgi( $req );
+
+warn "CGI: $cgi";
   
   $ENV{CONTENT_TYPE} = 'multipart/form-data';
   my $r = Apache2::ASP::Test::MockRequest->new(

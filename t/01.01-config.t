@@ -4,7 +4,6 @@ use strict;
 use warnings 'all';
 use Test::More 'no_plan';
 use Test::Exception;
-#use Devel::Cover;
 
 use_ok('Apache2::ASP::GlobalConfig');
 

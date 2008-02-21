@@ -4,7 +4,6 @@ package Apache2::ASP::Base;
 use strict;
 use warnings 'all';
 use CGI ();
-#use Devel::StackTrace;
 
 use Apache2::ASP::PageHandler;
 use Apache2::ASP::Request;
@@ -344,10 +343,9 @@ Apache2::ASP::Base - Base class for ASP engines
   {
     my ($s, $err) = @_;
     
-    my $stack = Devel::StackTrace->new;
-    warn $stack->as_string;
+    war $err;
     $s->response->Clear();
-    $s->global_asa->can('Script_OnError')->( $stack );
+    $s->global_asa->can('Script_OnError')->( $err );
     
     return 500;
   }# end _handle_error()

@@ -3,46 +3,36 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 use lib qw( ../blib/lib lib );
-BEGIN {
-  eval q~
-use Apache::Test;
-use Apache::TestMM qw( test clean ); # enable 'make test'
-use Apache::TestRun;
-use Apache::TestTrace;
-use Apache::TestReport;
-use Apache::TestConfig ();
-  ~;
-}
 
 # Prerequisites:
 my %require = (
-  'Apache::Test'          => 0,
-  'Devel::StackTrace'     => 0,
-  'XML::Simple'           => 0,
-  'CGI::Apache2::Wrapper' => 0,
-  'CGI'                   => 0,
-  'Cwd'                   => 0,
-  'Digest::MD5'           => 0,
-  'DBI'                   => 0,
-  'DBD::SQLite'           => 0,     # Default state-persistence backend for testing.
-  'Storable'              => 0,
-  'HTTP::Date'            => 0,
-  'DateTime::Duration'    => 0,
-  'MIME::Types'           => 0,
-  'Mail::Sendmail'        => 0,
-  'Sys::Hostname'         => 0,
-  'Apache2::Directive'    => 0,
-  'HTML::Form'            => 0,
-  'HTTP::Request::AsCGI'  => 0,     # For Apache2::ASP::Test::*
-  'CGI::Simple'           => 0,     # For Apache2::ASP::Test::*
-  'HTML::Form'            => 0,     # For Apache2::ASP::Test::*
-  'Ima::DBI'              => 0.35,  # For sessions & applications.
+  'Data::Properties::YAML'  => 0.02,
+  'Devel::StackTrace'       => 0,
+  'XML::Simple'             => 0,
+  'CGI::Apache2::Wrapper'   => 0,
+  'CGI'                     => 0,
+  'Cwd'                     => 0,
+  'Digest::MD5'             => 0,
+  'DBI'                     => 0,
+  'DBD::SQLite'             => 0,     # Default state-persistence backend for testing.
+  'Storable'                => 0,
+  'HTTP::Date'              => 0,
+  'DateTime::Duration'      => 0,
+  'MIME::Types'             => 0,
+  'Mail::Sendmail'          => 0,
+  'Sys::Hostname'           => 0,
+  'Apache2::Directive'      => 0,
+  'HTML::Form'              => 0,
+  'HTTP::Request::AsCGI'    => 0,     # For Apache2::ASP::Test::*
+  'CGI::Simple'             => 0,     # For Apache2::ASP::Test::*
+  'HTML::Form'              => 0,     # For Apache2::ASP::Test::*
+  'Ima::DBI'                => 0.35,  # For sessions & applications.
 );
-my @scripts = qw( t/TEST );
+#my @scripts = qw( t/TEST );
 
 # Accept configuration from the command line:
-Apache::TestMM::filter_args();
-Apache::TestMM::generate_script('t/TEST');
+#Apache::TestMM::filter_args();
+#Apache::TestMM::generate_script('t/TEST');
 
 WriteMakefile(
   NAME              => 'Apache2::ASP',
@@ -61,7 +51,7 @@ WriteMakefile(
 
 sub clean_files
 {
-  return [@scripts];
+#  return [@scripts];
 }# end clean_files()
 
 

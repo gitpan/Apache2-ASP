@@ -58,17 +58,19 @@ with CPAN.
   DateTime::Duration
   DBD::SQLite
   DBI
-  Devel::StackTrace
   Digest::MD5
   HTML::FillInForm
   HTML::Form
   HTTP::Date
   HTTP::Request::AsCGI
   Ima::DBI - (version 0.35 or greater)
+  YAML
+  Data::Properties::YAML
   Mail::Sendmail
   MIME::Types
   Storable
   Sys::Hostname
+  XML::Simple
 
 If you plan on using MySQL to store your Application and Session data, you should also install
 L<DBD::mysql> unless you've already got it.

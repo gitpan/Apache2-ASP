@@ -1,3 +1,0 @@
-<%
-  $undeclared_variable = "woops!";
-%>

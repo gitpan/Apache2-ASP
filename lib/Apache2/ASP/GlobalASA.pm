@@ -121,10 +121,10 @@ Apache2::ASP::GlobalASA - Base class for your GlobalASA
   # Special error-handling method:
   sub Script_OnError
   {
-    my $stack = shift;
+    my $err;
     
     # Log the error:
-    warn "[" . localtime() . "] An error has occurred: " . $stack->as_string;
+    warn "[" . localtime() . "] An error has occurred: " . $err;
     
     # Print something friendly:
     $Response->Write("Sorry for the inconvenience.  Please try again later.");
@@ -133,7 +133,7 @@ Apache2::ASP::GlobalASA - Base class for your GlobalASA
     $Server->Mail(
       To      => 'me@mydomain.com',
       Subject => '500 Server error',
-      Message => "Please look at the following error:\n\n" . $stack->as_string
+      Message => "Please look at the following error:\n\n" . $err
     );
     
     # Done!
@@ -212,7 +212,7 @@ during the script's execution.
 
 Called right after processing for the script has finished, only if an error occurred.
 
-The C<$error> passed in is a C<Devel::StackTrace> object.
+The C<$error> passed in is the current value of C<$@>.
 
 This is a good place to insert code to email you about the error that occurred, or print out
 a friendly error message to the client.

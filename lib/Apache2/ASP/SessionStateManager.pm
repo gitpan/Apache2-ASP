@@ -161,6 +161,17 @@ sub save
 }# end save()
 
 
+#=========================================================================
+sub reset
+{
+  my ($s) = @_;
+  
+  # Remove everything *but* our session id:
+  delete( $s->{$_} ) foreach grep { $_ ne 'SessionID' } keys(%$s);
+  $s->save;
+}# end reset()
+
+
 #==============================================================================
 sub new_session_id
 {
@@ -260,6 +271,10 @@ Attempts to retrieve the Session by that ID from the database.
 =head2 save( )
 
 Stores the session in the database.
+
+=head2 reset( )
+
+Deletes all data from the session except for its C<SessionID> value.
 
 =head2 new_session_id( )
 

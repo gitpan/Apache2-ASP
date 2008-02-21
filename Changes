@@ -1,5 +1,22 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.31 2008-02-20
+  - Added $Session->reset() method.
+  - Added Apache2::ASP::Test::Base.
+  - Added dependancy Data::Properties::YAML
+  - Added /etc/properties.yaml
+  - Added Apache2::ASP::Test::Fixtures.
+  - Added /etc/test_fixtures.yaml
+  - Fixed a bug in Apache2::ASP::Request that caused forms with multiple
+    values for the same parameter (i.e. 3 checkboxes named the same, but 
+    with different values) to only return 1 value.
+  - Completely overhauled the test suite.  No longer requires Apache::Test
+    and should run find as root.  More tests are needed, but at least
+    what's there should run correctly.
+  - Fixed a bug in Apache2::ASP::Config that caused errors when a 
+    Session or Application State Manager was not in @INC until
+    after the <settings> section had been initialized.
+
 1.29 2008-02-06
   - Fixed a bug that caused Response->Include to misbehave when used in
     conjunction with RequestFilters.

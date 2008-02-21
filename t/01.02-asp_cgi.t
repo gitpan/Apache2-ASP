@@ -11,7 +11,7 @@ package main;
 
 use strict;
 use warnings 'all';
-use lib './t';
+use lib qw( ./t ../ );
 use Mock;
 use Cwd 'cwd';
 #use Devel::Cover;

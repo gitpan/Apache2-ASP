@@ -83,6 +83,7 @@ sub Cookies
 sub Form
 {
   my $s = shift;
+  
   if( @_ )
   {
     my $arg = shift;
@@ -111,7 +112,20 @@ sub Form
       $page_args = ref($last) ? $last : { };
     }# end if()
     
-    my %info = ( %$page_args, map { $_ => $s->{q}->param( $_ ) } $s->{q}->param );
+    my %info = %$page_args;
+    foreach my $field ( $s->{q}->param )
+    {
+      my @data = $s->{q}->param( $field );
+      if( scalar(@data) > 1 )
+      {
+        $info{$field} = [ @data ];
+      }
+      else
+      {
+        $info{$field} = shift(@data);
+      }# end if()
+    }# end foreach()
+    
     return \%info;
   }# end if()
 }# end Form()

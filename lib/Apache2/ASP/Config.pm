@@ -139,14 +139,6 @@ sub validate_config
   die "web_application.session_state.manager is not defined"
     unless defined($s->{session_state}->{manager});
   
-  if( ! eval { $s->{session_state}->{manager}->isa('UNIVERSAL') } )
-  {
-    my ($filename); ($filename = $s->{session_state}->{manager} ) =~ s/::/\//g;
-    eval { require "$filename.pm" };
-    die "web_application.session_state.manager '$s->{session_state}->{manager}' cannot be loaded: $@"
-      if $@;
-  }# end if()
-  
   $s->{session_state}->{username} = ''
     if ref($s->{session_state}->{username});
   $s->{session_state}->{password} = ''
@@ -161,6 +153,27 @@ sub validate_config
   die "web_application.application_state.manager is not defined"
     unless defined($s->{application_state}->{manager});
   
+  $s->{application_state}->{username} = ''
+    if ref($s->{application_state}->{username});
+  $s->{application_state}->{password} = ''
+    if ref($s->{application_state}->{password});
+  
+  # Initialize other settings:
+  $s->_init_settings();
+  $s->_init_request_filters();
+  
+  # Now that we should have a fully-configured @INC, try to load our session/application managers:
+  
+  # First try to load our session state manager:
+  if( ! eval { $s->{session_state}->{manager}->isa('UNIVERSAL') } )
+  {
+    my ($filename); ($filename = $s->{session_state}->{manager} ) =~ s/::/\//g;
+    eval { require "$filename.pm" };
+    die "web_application.session_state.manager '$s->{session_state}->{manager}' cannot be loaded: $@"
+      if $@;
+  }# end if()
+  
+  # Now load our application state manager:
   if( ! eval { $s->{application_state}->{manager}->isa('UNIVERSAL') } )
   {
     my ($filename); ($filename = $s->{application_state}->{manager} ) =~ s/::/\//g;
@@ -168,14 +181,6 @@ sub validate_config
     die "web_application.application_state.manager '$s->{application_state}->{manager}' cannot be loaded: $@"
       if $@;
   }# end if()
-  
-  $s->{application_state}->{username} = ''
-    if ref($s->{application_state}->{username});
-  $s->{application_state}->{password} = ''
-    if ref($s->{application_state}->{password});
-  
-  $s->_init_settings();
-  $s->_init_request_filters();
 }# end validate_config()
 
 
@@ -479,6 +484,13 @@ The username for your application's connectionstring.
 =head2 $config->settings->password
 
 The password for your application's connectionstring.
+
+=head2 $config->request_filters
+
+Returns a list of L<Apache2::ASP::Config::Node> objects, each representing a different
+<filter> node from your config file.
+
+See L<Apache2::ASP::RequestFilter> for more information.
 
 =head1 BUGS
 
