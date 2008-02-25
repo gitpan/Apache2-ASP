@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.32 2008-02-24
+  - Removed Application_OnStart and added Server_OnStart event to
+    GlobalASA.
+  - Added documentation to Apache2::ASP::Test::Base.
+  - Added documentation to Apache2::ASP::Test::Fixtures.
+
 1.31 2008-02-20
   - Added $Session->reset() method.
   - Added Apache2::ASP::Test::Base.

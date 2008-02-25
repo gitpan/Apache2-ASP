@@ -517,6 +517,11 @@ Gets/sets the buffering behavior.  Default value is C<1>.
   # Turn on buffering.  Wait until the request is finished before the buffer is sent:
   $Response->Buffer(1);
 
+=head2 Declined( )
+
+Intended for use within an L<Apache2::ASP::RequestFilter> subclass, C<Declined> returns
+a value of C<-1>, which is equivallent to C<Apache2::Const::DECLINED>.
+
 =head1 BUGS
 
 It's possible that some bugs have found their way into this release.

@@ -86,7 +86,7 @@ Definition for C<MyWebApp::MemberFilter>:
     else
     {
       # Same as Apache2::Const::DECLINED:
-      return -1;
+      return $Response->Declined;
     }# end if()
     
   }# end run()
@@ -145,23 +145,7 @@ B<VERY IMPORTANT!!!>
 
 This gets its own section because it is very important.
 
-The C<run()> method should return the following kinds of values:
-
-=over 4
-
-=item C<-1>
-
-Return C<-1> when your Filter can safely be ignored.
-
-If your C<run()> method returns C<undef>, Apache2::ASP pretends you returned C<-1>.
-
-=item C<0>
-
-Return C<0> when your Filter has completely finished the response, and a successful response can be sent to the browser.
-
-=item C<404>,C<403>,<401>. etc.
-
-=back
+The C<run()> method should either return C<<$Response->Declined>> or some other C<Apache2::Const::*>-compatible value.
 
 =head1 BUGS
 

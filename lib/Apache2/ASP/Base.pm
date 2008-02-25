@@ -56,8 +56,10 @@ sub execute
   if( ! $is_subrequest )
   {
     # Prevent multiple *OnStart events from being raised during the same request:
-    $s->global_asa->can('Application_OnStart')->() 
-      unless $s->application->{__did_init}++;
+#    $s->global_asa->can('Application_OnStart')->() 
+#      unless $s->application->{__did_init}++;
+    $s->global_asa->can('Server_OnStart')->()
+      unless $s->application->{"__started_server_$$"}++;
     $s->application->save;
     $s->global_asa->can('Session_OnStart')->()
       unless $s->session->{__did_init}++;

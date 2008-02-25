@@ -47,6 +47,13 @@ sub Application_OnStart
 
 
 #==============================================================================
+sub Server_OnStart
+{
+  
+}# end Server_OnStart()
+
+
+#==============================================================================
 sub Script_OnParse
 {
   my ($script_ref) = @_;
@@ -156,10 +163,10 @@ web application.
 
 Returns a new GlobalASA object.
 
-=head2 Application_OnStart( )
+=head2 Server_OnStart( )
 
-Called just before setting up the C<$Session> object, but only if it has never been called
-for this application before.
+Executes once per Apache child, before servicing the first request that Apache child
+processes.
 
 =head2 Script_OnParse( $source_ref )
 

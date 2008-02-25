@@ -3,6 +3,7 @@ package Apache2::ASP::PostConfigHandler;
 
 use strict;
 use warnings 'all';
+use Apache2::ASP::Base;
 use Apache2::ASP::GlobalConfig;
 
 sub handler : method
@@ -14,6 +15,8 @@ sub handler : method
   {
     opendir my $dir, $config->page_cache_root . '/' . $config->application_name
       or return;
+    
+    # Load up all the cached ASP scripts:
     foreach my $file ( readdir($dir) )
     {
       next if $file =~ m/\.+$/;
@@ -22,10 +25,24 @@ sub handler : method
       warn "Couldn't load '$file': $@"
         if $@;
     }# end foreach()
+    
+    # Reset the Application object to __did_init = 0:
+#    (my $app_class = $config->application_state->manager . '.pm') =~ s/::/\//g;
+#    eval { require $app_class }
+#      unless $INC{$app_class};
+#    warn $@ if $@;
+#    if( ! $@ )
+#    {
+#      my $asp = Apache2::ASP::Base->new( $config );
+#      my $app_obj = $config->application_state->manager->new( $asp );
+#      $app_obj->{__did_init} = 0;
+#      $app_obj->save;
+#    }# end if()
   }# end foreach()
   
-  return 0;
+  return -1;
 }# end handler()
+
 
 1;# return true:
 
