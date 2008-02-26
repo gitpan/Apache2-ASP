@@ -75,6 +75,7 @@ sub hook
   
   if( $length_received <= 0 )
   {
+    $s->{handler_class}->init_asp_objects( $s->{asp} );
     $s->{handler_class}->upload_end( $s->{asp}, $Upload );
   }# end if()
   

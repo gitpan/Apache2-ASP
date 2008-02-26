@@ -37,26 +37,6 @@ sub handler : method
       # We don't do directory indexes:
       return 403;
     }# end if()
-  }
-  else
-  {
-    # Fixup /media/* URL requests:
-    return Apache2::Const::DECLINED()
-      unless $r->uri =~ m/^\/media\/.+/;
-    my ($file) = $r->uri =~ m/^\/media\/([^\?]+)$/;
-    
-    my @args = ( "file=$file" );
-    if( $r->args )
-    {
-      push @args, $r->args;
-    }# end if()
-    
-    # Fixup the uri and args:
-    $r->uri( '/handlers/MediaManager' );
-    $r->args( join '&', @args );
-    
-    # Send the request on down the line to the next handler:
-    return Apache2::Const::DECLINED();
   }# end if()
   
   return -1;

@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.33 2008-02-25
+  - Fixed a bug that caused the intrinsic ASP objects (Request, Response, etc)
+    to not be available at the right point in time for UploadHook subclasses
+    (including subclasses of MediaManager).
+    So now, calling $Response->Redirect(...) from sub after_create() will work.
+
 1.32 2008-02-24
   - Removed Application_OnStart and added Server_OnStart event to
     GlobalASA.
