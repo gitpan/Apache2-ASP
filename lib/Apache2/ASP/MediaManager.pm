@@ -20,7 +20,7 @@ sub run
   my $file = $s->compose_download_file_name( $asp );
   
   # Find its MIME type and set our 'ContentType' value:
-  my ($ext) = $filename =~ m/.*?\.([^\.]+)$/;
+  my ($ext) = $file =~ m/.*?\.([^\.]+)$/;
   $ext ||= 'txt';
   my $type = $mimetypes->mimeTypeOf( $ext );
   $asp->response->{ContentType} = $type;

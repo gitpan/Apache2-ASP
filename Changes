@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.34 2008-02-26
+  - Minor updates to Apache2::ASP::MediaManager.
+  - Added a workaround to Apache2::ASP::GlobalConfig for the
+    "internal dummy connection" issue.
+    More details at http://wiki.apache.org/httpd/InternalDummyConnection
+
 1.33 2008-02-25
   - Fixed a bug that caused the intrinsic ASP objects (Request, Response, etc)
     to not be available at the right point in time for UploadHook subclasses

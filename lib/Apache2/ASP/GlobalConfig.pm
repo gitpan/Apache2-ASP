@@ -36,7 +36,7 @@ sub find_current_config
   my ($s, $r) = @_;
   
   my $domain;
-  if( $r )
+  if( $r && $r->headers_in->{'User-Agent'} !~ m/internal dummy connection/ )
   {
     $domain = $r->headers_in->{Host};
   }
