@@ -29,6 +29,8 @@ my $r = Mock->new(
   )
 );
 
+exit;
+
 # Setup our ASP object:
 $ENV{HTTP_QUERYSTRING} = 'field1=value1&field2=value2&filename=C:\\MyFile.txt';
 my $asp = Apache2::ASP->new( $config );

@@ -135,11 +135,12 @@ sub Form
 sub FileUpload
 {
   my ($s, $field, $arg) = @_;
+  
   my $ifh = $s->{q}->upload($field);
   my %info = ();
   my $upInfo = { };
   
-  if( $s->{q}->isa('CGI::Simple') )
+  if( $s->{q}->isa('CGI::Simple') || $s->{q}->isa('Apache2::ASP::SimpleCGI') )
   {
     no warnings 'uninitialized';
     %info = (

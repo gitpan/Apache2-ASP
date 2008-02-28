@@ -13,6 +13,8 @@ use Apache2::ASP::Config;
 # Start out simple:
 use_ok('Apache2::ASP::ApplicationStateManager::SQLite');
 
+exit;
+
 # Initialize the config:
 my $config = Apache2::ASP::Config->new();
 

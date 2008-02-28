@@ -21,6 +21,7 @@ sub new
   %args = (
     buffer        => '',
     status        => 200,
+    content_type  => 'text/html',
     _headers_out  => { },
     _headers_in   => { },
     rflush        => 1,
@@ -170,7 +171,7 @@ sub AUTOLOAD
   else
   {
     no warnings 'uninitialized';
-    if( $s->{cgi}->can($method) )
+    if( $s->{cgi} && $s->{cgi}->can($method) )
     {
       return $s->{cgi}->$method( @_ );
     }
@@ -180,7 +181,7 @@ sub AUTOLOAD
     }
     else
     {
-      die "Unhandled method '$method'";
+      die "Unhandled method '$method' called from " . join( ' at ', caller);
     }# end if()
   }# end if()
   

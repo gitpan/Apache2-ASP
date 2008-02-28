@@ -6,11 +6,11 @@ use lib qw( ../blib/lib lib );
 
 # Prerequisites:
 my %require = (
+  'HTTP::Body'              => 1.01,
   'Data::Properties::YAML'  => 0.02,
   'Devel::StackTrace'       => 0,
   'XML::Simple'             => 0,
   'CGI::Apache2::Wrapper'   => 0,
-  'CGI'                     => 0,
   'Cwd'                     => 0,
   'Digest::MD5'             => 0,
   'DBI'                     => 0,

@@ -3,7 +3,7 @@ package Apache2::ASP::ApacheRequest;
 
 use strict;
 use warnings 'all';
-use CGI ();
+use CGI::Simple();
 use Cwd 'cwd';
 
 
@@ -21,7 +21,7 @@ sub new
   return bless {
     buffer => '',
     rflush => 1,
-    q      => CGI->new(),
+    q      => CGI::Simple->new(),
     _headers_out => { },
     %args
   }, $class;

@@ -23,6 +23,8 @@ my $r = Mock->new(
   headers_out => { },
 );
 
+exit;
+
 # Setup our ASP object:
 my $asp = Apache2::ASP->new( $config );
 $asp->setup_request( $r );

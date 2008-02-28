@@ -3,7 +3,7 @@
 use strict;
 use warnings 'all';
 use base 'Apache2::ASP::Test::Base';
-use Test::More skip_all => "Uploads only work within a real CGI environment";
+use Test::More 'no_plan';
 use Data::Dumper;
 use HTML::Form;
 
@@ -12,15 +12,15 @@ my $s = __PACKAGE__->SUPER::new();
 
 open my $ofh, '>', "/tmp/uploadtest"
   or die "Cannot open: $!";
-for( 1...100 )
-{
-  print $ofh "ANOTHER LINE\n";
-}# end for()
+my $data = "ANOTHER LINE ANOTHER LINE ANOTHER LINE ANOTHER LINE ANOTHER LINE ANOTHER LINE \n"x10_000;
+print $ofh $data;
 close($ofh);
 
 my $res = $s->ua->upload("/handlers/TestUploadHandler", [
-  filename => ["/tmp/uploadtest"]
+  uploaded_file => ["/tmp/uploadtest"],
+  color    => "red",
+  name     => "Frank",
 ]);
 
-warn $res->content;
+is( $res->content => $data, "File was uploaded correctly" );
 

@@ -18,6 +18,7 @@ lib/Apache2/ASP/SessionStateManager/MySQL.pm
 lib/Apache2/ASP/SessionStateManager/SQLite.pm
 lib/Apache2/ASP/Config.pm
 lib/Apache2/ASP/Config/Node.pm
+lib/Apache2/ASP/SimpleCGI.pm
 lib/Apache2/ASP/GlobalConfig.pm
 lib/Apache2/ASP/ApplicationStateManager.pm
 lib/Apache2/ASP/SessionStateManager.pm

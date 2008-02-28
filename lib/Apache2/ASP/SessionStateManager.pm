@@ -110,6 +110,7 @@ sub create
 
   my $now = time2iso();
   my %clone = %$s;
+  delete($clone{asp});
   
   $sth->execute(
     $id,
@@ -153,6 +154,7 @@ sub save
     WHERE session_id = ?
 
   my %clone = %$s;
+  delete($clone{asp});
   my $data = freeze( \%clone );
   $sth->execute( $data, time2iso(), $s->{SessionID} );
   $sth->finish();

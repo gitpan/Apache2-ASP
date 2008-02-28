@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.35 2008-02-27
+  - Removed all references to "use CGI" to reduce memory footprint
+    and improve performance.
+  - Added Apache2::ASP::SimpleCGI for use by Apache2::ASP::Test::UserAgent.
+  - Added dependency HTTP::Body for Apache2::ASP::SimpleCGI to function.
+
 1.34 2008-02-26
   - Minor updates to Apache2::ASP::MediaManager.
   - Added a workaround to Apache2::ASP::GlobalConfig for the
