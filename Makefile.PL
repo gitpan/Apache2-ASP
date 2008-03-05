@@ -28,11 +28,6 @@ my %require = (
   'HTML::Form'              => 0,     # For Apache2::ASP::Test::*
   'Ima::DBI'                => 0.35,  # For sessions & applications.
 );
-#my @scripts = qw( t/TEST );
-
-# Accept configuration from the command line:
-#Apache::TestMM::filter_args();
-#Apache::TestMM::generate_script('t/TEST');
 
 WriteMakefile(
   NAME              => 'Apache2::ASP',
@@ -51,7 +46,6 @@ WriteMakefile(
 
 sub clean_files
 {
-#  return [@scripts];
 }# end clean_files()
 
 

@@ -7,18 +7,28 @@ use Apache2::RequestRec ();
 use Apache2::RequestUtil ();
 use Apache2::SubRequest ();
 use Apache2::Const -compile => ':common';
+use Apache2::ServerRec ();
+
+use Apache2::ASP::GlobalConfig;
+
+our %configs = ();
 
 sub handler : method
 {
   my ($class, $r) = @_;
   
-  # Get our config:
-  if( ! $ENV{APACHE2_ASP_GLOBALCONFIG} )
-  {
-    require Apache2::ASP::PostConfigHandler;
-    Apache2::ASP::PostConfigHandler->handler( $r );
-  }# end if()
-  $ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBALCONFIG}->find_current_config( $r );
+	my $domain = $r->hostname || $r->server->server_hostname;
+	if( $configs{$domain} )
+	{
+		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain};
+	}
+	else
+	{
+		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain} = Apache2::ASP::GlobalConfig->new();
+	  warn "Apache2::ASP::GlobalConfig($domain) has been loaded into \$ENV{APACHE2_ASP_GLOBALCONFIG}\n";
+	}# end if()
+	
+	$ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBAL_CONFIG}->find_current_config( $r );
   
   # Fixup the request URI:
   my $filename = $r->filename;

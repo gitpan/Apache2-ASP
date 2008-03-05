@@ -26,6 +26,7 @@
     </session_state>
     <settings>
       <lib>@ServerRoot@/lib</lib>
+			<orm_base_class>MyDBI</orm_base_class>
       <dsn>DBI:mysql:databasename:localhost</dsn>
       <username>my-username</username>
       <password>swordfish</password>

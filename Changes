@@ -1,5 +1,13 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.36 2008-03-04
+  - Rewrote Apache2::ASP::Config and Apache2::ASP::GlobalConfig.
+  - Removed Apache2::ASP::PostConfigHandler.
+  - You no longer need to include the following in your httpd.conf:
+      PerlModule Apache2::ASP::PostConfigHandler
+      PerlPostConfigHandler Apache2::ASP::PostConfigHandler
+  - Minor speed improvements as a result of cleaner config logic.
+
 1.35 2008-02-27
   - Removed all references to "use CGI" to reduce memory footprint
     and improve performance.

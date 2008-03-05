@@ -174,7 +174,8 @@ sub resolve_request_handler
     # (Try to) load up the handler:
     my ($handler) = $uri =~ m/^\/handlers\/([^\?]+)/;
     $handler =~ s/[^a-z0-9]/\//ig;
-    eval { require "$handler.pm" };
+		(my $file = $handler . '.pm');
+    eval { require $file };
     if( $@ )
     {
       # Failed to load the handler:

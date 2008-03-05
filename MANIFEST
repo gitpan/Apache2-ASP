@@ -11,7 +11,6 @@ lib/Apache2/ASP/ApplicationStateManager/SQLite.pm
 lib/Apache2/ASP/Request.pm
 lib/Apache2/ASP/Handler.pm
 lib/Apache2/ASP/Server.pm
-lib/Apache2/ASP/PostConfigHandler.pm
 lib/Apache2/ASP/TransHandler.pm
 lib/Apache2/ASP/Parser.pm
 lib/Apache2/ASP/SessionStateManager/MySQL.pm

@@ -9,6 +9,8 @@ sub APR::Request::Apache2::handle { return bless {}, 'Apache2::RequestRec' }
 
 package main;
 
+$ENV{APACHE2_ASP_APPLICATION_ROOT} = './t';
+
 use strict;
 use warnings 'all';
 use lib qw( ./t ../ );

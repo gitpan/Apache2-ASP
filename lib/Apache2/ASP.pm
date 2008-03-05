@@ -1,7 +1,6 @@
 
 package Apache2::ASP;
 
-our $VERSION = 1.35;
 
 use strict;
 use warnings 'all';
@@ -18,6 +17,8 @@ use Apache2::Connection ();
 use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
+use vars '$VERSION';
+$VERSION = 1.36;
 
 #==============================================================================
 sub handler : method

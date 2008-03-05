@@ -4,8 +4,11 @@ use strict;
 use warnings 'all';
 use Test::More 'no_plan';
 use Test::Exception;
+$ENV{APACHE2_ASP_APPLICATION_ROOT} = './t';
 
 use_ok('Apache2::ASP::GlobalConfig');
+
+exit;
 
 my $global;
 lives_ok
@@ -20,15 +23,17 @@ foreach my $config ( $global->web_applications )
 {
   # Go through each element, ensuring that a failure occurs whenever something 
   # is improperly configured:
-  {
-    my $con = bless { }, ref($config);
-    throws_ok
-      { $con->validate_config() }
-      qr/web_application configuration is not defined/;
-  }
+#  {
+#    my $con = bless { }, ref($config);
+#		$con->{__validated} = 0;
+#    throws_ok
+#      { $con->validate_config() }
+#      qr/web_application configuration is not defined/;
+#  }
   
   {
     local $config->{application_name} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.application_name is not defined/;
@@ -37,6 +42,7 @@ foreach my $config ( $global->web_applications )
   # application_root:
   {
     local $config->{application_root} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.application_root is not defined/;
@@ -55,6 +61,7 @@ foreach my $config ( $global->web_applications )
   # page_cache_root:
   {
     local $config->{page_cache_root} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.page_cache_root is not defined/;
@@ -78,6 +85,7 @@ foreach my $config ( $global->web_applications )
   # www_root:
   {
     local $config->{www_root} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.www_root is not defined/;
@@ -96,6 +104,7 @@ foreach my $config ( $global->web_applications )
   # handler_root:
   {
     local $config->{handler_root} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.handler_root is not defined/;
@@ -114,6 +123,7 @@ foreach my $config ( $global->web_applications )
   # media_manager_upload_root:
   {
     local $config->{media_manager_upload_root} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.media_manager_upload_root is not defined/;
@@ -138,22 +148,26 @@ foreach my $config ( $global->web_applications )
   {
     my $st = bless { %{ $config->{session_state} } }, ref($config->{session_state});
     local $config->{session_state} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.session_state is not defined/;
       
     local $config->{session_state} = { };
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.session_state is a hash but has no keys/;
     
     local $config->{session_state} = $st;
     local $config->{session_state}->{manager} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/^web_application\.session_state.manager is not defined/;
       
     local $config->{session_state}->{manager} = 'UnknownClass';
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/^web_application\.session_state.manager 'UnknownClass' cannot be loaded:/;
@@ -163,22 +177,26 @@ foreach my $config ( $global->web_applications )
   {
     my $as = bless { %{ $config->{application_state} } }, ref($config->{application_state});
     local $config->{application_state} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.application_state is not defined/;
       
     local $config->{application_state} = { };
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/web_application\.application_state is a hash but has no keys/;
     
     local $config->{application_state} = $as;
     local $config->{application_state}->{manager} = undef;
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/^web_application\.application_state.manager is not defined/;
     
     local $config->{application_state}->{manager} = 'UnknownClass';
+		$config->{__validated} = 0;
     throws_ok
       { $config->validate_config() }
       qr/^web_application\.application_state.manager 'UnknownClass' cannot be loaded:/;
@@ -189,9 +207,11 @@ foreach my $config ( $global->web_applications )
     # username parsed as a hashref, then as undef:
     {
       local $config->{application_state}->{username} = { };
+			$config->{__validated} = 0;
       lives_ok
         { $config->validate_config() };
       local $config->{application_state}->{username} = undef;
+			$config->{__validated} = 0;
       lives_ok
         { $config->validate_config() };
     }
@@ -199,9 +219,11 @@ foreach my $config ( $global->web_applications )
     # password parsed as a hashref, then as undef:
     {
       local $config->{application_state}->{password} = { };
+			$config->{__validated} = 0;
       lives_ok
         { $config->validate_config() };
       local $config->{application_state}->{password} = undef;
+			$config->{__validated} = 0;
       lives_ok
         { $config->validate_config() };
     }
