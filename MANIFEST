@@ -74,6 +74,7 @@ t/htdocs/responsetrapinclude.asp
 t/htdocs/syntax_error.asp
 t/htdocs/updated.asp
 t/lib/My/MemberFilter.pm
+t/lib/MyDBI.pm
 t/MEDIA/DefaultApp/.ok
 t/MEDIA/.ok
 t/Mock.pm
