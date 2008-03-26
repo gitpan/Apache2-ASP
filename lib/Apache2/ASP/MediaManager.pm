@@ -15,7 +15,12 @@ sub run
   my ($s, $asp) = @_;
   
   shift(@_);
-  
+	
+	my ($filename, $file, $ext);
+	
+	my $mode = $asp->request->Form('mode');
+	return unless ( ! $mode ) || ( $mode !~ m/^(create|edit)$/ );
+	
   my $filename = $s->compose_download_file_path( $asp );
   my $file = $s->compose_download_file_name( $asp );
   
@@ -26,7 +31,7 @@ sub run
   $asp->response->{ContentType} = $type;
   
   # Call our extension hooks:
-  if( my $mode = $asp->request->Form('mode') )
+  if( $mode )
   {
     if( $mode eq 'delete' )
     {
@@ -412,7 +417,7 @@ Now, when you want to upload files, just point the upload form to
 
   <html>
   ...
-  <form method="POST" enctype="multipart/form-data" action="/handlers/MyMediaManager">
+  <form method="POST" enctype="multipart/form-data" action="/handlers/MyMediaManager?upload_id=SomeUniqueID">
     <!-- This "mode" parameter tells us what we're going to do -->
     <!-- Possible values include "create", "update" and "delete" -->
     <input type="hidden" name="mode" value="create">

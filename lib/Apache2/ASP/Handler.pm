@@ -67,7 +67,8 @@ sub init_asp_objects
   $Config       = $asp->config;
   
   no strict 'refs';
-  foreach my $pkg( ( $s, @{"$s\::ISA"} ) )
+	my %saw = ($s => 1);
+  foreach my $pkg ( ( $s, @{"$s\::ISA"} ) )
   {
     ${"$pkg\::Session"}     = $Session;
     ${"$pkg\::Server"}      = $Server;
@@ -76,6 +77,10 @@ sub init_asp_objects
     ${"$pkg\::Form"}        = $Form;
     ${"$pkg\::Application"} = $Application;
     ${"$pkg\::Config"}      = $Config;
+		
+		# Recurse upward:
+		$pkg->init_asp_objects( $asp )
+			unless $saw{$pkg}++;
   }# end foreach()
   
   return 1;

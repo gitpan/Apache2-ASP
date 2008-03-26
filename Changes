@@ -1,5 +1,18 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.38 2008-03-25
+  - Intrinsic ASP objects (Request, Response, etc) are now
+    initialized for a handler and all of its super-classes.
+    This fixes a bug in which handlers that subclass another
+    handler (that subclasses yet another handler) will no longer
+    receive errors when the parent class does a $Response->Redirect
+    for example.
+  - Apache2::ASP::MediaManager checks the 'mode' parameter and behaves
+    differently based on its value.
+  - Apache2::ASP::MediaManager now supports multiple concurrent uploads
+    within the same Session (simultaneous requests), providing progress 
+    information for each upload in real-time.
+
 1.37 2008-03-16
   - Updated MANIFEST to include missing file t/lib/MyDBI.pm
 
