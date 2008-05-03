@@ -88,6 +88,13 @@ sub filename
 
 
 #==============================================================================
+sub pool
+{
+  return bless { cleanup_register => 1 }, ref(shift);
+}# end pool()
+
+
+#==============================================================================
 sub lookup_uri
 {
   my ($s, $path) = @_;
@@ -95,6 +102,7 @@ sub lookup_uri
   return if $s->{disable_lookup_uri};
   
   my $here = cwd();
+  no warnings 'uninitialized';
   return ref($s)->new(
     cgi         => $s->{cgi},
     req         => $s->{req},

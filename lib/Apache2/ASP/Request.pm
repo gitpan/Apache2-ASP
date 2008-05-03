@@ -11,7 +11,7 @@ sub new
   
   my $s = bless {
     asp => $asp,
-    q => $asp->{q},
+    'q' => $asp->{'q'},
     r => $asp->{r},
   }, $class;
   
@@ -65,17 +65,26 @@ sub new
 sub Cookies
 {
   my ($s, $name, $key ) = @_;
-
-  return unless exists($s->{cookies}->{$name});
-
-  if( defined($key) && ref($s->{cookies}->{$name}) )
-  {
-    return $s->{cookies}->{$name}->{$key};
-  }
-  else
-  {
-    return $s->{cookies}->{$name};
-  }# end if()
+	
+	if( @_ == 1 )
+	{
+		return keys( %{ $s->{cookies} } );
+	}
+	elsif( @_ == 2 )
+	{
+		return unless exists( $s->{cookies}->{$name} );
+		return $s->{cookies}->{$name};
+	}
+	elsif( @_ == 3 )
+	{
+		return unless defined($name) && defined($key);
+		return unless exists( $s->{cookies}->{$name} ) && exists( $s->{cookies}->{$name}->{$key} );
+		return $s->{cookies}->{$name}->{$key};
+	}
+	else
+	{
+		return;
+	}# end if()
 }# end Cookies()
 
 
@@ -87,19 +96,16 @@ sub Form
   if( @_ )
   {
     my $arg = shift;
-    my $val = $s->{q}->param( $arg );
+    my $val = $s->{'q'}->param( $arg );
     if( defined($val) )
     {
       return $val;
     }
     else
     {
-      if( my $last = $s->{asp}->session->{__lastArgs} )
+      if( my $page_args = $s->{asp}->session->{__lastArgs} )
       {
-        if( my $page_args = $last )
-        {
-          return $page_args->{ $arg };
-        }# end if()
+        return $page_args->{ $arg };
       }# end if()
     }# end if()
   }
@@ -113,9 +119,9 @@ sub Form
     }# end if()
     
     my %info = %$page_args;
-    foreach my $field ( $s->{q}->param )
+    foreach my $field ( $s->{'q'}->param )
     {
-      my @data = $s->{q}->param( $field );
+      my @data = $s->{'q'}->param( $field );
       if( scalar(@data) > 1 )
       {
         $info{$field} = [ @data ];
@@ -136,24 +142,24 @@ sub FileUpload
 {
   my ($s, $field, $arg) = @_;
   
-  my $ifh = $s->{q}->upload($field);
+  my $ifh = $s->{'q'}->upload($field);
   my %info = ();
   my $upInfo = { };
   
-  if( $s->{q}->isa('CGI::Simple') || $s->{q}->isa('Apache2::ASP::SimpleCGI') )
+  if( $s->{'q'}->isa('CGI::Simple') || $s->{'q'}->isa('Apache2::ASP::SimpleCGI') )
   {
     no warnings 'uninitialized';
     %info = (
-      ContentType           => $s->{q}->upload_info( $field, 'mime' ),
+      ContentType           => $s->{'q'}->upload_info( $field, 'mime' ),
       FileHandle            => $ifh,
       BrowserFile           => $s->Form->{ $field } . "",
       'Content-Disposition' => 'attachment',
-      'Mime-Header'         => $s->{q}->upload_info( $field, 'mime' ),
+      'Mime-Header'         => $s->{'q'}->upload_info( $field, 'mime' ),
     );
   }
   else
   {
-    $upInfo = $s->{q}->uploadInfo( $ifh );
+    $upInfo = $s->{'q'}->uploadInfo( $ifh );
     no warnings 'uninitialized';
     %info = (
       ContentType           => $upInfo->{'Content-Type'},

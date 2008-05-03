@@ -4,7 +4,7 @@ package Apache2::ASP::CGI;
 use strict;
 use warnings;
 use base 'CGI::Apache2::Wrapper';
-use CGI::Util ();
+#use CGI::Util ();
 
 #==============================================================================
 sub new
@@ -33,21 +33,21 @@ sub new
 
 
 #==============================================================================
-sub escape
-{
-  my ($s, $str) = @_;
-  
-  return CGI::Util::escape( $str );
-}# end escape()
+#sub escape
+#{
+#  my ($s, $str) = @_;
+#  
+#  return CGI::Util::escape( $str );
+#}# end escape()
 
 
 #==============================================================================
-sub unescape
-{
-  my ($s, $str) = @_;
-  
-  return CGI::Util::unescape( $str );
-}# end unescape()
+#sub unescape
+#{
+#  my ($s, $str) = @_;
+#  
+#  return CGI::Util::unescape( $str );
+#}# end unescape()
 
 
 1;# return true:

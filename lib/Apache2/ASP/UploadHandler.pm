@@ -3,7 +3,7 @@ package Apache2::ASP::UploadHandler;
 
 use strict;
 use base 'Apache2::ASP::Handler';
-our %LastUpdate;
+our $LastUpdate;
 
 use vars qw(
   %modes
@@ -14,11 +14,9 @@ sub upload_start
 {
   my ($s, $asp, $Upload) = @_;
   
-  my ($id) = $ENV{QUERY_STRING} =~ m/upload_id\=(\w+)/;
-  
   # Store the upload information in the Session for external retrieval:
-  $LastUpdate{$id} = time();
-  $asp->session->{"$id\_$_"} = $Upload->{$_}
+  $LastUpdate = time();
+  $asp->session->{$_} = $Upload->{$_}
     foreach keys(%$Upload);
   $asp->session->save;
 }# end upload_start()
@@ -29,13 +27,10 @@ sub upload_end
 {
   my ($s, $asp, $Upload) = @_;
   
-  my ($id) = $ENV{QUERY_STRING} =~ m/upload_id\=(\w+)/;
-  
   # Clear out the upload data from the Session:
-  delete($asp->session->{"$id\_$_"})
+  delete($asp->session->{$_})
     foreach keys(%$Upload);
   $asp->session->save;
-  delete($LastUpdate{$id});
 }# end upload_end()
 
 
@@ -44,19 +39,17 @@ sub upload_hook
 {
   my ($s, $asp, $Upload) = @_;
   
-  my ($id) = $ENV{QUERY_STRING} =~ m/upload_id\=(\w+)/;
-  
   # Since this method may be called several times per second, we only
   # want to save the Session state once per second:
-  my $Diff = time() - $LastUpdate{$id};
+  my $Diff = time() - $LastUpdate;
   if( $Diff >= 1 )
   {
     # Store everything in the session except for the data 
     # (since that could be too large to serialize quickly):
-    $asp->session->{"$id\_$_"} = $Upload->{$_}
+    $asp->session->{$_} = $Upload->{$_}
       foreach grep { $_ ne 'data' } keys(%$Upload);
     $asp->session->save;
-    $LastUpdate{$id} = time();
+    $LastUpdate = time();
   }# end if()
 }# end upload_hook()
 

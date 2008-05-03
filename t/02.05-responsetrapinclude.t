@@ -31,3 +31,5 @@ After TrapInclude
   "Response->Include worked correctly"
 );
 
+ok( ! eval{$s->ua->get("/bad-responsetrapinclude.asp")->is_success}, "/bad-responsetrapinclude.asp failed" );
+#ok( ! eval{$s->ua->get("/syntax-error-trapinclude.asp")->is_success}, "/syntax-error-trapinclude.asp failed" );

@@ -31,3 +31,7 @@ After Include
   "Response->Include worked correctly"
 );
 
+
+ok( ! eval{$s->ua->get("/bad-responseinclude.asp")->is_success}, "/bad-responseinclude.asp failed" );
+#ok( ! eval{$s->ua->get("/syntax-error-include.asp")->is_success}, "/syntax-error-include.asp failed" );
+

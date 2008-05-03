@@ -417,7 +417,7 @@ Now, when you want to upload files, just point the upload form to
 
   <html>
   ...
-  <form method="POST" enctype="multipart/form-data" action="/handlers/MyMediaManager?upload_id=SomeUniqueID">
+  <form method="POST" enctype="multipart/form-data" action="/handlers/MyMediaManager">
     <!-- This "mode" parameter tells us what we're going to do -->
     <!-- Possible values include "create", "update" and "delete" -->
     <input type="hidden" name="mode" value="create">

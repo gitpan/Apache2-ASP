@@ -67,8 +67,7 @@ sub hook
     
     # End the upload if we are done:
     $s->{asp}->r->push_handlers(PerlCleanupHandler => sub {
-      my $id = $s->{asp}->request->Form->{upload_id};
-      delete($s->{asp}->session->{"$id\_$_"})
+      delete($s->{asp}->session->{$_})
         foreach keys(%$Upload);
       $s->{asp}->session->save;
     });

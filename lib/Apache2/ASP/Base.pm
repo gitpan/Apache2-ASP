@@ -18,8 +18,8 @@ sub new
   my ($class, $config) = @_;
   
   my $s = bless {
-    config  => $config, #Apache2::ASP::Config->new(),
-  }, ref($class) ? ref($class) : $class;
+    config  => $config,
+  }, $class;
   
   return $s;
 }# end new()
@@ -31,7 +31,7 @@ sub setup_request
   my ($s, $r, $q) = @_;
   # Init self:
   $s->{r}           = $r;
-  $s->{q}           = $q ? $q : CGI::Simple->new();
+  $s->{'q'}           = $q ? $q : CGI::Simple->new();
   $s->{request}     = Apache2::ASP::Request->new( $s );
   $s->{response}    = Apache2::ASP::Response->new( $s );
   $s->{server}      = Apache2::ASP::Server->new( $s );
@@ -56,8 +56,6 @@ sub execute
   if( ! $is_subrequest )
   {
     # Prevent multiple *OnStart events from being raised during the same request:
-#    $s->global_asa->can('Application_OnStart')->() 
-#      unless $s->application->{__did_init}++;
     $s->global_asa->can('Server_OnStart')->()
       unless $s->application->{"__started_server_$$"}++;
     $s->application->save;
@@ -247,7 +245,7 @@ sub resolve_request_filters
 #==============================================================================
 sub config      { $_[0]->{config}       }
 sub r           { $_[0]->{r}            }
-sub q           { $_[0]->{q}            }
+sub q           { $_[0]->{'q'}            }
 sub session     { $_[0]->{session}      }
 sub request     { $_[0]->{request}      }
 sub response    { $_[0]->{response}     }

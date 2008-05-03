@@ -3,7 +3,7 @@ package Apache2::ASP::Response;
 
 use strict;
 use warnings 'all';
-use Carp qw( cluck confess );
+use Carp qw( cluck confess croak );
 use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
 
@@ -19,7 +19,8 @@ sub new
   
   return bless {
     asp            => $asp,
-    _buffer         => '',
+    _buffer         => [ ],
+    _buffer_length => 0,
     r               => $asp->r,
     q               => $asp->q,
     _headers        => [ {name => 'connection', value => 'close'} ],
@@ -131,13 +132,15 @@ sub Write
   my ($s, $str) = @_;
   
   $str = "" unless defined($str);
+  my $len = length($str);
   $str =~ s/_____TILDE_____/\~/g;
   
   no warnings 'uninitialized';
-  $s->{_buffer} .= $str;
+  push @{$s->{_buffer}}, $str;
   if( $s->{Buffer} )
   {
-    if( length($s->{_buffer}) >= $MAX_BUFFER_LENGTH )
+    $s->{_buffer_length} += $len;
+    if( $s->{_buffer_length} >= $MAX_BUFFER_LENGTH )
     {
       $s->Flush;
     }# end if()
@@ -154,22 +157,12 @@ sub Flush
 {
   my $s = shift;
   
-  my $buffer = delete( $s->{_buffer} );
+  my $buffer = join '', @{delete( $s->{_buffer} )};
+  $s->{_buffer} = [ ];
+  $s->{_buffer_length} = 0;
 
   if( $s->{asp}->{handler} && $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && $s->{asp}->global_asa )
   {
-#    if( defined($buffer) && length($buffer) )
-#    {
-#      my $fif = HTML::FillInForm->new();
-#      $buffer .= "\n";
-#      $buffer = $fif->fill(
-#        scalarref => \$buffer,
-#        fdat      => $s->{asp}->session->{__lastArgs} || { }
-#      );
-#      no warnings 'uninitialized';
-#      $buffer =~ s/\n$//;
-#    }# end if()
-#    
     $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer )
       unless $s->{is_subrequest};
   }# end if()
@@ -191,7 +184,6 @@ sub End
   my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
   $s->{asp}->{did_end} = 1;
-#  return 0;
 }# end End()
 
 
@@ -199,7 +191,8 @@ sub End
 sub Clear
 {
   my $s = shift;
-  $s->{_buffer} = '';
+  $s->{_buffer} = [ ];
+  $s->{_buffer_length} = 0;
 }# end Clear()
 
 
@@ -210,7 +203,7 @@ sub Redirect
   
   if( $s->{_sent_headers} )
   {
-    confess "Response.Redirect: Cannot redirect to '$location' after headers have been sent.";
+    croak "Response.Redirect: Cannot redirect to '$location' after headers have been sent.";
   }# end if()
   
   $s->Clear();
@@ -227,20 +220,20 @@ sub Redirect
 sub Include
 {
   my ($s, $script, @args) = @_;
-
+  
+  no warnings 'uninitialized';
   unless( -f $script )
   {
     $s->Write("[ Cannot Response.Include '$script': File not found ]");
-    cluck "Cannot Response.Include '$script': File not found";
-    return;
+    croak "Cannot Response.Include '$script': File not found";
   }# end unless()
   
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
-    r => $s->{asp}->r,
-    status => 200,# '200 OK',
+    r        => $s->{asp}->r,
+    status   => 200,
     filename => $script,
     uri      => $uri
   );
@@ -254,15 +247,14 @@ sub Include
         subservice
         registry_member
       /;
-  $asp->setup_request( $r, $s->{asp}->q );
+  $asp->setup_request( $r, $s->{asp}->q() );
   eval {
     $asp->execute( 1, @args );
     $s->Write( $r->buffer );
-#    $s->Flush;
   };
   if( $@ )
   {
-    confess "Cannot Include script '$script': $@";
+    croak "Cannot Include script '$script': $@";
   }# end if()
 }# end Include()
 
@@ -272,19 +264,19 @@ sub TrapInclude
 {
   my ($s, $script, @args) = @_;
   
+  no warnings 'uninitialized';
   unless( -f $script )
   {
     $s->Write("[ Cannot Response.TrapInclude '$script': File not found ]");
-    cluck "Cannot Response.TrapInclude '$script': File not found";
-    return;
+    croak "Cannot Response.TrapInclude '$script': File not found";
   }# end unless()
   
   my $uri = $script;
   my $root = $s->{asp}->config->www_root;
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
-    r => $s->{asp}->r,
-    status => 200,# '200 OK',
+    r        => $s->{asp}->r,
+    status   => 200,# '200 OK',
     filename => $script,
     uri      => $uri
   );
@@ -298,7 +290,7 @@ sub TrapInclude
         subservice
         registry_member
       /;
-  $asp->setup_request( $r, $s->{asp}->q );
+  $asp->setup_request( $r, $s->{asp}->q() );
   
   my $include = eval {
     $asp->execute( 1, @args );
@@ -307,11 +299,11 @@ sub TrapInclude
   };
   if( $@ )
   {
-    confess "Cannot TrapInclude script '$script': $@";
+    croak "Cannot TrapInclude script '$script': $@";
   }# end if()
   
   return $include;
-}# end Include()
+}# end TrapInclude()
 
 
 #==============================================================================

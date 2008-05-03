@@ -18,7 +18,7 @@ use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
 use vars '$VERSION';
-$VERSION = 1.38;
+$VERSION = 1.39;
 
 #==============================================================================
 sub handler : method
@@ -39,16 +39,16 @@ sub handler : method
       asp           => $s,
       handler_class => $handler_class,
     );
-    $s->{q} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
+    $s->{'q'} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
   }
   else
   {
     # Not an upload - normal CGI functionality will work fine:
-    $s->{q} = Apache2::ASP::CGI->new( $r );
+    $s->{'q'} = Apache2::ASP::CGI->new( $r );
   }# end if()
   
   # Get our subref and execute it:
-  $s->setup_request( $r, $s->{q} );
+  $s->setup_request( $r, $s->{'q'} );
   my $status = eval { $s->execute() };
   if( $@ )
   {

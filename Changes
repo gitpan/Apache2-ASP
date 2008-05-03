@@ -1,6 +1,13 @@
 Revision history for Perl extension Apache2::ASP.
 
-1.38 2008-03-25
+1.39 2008-05-03
+  - Apache2::ASP::Response stores the buffer as an array instead of
+    as a string.
+  - Performance enhancements.
+  - Better test coverage for several modules.
+  - More tests.
+
+1.38 2008-03-20
   - Intrinsic ASP objects (Request, Response, etc) are now
     initialized for a handler and all of its super-classes.
     This fixes a bug in which handlers that subclass another
@@ -9,9 +16,6 @@ Revision history for Perl extension Apache2::ASP.
     for example.
   - Apache2::ASP::MediaManager checks the 'mode' parameter and behaves
     differently based on its value.
-  - Apache2::ASP::MediaManager now supports multiple concurrent uploads
-    within the same Session (simultaneous requests), providing progress 
-    information for each upload in real-time.
 
 1.37 2008-03-16
   - Updated MANIFEST to include missing file t/lib/MyDBI.pm

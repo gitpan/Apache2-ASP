@@ -12,14 +12,7 @@ use vars qw(
 );
 
 #==============================================================================
-sub run
-{
-  my ($s) = @_;
-  
-  warn "Filter class $s does not override the 'run()' method.";
-  
-  return -1;
-}# end run()
+sub run;
 
 1;# return true:
 

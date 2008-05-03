@@ -39,12 +39,7 @@ sub run
   }# end if()
   
   # Create or recreate the *.pm file?
-  if( ! $s->pm_exists($package_filename) )
-  {
-    # *.pm doesn't exist - create it:
-    $s->compile_asp( $package_filename, $asp_filename, $full_package_name );
-  }
-  elsif( $s->pm_exists($package_filename) )
+  if( $s->pm_exists($package_filename) )
   {
     # *.pm exists:
     if( $asp->config->do_reload_on_script_change )
@@ -61,6 +56,11 @@ sub run
         undef ${"$full_package_name\::TIMESTAMP"};
       }# end if()
     }# end if()
+  }
+  else
+  {
+    # *.pm doesn't exist - create it:
+    $s->compile_asp( $package_filename, $asp_filename, $full_package_name );
   }# end if()
 
   # Runtime import of the newly-created class:
@@ -93,6 +93,7 @@ sub asp_has_changed
   no strict 'refs';
   if( my $pm_time = ${"$full_package_name\::TIMESTAMP"} )
   {
+    # We use 'mtime' - see `perldoc stat` for details:
     my $asp_time = (stat($asp_filename))[9];
     return $asp_time > $pm_time;
   }

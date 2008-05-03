@@ -27,6 +27,7 @@ my %require = (
   'CGI::Simple'             => 0,     # For Apache2::ASP::Test::*
   'HTML::Form'              => 0,     # For Apache2::ASP::Test::*
   'Ima::DBI'                => 0.35,  # For sessions & applications.
+  'Test::Exception'         => 0,
 );
 
 WriteMakefile(

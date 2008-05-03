@@ -51,13 +51,12 @@ sub AUTOLOAD
   my ($key) = $AUTOLOAD =~ m/::([^:]+)$/;
   if( exists($s->{ $key }) )
   {
-    return $s->{ $key };
+    return $s->{$key};
   }
   else
   {
-#    die "Invalid config.node property '$key'";
-use Carp 'confess';
-		confess "Config node '$s->{__path}' has no property named '$key'";
+    require Carp;
+		Carp::confess( "Config node '$s->{__path}' has no property named '$key'" );
   }# end if()
 }# end AUTOLOAD()
 

@@ -200,69 +200,6 @@ sub _setup_cgi
 }# end _setup_cgi()
 
 
-#==============================================================================
-sub _setup_cgi____OLD
-{
-  my ($s, $req) = @_;
-  
-  # Preserve our session cookie:
-  if( $s->{asp}->session && $s->{asp}->session->{SessionID} )
-  {
-    $s->add_cookie( $s->{asp}->config->session_state->cookie_name => $s->{session_id} );
-  }# end if()
-  $s->{c}->DESTROY
-    if $s->{c};
-  $s->{asp} = ref($s->{asp})->new( $s->{asp}->config );
-  $req->referer( $s->{referer} );
-  ($s->{referer}) = $req->uri =~ m/.*?(\/[^\?]+)/;
-  $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
-  $ENV{SERVER_NAME} = $ENV{HTTP_HOST} = 'localhost';
-  
-  if( $req->uri =~ m/^\/handlers/ )
-  {
-    # Do nothing...
-  }
-  else
-  {
-    $ENV{SCRIPT_FILENAME} = $s->{asp}->config->www_root . $req->uri;
-  }# endif()
-  
-  # User-Agent:
-  $req->header( 'User-Agent' => 'apache2-asp-test-useragent v1.0' );
-  
-  # Cookies:
-  my @cookies = ();
-  while( my ($name,$val) = each(%{ $s->{cookies} } ) )
-  {
-    push @cookies, "$name=" . CGI::Simple->url_encode($val);
-  }# end while()
-  $req->header( 'Cookie' => join ';', @cookies );
-  $ENV{HTTP_COOKIE} = join ';', @cookies;
-
-  # If it's a POST request we have to point STDIN to $req->content:
-  if( $req->method =~ m/^post$/i )
-  {
-    # Get the POST data:
-    $CGI::Simple::DISABLE_UPLOADS = 0;
-    my $content = $req->content . '';
-    open my $ifh, '<', \$content;
-    my $cgi = CGI::Simple->new( $ifh );
-    
-    # Manually inject the Querystring data into the CGI object:
-    my $qs_cgi = CGI::Simple->new( $ENV{QUERY_STRING} );
-    $cgi->param( $_ => $qs_cgi->param( $_ ) ) foreach $qs_cgi->param;
-    eval{ $qs_cgi->DESTROY };
-    
-    # Done:
-    return $cgi;
-  }
-  else
-  {
-    # Simple 'GET' request:
-    return CGI::Simple->new( $ENV{QUERY_STRING} );
-  }# end if()
-}# end _setup_cgi()
-
 1;# return true:
 
 __END__

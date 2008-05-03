@@ -66,9 +66,12 @@ sub MapPath
 {
   my ($s, $path) = @_;
   
+  return unless defined($path);
+  
   my $subr = $s->{r}->lookup_uri( $path );
   my $file = $subr ? $subr->filename : undef;
-  if( defined($file) && -f $file )
+  return unless defined($file);
+  if( -f $file )
   {
     return $file;
   }

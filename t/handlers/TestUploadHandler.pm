@@ -2,9 +2,13 @@
 package TestUploadHandler;
 
 use strict;
+use warnings 'all';
 use base 'Apache2::ASP::UploadHandler';
 use vars qw(
-  $Request $Form $Response $Server $Session $Application $Config
+  $Request  $Form 
+  $Response $Server 
+  $Session  $Application
+  $Config
 );
 
 
@@ -25,5 +29,5 @@ sub run
 
 }# end run()
 
-1;
+1;# return true:
 

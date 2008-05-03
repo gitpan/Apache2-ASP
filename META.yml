@@ -1,10 +1,13 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Apache2-ASP
-version:      1.38
-version_from: lib/Apache2/ASP.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Apache2-ASP
+version:             1.39
+abstract:            ~
+license:             ~
+author:              
+    - John Drago <jdrago_999@yahoo.com>
+generated_by:        ExtUtils::MakeMaker version 6.44
+distribution_type:   module
+requires:     
     Apache2::Directive:            0
     CGI::Apache2::Wrapper:         0
     CGI::Simple:                   0
@@ -24,7 +27,8 @@ requires:
     MIME::Types:                   0
     Storable:                      0
     Sys::Hostname:                 0
+    Test::Exception:               0
     XML::Simple:                   0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3
