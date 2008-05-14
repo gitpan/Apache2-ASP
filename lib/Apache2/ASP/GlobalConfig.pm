@@ -123,26 +123,6 @@ sub test_config_path
 }# end test_config_path()
 
 
-
-
 1;# return true:
 
-__END__
 
-=pod
-
-=head1 NAME
-
-=head1 SYNOPSIS
-
-	use Apache2::ASP::ConfigLoader;
-	
-	my $loader = Apache2::ASP::ConfigLoader->new(
-		config_path => '/path/to/config.xml'
-	);
-
-=head1 DESCRIPTION
-
-=head1 PUBLIC METHODS
-
-=cut

@@ -1,6 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
-1.42 2009-05-13
+1.43 2008-05-13
+  - Fixed some damaged documentation.
+
+1.42 2008-05-13
   - New media manager tests didn't make it in to the last release.
 
 1.41 2008-05-13
