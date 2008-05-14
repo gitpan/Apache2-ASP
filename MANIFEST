@@ -62,6 +62,7 @@ t/02.05-responsetrapinclude.t
 t/02.06-requestfilter.t
 t/02.07-upload.t
 t/03.01-wizard.t
+t/04.01-mediamanager.t
 t/conf/apache2-asp-config.xml
 t/etc/properties.yaml
 t/etc/test_fixtures.yaml

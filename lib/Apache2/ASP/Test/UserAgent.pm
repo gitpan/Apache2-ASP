@@ -32,8 +32,6 @@ sub submit_form
   
   my $req = $form->click;
   
-  $s->{handler} = $s->{asp}->resolve_request_handler( $req->uri );
-  
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
 
@@ -69,8 +67,6 @@ sub get
 {
   my ($s, $uri) = @_;
   
-  $s->{handler} = $s->{asp}->resolve_request_handler( $uri );
-  
   my $req = GET $uri;
   $ENV{REQUEST_METHOD} = 'GET';
   my $cgi = $s->_setup_cgi( $req );
@@ -90,8 +86,6 @@ sub get
 sub post
 {
   my ($s, $uri, $argref) = @_;
-  
-  $s->{handler} = $s->{asp}->resolve_request_handler( $uri );
   
   my $req = POST $uri, $argref;
   $ENV{REQUEST_METHOD} = 'POST';
@@ -114,8 +108,6 @@ sub upload
 {
   my ($s, $uri, $argref) = @_;
   
-  $s->{handler} = $s->{asp}->resolve_request_handler( $uri );
-  
   my $req = POST $uri, Content_Type => 'form-data', Content => $argref;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
@@ -133,7 +125,7 @@ sub upload
   require Apache2::ASP::UploadHook;
   my $hook_obj = Apache2::ASP::UploadHook->new(
     asp           => $s->{asp},
-    handler_class => $s->{handler},
+    handler_class => $s->{asp}->resolve_request_handler( $uri ),
   );
   my $hook_ref = sub { $hook_obj->hook( @_ ) };
   
@@ -185,66 +177,6 @@ sub _setup_response
 
 #==============================================================================
 sub _setup_cgi
-{
-  my ($s, $req) = @_;
-  
-  # Preserve our session cookie:
-  if( $s->{asp}->session && $s->{asp}->session->{SessionID} )
-  {
-    $s->add_cookie( $s->{asp}->config->session_state->cookie_name => $s->{session_id} );
-  }# end if()
-  $s->{c}->DESTROY
-    if $s->{c};
-  
-  $s->{asp} = ref($s->{asp})->new( $s->{asp}->config );
-  $req->referer( $s->{referer} );
-  ($s->{referer}) = $req->uri =~ m/.*?(\/[^\?]+)/;
-  $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
-  $ENV{SERVER_NAME} = $ENV{HTTP_HOST} = 'localhost';
-  
-  unless( $req->uri =~ m@^/handlers@ )
-  {
-    $ENV{SCRIPT_FILENAME} = $s->{asp}->config->www_root . $req->uri;
-  }# end unless()
-  
-  # User-Agent:
-  $req->header( 'User-Agent' => 'apache2-asp-test-useragent v1.0' );
-  
-  # Cookies:
-  my @cookies = ();
-  while( my ($name,$val) = each(%{ $s->{cookies} } ) )
-  {
-    push @cookies, "$name=" . CGI::Simple->url_encode($val);
-  }# end while()
-  $req->header( 'Cookie' => join ';', @cookies );
-  $ENV{HTTP_COOKIE} = join ';', @cookies;
-  
-  if( $ENV{REQUEST_METHOD} =~ m/^post$/i )
-  {
-    my $body = HTTP::Body->new(
-      $req->headers->{'content-type'},
-      $req->headers->{'content-length'}
-    );
-    $body->add( $req->content );
-    
-    # Set up the basic params:
-    return Apache2::ASP::SimpleCGI->new(
-      querystring     => $ENV{QUERY_STRING},
-      body            => $req->content,
-      content_type    => $req->headers->{'content-type'},
-      content_length  => $req->headers->{'content-length'},
-    );
-  }
-  else
-  {
-    # Simple 'GET' request:
-    return CGI::Simple->new( $ENV{QUERY_STRING} );
-  }# end if()
-}# end _setup_cgi()
-
-
-#==============================================================================
-sub _setup_cgi_______OLD
 {
   my ($s, $req) = @_;
   

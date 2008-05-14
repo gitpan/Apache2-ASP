@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.42 2009-05-13
+  - New media manager tests didn't make it in to the last release.
+
 1.41 2008-05-13
   - Apache2::ASP::GlobalConfig will now also look 1 level "up" from
     the current working directory (retrieved from Cwd) for the 
