@@ -27,6 +27,9 @@ is(
   "Form results are correct"
 );
 
+$res = $s->ua->submit_form( $form );
+
+
 $res = $s->ua->get("/form01.asp?fruit=apple&fruit=cherry&fruit=banana");
 
 $form = HTML::Form->parse( $res->content, '/' );

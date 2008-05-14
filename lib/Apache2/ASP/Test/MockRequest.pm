@@ -25,6 +25,7 @@ sub new
     _headers_out  => { },
     _headers_in   => { },
     rflush        => 1,
+    push_handlers => 1,
     %args
   );
   
@@ -152,6 +153,23 @@ sub escape
   my $s = shift;
   $s->{cgi}->url_encode( @_ );
 }# end escape()
+
+
+#==============================================================================
+sub pnotes
+{
+  my ($s) = shift;
+  if( @_ == 1 )
+  {
+    my $key = shift;
+    return $s->{_pnotes}->{$key} if exists($s->{_pnotes}->{$key});
+  }
+  elsif( @_ == 2 )
+  {
+    my ($key, $val) = @_;
+    return $s->{_pnotes}->{$key} = $val;
+  }# end if()
+}# end pnotes()
 
 
 #==============================================================================

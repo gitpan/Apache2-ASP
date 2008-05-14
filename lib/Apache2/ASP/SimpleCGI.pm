@@ -69,7 +69,8 @@ sub new
   
   return bless {
     params => \%params,
-    uploads => \%upload_data
+    uploads => \%upload_data,
+    %args
   }, $s;
 }# end new()
 

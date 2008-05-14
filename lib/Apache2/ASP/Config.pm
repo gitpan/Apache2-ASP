@@ -228,3 +228,204 @@ sub _fixup_path2
 }# end _fixup_path2()
 
 1;# return true:
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Config - Configuration object for Apache2::ASP web applications.
+
+=head1 READ THIS FIRST
+
+B<NOTE:> This module requires the environment variable C<$ENV{APACHE2_ASP_APPLICATION_ROOT}> to be set 
+to the path where your Apache2::ASP application lives.
+
+For instance, say you keep your website at C</var/www> - you would set C<$ENV{APACHE2_ASP_APPLICATION_ROOT}> to 
+C</var/www>.
+
+If you keep your *.asp pages inside C</var/www/htdocs> - you would still set C<$ENV{APACHE2_ASP_APPLICATION_ROOT}>
+to C</var/www>.
+
+If you keep your *.asp pages inside C</usr/local/mywebsite/htdocs> - you would set C<$ENV{APACHE2_ASP_APPLICATION_ROOT}>
+to C</usr/local/mywebsite>.
+
+If C<$ENV{APACHE2_ASP_APPLICATION_ROOT}> is not set, C<Apache2::ASP::Config> will do its best to guess it for you.  Usually
+it's pretty good at it, and you will never know the difference.  However, if this module keeps failing and can't find your
+config file, it's most likely because C<$ENV{APACHE2_ASP_APPLICATION_ROOT}> was not properly set.
+
+=head1 SYNOPSIS
+
+  use Apache2::ASP::Config;
+  my $config = Apache2::ASP::Config->new();
+  
+  print $config->www_root;                        # /var/www/html
+  
+  print $config->application_name;                # DefaultApp
+  
+  print $config->handler_root;                    # /var/www/html/handlers
+  
+  print $config->page_cache_root;                 # /var/www/html/PAGE_CACHE
+  
+  print $config->media_manager_upload_root;       # /var/www/html/MEDIA
+  
+  print $config->application_state->manager;      # Apache2::ASP::ApplicationStateManager::SQLite
+  
+  print $config->application_state->dsn;          # DBI:SQLite:dbname=/tmp/apache2_asp_state
+  
+  print $config->application_state->username;     # "username"
+  
+  print $config->application_state->password;     # "password"
+  
+  print $config->session_state->manager;          # Apache2::ASP::SessionStateManager::SQLite
+  
+  print $config->session_state->cookie_domain;    # .yoursite.com
+  
+  print $config->session_state->cookie_name;      # session-id
+  
+  print $config->session_state->dsn;              # DBI:SQLite:dbname=/tmp/apache2_asp_state
+  
+  print $config->session_state->username;         # "username"
+  
+  print $config->session_state->password;         # "password"
+  
+  print $config->session_state->session_timeout;  # 30 (means 30 minutes)
+  
+  my @filters = $config->request_filters;         # A list of your Apache2::ASP::RequestFilter classes
+  
+  print $config->settings->lib;                   # /usr/local
+  
+  print $config->settings->dsn;                   # DBI:mysql:dbname:hostname
+  
+  print $config->settings->username;              # "username"
+  
+  print $config->settings->password;              # "password"
+
+=head1 DESCRIPTION
+
+Each web application gets its own configuration.  For more information about the config xml format,
+see L<Apache2::ASP::GlobalConfig>.
+
+For information on setting up the configuration, please refer to L<Apache2::ASP::Manual::Intro> 
+and L<Apache2::ASP::Manual::ConfigXML>.
+
+=head1 PUBLIC METHODS
+
+=head2 new( )
+
+Returns a new C<Apache2::ASP::Config> object.
+
+=head2 validate_config( )
+
+Used for testing, but it could (possibly) be useful some other way.  Validates the config.  Dies if the config contains errors.
+
+=head1 PUBLIC PROPERTIES
+
+=head2 $config->www_root
+
+Returns 
+
+=head2 $config->application_name
+
+See synopsis.
+
+=head2 $config->handler_root
+
+See synopsis.
+
+=head2 $config->page_cache_root
+
+See synopsis.
+
+=head2 $config->media_manager_upload_root
+
+See synopsis.
+
+=head2 $config->application_state->manager
+
+See synopsis.
+
+=head2 $config->application_state->dsn
+
+See synopsis.
+
+=head2 $config->application_state->username
+
+See synopsis.
+
+=head2 $config->application_state->password
+
+See synopsis.
+
+=head2 $config->session_state->manager
+
+See synopsis.
+
+=head2 $config->session_state->cookie_domain
+
+See synopsis.
+
+=head2 $config->session_state->cookie_name
+
+See synopsis.
+
+=head2 $config->session_state->dsn
+
+See synopsis.
+
+=head2 $config->session_state->username
+
+See synopsis.
+
+=head2 $config->session_state->password
+
+See synopsis.
+
+=head2 $config->request_filters
+
+See synopsis and L<Apache2::ASP::RequestFilter>
+
+=head2 $config->settings->lib
+
+The path to your Application-specific Perl modules, B<not> your Handlers.
+
+Generally these are L<Class::DBI> or L<DBIx::Class> modules (or whatever you prefer to use).
+
+=head2 $config->settings->dsn
+
+The connectionstring your application uses.
+
+=head2 $config->settings->username
+
+The username for your application's connectionstring.
+
+=head2 $config->settings->password
+
+The password for your application's connectionstring.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+
+

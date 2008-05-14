@@ -96,17 +96,20 @@ sub find_config_path
 		{
 			$ENV{APACHE2_ASP_APPLICATION_ROOT} .= "/t";
 			return "$ENV{APACHE2_ASP_APPLICATION_ROOT}/conf/apache2-asp-config.xml";
+		}
+		else
+		{
+			my (@parts) = split /\//, $ENV{APACHE2_ASP_APPLICATION_ROOT};
+			pop(@parts);
+			my $newpath = join '/', @parts;
+			if( -f "$newpath/conf/apache2-asp-config.xml" )
+			{
+				$ENV{APACHE2_ASP_APPLICATION_ROOT} = $newpath;
+				return "$ENV{APACHE2_ASP_APPLICATION_ROOT}/conf/apache2-asp-config.xml";
+			}# end if()
 		}# end if()
 		
 		die "Cannot find config file anywhere!";
-		
-#		my ($path) = grep { $s->test_config_path( $_ ) } qw(
-#			t/conf/apache2-asp-config.xml
-#			conf/apache2-asp-config.xml
-#			../conf/apache2-asp-config.xml
-#			../t/conf/apache2-asp-config.xml
-#		), "$ENV{APACHE2_ASP_APPLICATION_ROOT}/conf/apache2-asp-config.xml";
-#		return $path;
 	}# end if()
 }# end find_config_path()
 

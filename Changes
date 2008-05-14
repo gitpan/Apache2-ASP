@@ -1,5 +1,18 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.41 2008-05-13
+  - Apache2::ASP::GlobalConfig will now also look 1 level "up" from
+    the current working directory (retrieved from Cwd) for the 
+    apache2-asp-config.xml file.  This is important for when you have
+    (for example) an /sbin/ folder with asp-related scripts.
+  - Added method $Server->URLDecode( $str ).
+  - Minor tweaks to Apache2::ASP::MediaManager and Apache2::ASP::Test::UserAgent
+    to allow testing of MediaManager classes/handlers from the command-line.
+  - Added some missing POD for Apache2::ASP::Config and Apache2::ASP::Config::Node.
+  - Added tests for Apache2::ASP::MediaManager.
+  - Added tests for "wizard" functionality (multiple-step forms, anyways).
+  - Skipped v1.40 because of the way CPAN handles version numbers.
+
 1.39 2008-05-03
   - Apache2::ASP::Response stores the buffer as an array instead of
     as a string.

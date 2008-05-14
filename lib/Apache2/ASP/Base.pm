@@ -31,7 +31,7 @@ sub setup_request
   my ($s, $r, $q) = @_;
   # Init self:
   $s->{r}           = $r;
-  $s->{'q'}           = $q ? $q : CGI::Simple->new();
+  $s->{'q'}         = $q ? $q : CGI::Simple->new();
   $s->{request}     = Apache2::ASP::Request->new( $s );
   $s->{response}    = Apache2::ASP::Response->new( $s );
   $s->{server}      = Apache2::ASP::Server->new( $s );
@@ -245,7 +245,7 @@ sub resolve_request_filters
 #==============================================================================
 sub config      { $_[0]->{config}       }
 sub r           { $_[0]->{r}            }
-sub q           { $_[0]->{'q'}            }
+sub q           { $_[0]->{'q'}          }
 sub session     { $_[0]->{session}      }
 sub request     { $_[0]->{request}      }
 sub response    { $_[0]->{response}     }

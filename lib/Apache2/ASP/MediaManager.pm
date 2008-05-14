@@ -16,9 +16,8 @@ sub run
   
   shift(@_);
 	
-	my ($filename, $file, $ext);
-	
 	my $mode = $asp->request->Form('mode');
+	
 	return unless ( ! $mode ) || ( $mode !~ m/^(create|edit)$/ );
 	
   my $filename = $s->compose_download_file_path( $asp );
@@ -49,6 +48,11 @@ sub run
   }# end if()
   
   # Get the readable filehandle:
+  unless( -f $filename )
+  {
+    $asp->response->{Status} = 404;
+    return;
+  }# end unless()
   my $ifh = $s->open_file_for_reading( $asp, $filename );
   
   # Call our before- hook:
@@ -205,7 +209,7 @@ sub upload_start
     $s->before_create($asp, $Upload)
       or return;
   }
-  elsif( /^update$/ )
+  elsif( /^edit$/ )
   {
     $s->before_update($asp, $Upload)
       or return;
@@ -234,6 +238,7 @@ sub upload_start
 sub upload_hook
 {
   my ($s, $asp, $Upload) = @_;
+  
   shift(@_);
   $s->SUPER::upload_hook( @_ );
   
@@ -241,6 +246,7 @@ sub upload_hook
     or die "Couldn't get pnotes 'filename'";
   
   my $ofh = $s->open_file_for_appending($asp, $filename);
+  no warnings 'uninitialized';
   print $ofh $Upload->{data};
   close($ofh);
 }# end upload_hook()
@@ -250,6 +256,7 @@ sub upload_hook
 sub upload_end
 {
   my ($s, $asp, $Upload) = @_;
+  
   shift(@_);
   $s->SUPER::upload_end( @_ );
   
@@ -267,7 +274,7 @@ sub upload_end
   {
     $s->after_create($asp, $Upload);
   }
-  elsif( /^update$/ )
+  elsif( /^edit$/ )
   {
     $s->after_update($asp, $Upload);
   }

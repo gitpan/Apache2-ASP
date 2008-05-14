@@ -35,6 +35,18 @@ sub URLEncode
 
 
 #==============================================================================
+sub URLDecode
+{
+  my ($s, $todecode) = @_;
+  return unless defined($todecode);
+  $todecode =~ tr/+/ /;       # pluses become spaces
+  $todecode =~ s/%(?:([0-9a-fA-F]{2})|u([0-9a-fA-F]{4}))/
+  defined($1)? chr hex($1) : utf8_chr(hex($2))/ge;
+  return $todecode;
+}# end URLDecode()
+
+
+#==============================================================================
 sub HTMLEncode
 {
   my ($s, $str) = @_;
@@ -134,6 +146,12 @@ performed asynchronously.
 Returns a URL-Encoded version of the string provided.
 
 For example, "test@test.com" becomes "test%40test.com" with C<URLEncode()>.
+
+=head2 URLDecode( $str )
+
+Takes a URL-Encoded string and returns the URL-Decoded version.
+
+For example, "test%40test.com" becomes "test@test.com" with C<URLDecode()>.
 
 =head2 HTMLEncode( $str )
 

@@ -38,10 +38,11 @@ lib/Apache2/ASP/PageHandler.pm
 lib/Apache2/ASP/FormHandler.pm
 lib/Apache2/ASP/MediaManager.pm
 lib/Apache2/ASP/ApacheRequest.pm
-lib/Apache2/ASP/Test/UserAgent.pm
 lib/Apache2/ASP/Test/MockRequest.pm
+lib/Apache2/ASP/Test/UserAgent.pm
 lib/Apache2/ASP/Test/Base.pm
 lib/Apache2/ASP/Test/Fixtures.pm
+lib/Apache2/ASP/Test/UploadObject.pm
 lib/Apache2/ASP/RequestFilter.pm
 t/00.01-setup.t
 t/01.01-config.t
@@ -66,12 +67,14 @@ t/etc/properties.yaml
 t/etc/test_fixtures.yaml
 t/handlers/TestHandler.pm
 t/handlers/TestUploadHandler.pm
+t/handlers/MediaManager.pm
 t/htdocs/form01.asp
 t/htdocs/wizard/step1.asp
 t/htdocs/wizard/step2.asp
 t/handlers/wizard/step1.pm
 t/htdocs/altered.asp
 t/htdocs/updated.asp
+t/htdocs/mediamanager.asp
 t/htdocs/bad-responseinclude.asp
 t/htdocs/bad-responsetrapinclude.asp
 t/htdocs/compile-error.asp
