@@ -8,7 +8,7 @@ use HTTP::Response;
 use HTTP::Request::AsCGI;
 use HTTP::Body;
 use Apache2::ASP::Test::MockRequest;
-use CGI::Simple ();
+#use CGI::Simple ();
 use Apache2::ASP::SimpleCGI;
 
 #==============================================================================
@@ -190,6 +190,9 @@ sub _setup_cgi
   $s->{asp} = ref($s->{asp})->new( $s->{asp}->config );
   $req->referer( $s->{referer} );
   ($s->{referer}) = $req->uri =~ m/.*?(\/[^\?]+)/;
+
+  no warnings 'redefine';
+  *HTTP::Request::AsCGI::stdout = sub { 0 };
   $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
   $ENV{SERVER_NAME} = $ENV{HTTP_HOST} = 'localhost';
   
@@ -205,7 +208,7 @@ sub _setup_cgi
   my @cookies = ();
   while( my ($name,$val) = each(%{ $s->{cookies} } ) )
   {
-    push @cookies, "$name=" . CGI::Simple->url_encode($val);
+    push @cookies, "$name=" . Apache2::ASP::SimpleCGI->escape($val);
   }# end while()
   $req->header( 'Cookie' => join ';', @cookies );
   $ENV{HTTP_COOKIE} = join ';', @cookies;
@@ -229,7 +232,7 @@ sub _setup_cgi
   else
   {
     # Simple 'GET' request:
-    return CGI::Simple->new( $ENV{QUERY_STRING} );
+    return Apache2::ASP::SimpleCGI->new( querystring => $ENV{QUERY_STRING} );
   }# end if()
 }# end _setup_cgi()
 

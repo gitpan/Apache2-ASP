@@ -143,7 +143,7 @@ sub connection
 sub unescape
 {
   my $s = shift;
-  $s->{cgi}->url_decode( @_ );
+  $s->{cgi}->unescape( @_ );
 }# end unescape()
 
 
@@ -151,7 +151,7 @@ sub unescape
 sub escape
 {
   my $s = shift;
-  $s->{cgi}->url_encode( @_ );
+  $s->{cgi}->escape( @_ );
 }# end escape()
 
 

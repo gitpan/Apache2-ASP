@@ -12,7 +12,6 @@ use Apache2::ASP::Base;
 use Apache2::ASP::Test::UserAgent;
 use Apache2::ASP::Test::Fixtures;
 use Data::Properties::YAML;
-use HTML::Form;
 use Data::Dumper;
 
 

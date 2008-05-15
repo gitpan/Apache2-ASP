@@ -18,7 +18,7 @@ use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
 use vars '$VERSION';
-$VERSION = 1.43;
+$VERSION = 1.44;
 
 #==============================================================================
 sub handler : method
@@ -30,16 +30,24 @@ sub handler : method
   $s->{r} = $r;
   
   # What Apache2::ASP::Handler is going to handle this request?
-  my $handler_class = $s->resolve_request_handler( $r->uri );
-  if( $handler_class->isa('Apache2::ASP::UploadHandler') )
+  if( uc($ENV{REQUEST_METHOD}) eq 'POST'  )
   {
-    # We use the upload_hook functionality from Apache::Request
-    # to process uploads:
-    my $hook_obj = Apache2::ASP::UploadHook->new(
-      asp           => $s,
-      handler_class => $handler_class,
-    );
-    $s->{'q'} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
+    my $handler_class = $s->resolve_request_handler( $r->uri );
+    if( $handler_class->isa('Apache2::ASP::UploadHandler') )
+    {
+      # We use the upload_hook functionality from Apache::Request
+      # to process uploads:
+      my $hook_obj = Apache2::ASP::UploadHook->new(
+        asp           => $s,
+        handler_class => $handler_class,
+      );
+      $s->{'q'} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
+    }
+    else
+    {
+      # Not an upload - normal CGI functionality will work fine:
+      $s->{'q'} = Apache2::ASP::CGI->new( $r );
+    }# end if()
   }
   else
   {

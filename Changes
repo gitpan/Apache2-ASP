@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.44 2008-05-14
+  - Minor speed improvements (20% faster).
+  - Miscellaneous fixes here and there.
+
 1.43 2008-05-13
   - Fixed some damaged documentation.
 

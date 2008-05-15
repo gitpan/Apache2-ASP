@@ -3,7 +3,7 @@ package Apache2::ASP::Base;
 
 use strict;
 use warnings 'all';
-use CGI::Simple ();
+#use CGI::Simple ();
 
 use Apache2::ASP::PageHandler;
 use Apache2::ASP::Request;
@@ -31,7 +31,7 @@ sub setup_request
   my ($s, $r, $q) = @_;
   # Init self:
   $s->{r}           = $r;
-  $s->{'q'}         = $q ? $q : CGI::Simple->new();
+  $s->{'q'}         = $q;# ? $q : CGI::Simple->new();
   $s->{request}     = Apache2::ASP::Request->new( $s );
   $s->{response}    = Apache2::ASP::Response->new( $s );
   $s->{server}      = Apache2::ASP::Server->new( $s );
@@ -56,10 +56,10 @@ sub execute
   if( ! $is_subrequest )
   {
     # Prevent multiple *OnStart events from being raised during the same request:
-    $s->global_asa->can('Server_OnStart')->()
+    $s->global_asa->Server_OnStart()
       unless $s->application->{"__started_server_$$"}++;
     $s->application->save;
-    $s->global_asa->can('Session_OnStart')->()
+    $s->global_asa->Session_OnStart()
       unless $s->session->{__did_init}++;
     $s->session->save;
     
@@ -85,7 +85,7 @@ sub execute
     }# end foreach()
     
     # Now that we've initialized our other objects, we can safely call Script_OnStart()
-    $s->global_asa->can('Script_OnStart')->();
+    $s->global_asa->Script_OnStart();
   }# end if()
   
   $s->{handler}->init_asp_objects( $s );
@@ -112,7 +112,7 @@ sub execute
   
   if( ! $is_subrequest )
   {
-    $s->global_asa->can('Script_OnEnd')->();
+    $s->global_asa->Script_OnEnd();
     
     # Using __lastPage instead of HTTP_REFERER prevents us from losing that data
     # after a JavaScript-initialized request:
@@ -173,7 +173,8 @@ sub resolve_request_handler
     my ($handler) = $uri =~ m/^\/handlers\/([^\?]+)/;
     $handler =~ s/[^a-z0-9]/\//ig;
 		(my $file = $handler . '.pm');
-    eval { require $file };
+    eval { require $file }
+      unless $INC{$file};
     if( $@ )
     {
       # Failed to load the handler:
@@ -261,7 +262,8 @@ sub _global_asa_class
   
   if( -f $s->config->www_root . '/GlobalASA.pm' )
   {
-    require $s->config->www_root . '/GlobalASA.pm';
+    my $file = $s->config->www_root . '/GlobalASA.pm';
+    require $file unless $INC{$file};
     return $s->config->application_name . '::GlobalASA';
   }
   else

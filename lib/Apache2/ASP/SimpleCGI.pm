@@ -80,6 +80,7 @@ sub upload
 {
   my ($s, $key) = @_;
   
+  no warnings 'uninitialized';
   return exists( $s->{uploads}->{$key} ) ? $s->{uploads}->{$key}->{filehandle} : undef;
 }# end upload()
 
@@ -89,6 +90,7 @@ sub upload_info
 {
   my ($s, $key, $info) = @_;
   
+  no warnings 'uninitialized';
   if( exists( $s->{uploads}->{$key} ) )
   {
     my $upload = $s->{uploads}->{$key};
@@ -134,18 +136,22 @@ sub param
 #==============================================================================
 sub escape
 {
-  my ($s, $str) = @_;
-  
-  return CGI::Util::escape( $str );
+  my $toencode = $_[1];
+  no warnings 'uninitialized';
+  $toencode =~ s/([^a-zA-Z0-9_\-.])/uc sprintf("%%%02x",ord($1))/esg;
+  $toencode;
 }# end escape()
 
 
 #==============================================================================
 sub unescape
 {
-  my ($s, $str) = @_;
-  
-  return CGI::Util::unescape( $str );
+  my ($s, $todecode) = @_;
+  return unless defined($todecode);
+  $todecode =~ tr/+/ /;       # pluses become spaces
+  $todecode =~ s/%(?:([0-9a-fA-F]{2})|u([0-9a-fA-F]{4}))/
+  defined($1)? chr hex($1) : utf8_chr(hex($2))/ge;
+  return $todecode;
 }# end unescape()
 
 1;# return true:
