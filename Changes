@@ -1,5 +1,14 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.46 2008-05-21
+  - Apache2::ASP::MediaManager::before_download() must return true
+    before the filehandle is opened (for the file about to be downloaded).
+  - Apache2::ASP::MediaManager's before_delete() and after_delete() methods
+    are now also passed the full path to the file that is to be deleted.
+
+1.45 2008-05-15
+  - Minor adjustments.
+
 1.44 2008-05-14
   - Minor speed improvements (20% faster).
   - Miscellaneous fixes here and there.

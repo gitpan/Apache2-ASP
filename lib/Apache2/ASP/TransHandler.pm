@@ -17,18 +17,7 @@ sub handler : method
 {
   my ($class, $r) = @_;
   
-	my $domain = $r->hostname || $r->server->server_hostname;
-	if( $configs{$domain} )
-	{
-		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain};
-	}
-	else
-	{
-		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain} = Apache2::ASP::GlobalConfig->new();
-	  warn "Apache2::ASP::GlobalConfig($domain) has been loaded into \$ENV{APACHE2_ASP_GLOBALCONFIG}\n";
-	}# end if()
-	
-	$ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBAL_CONFIG}->find_current_config( $r );
+  $class->init_config( $r );
   
   # Fixup the request URI:
   my $filename = $r->filename;
@@ -51,6 +40,25 @@ sub handler : method
   
   return -1;
 }# end handler()
+
+
+sub init_config
+{
+  my ($s, $r) = @_;
+  
+	my $domain = $r->hostname || $r->server->server_hostname;
+	if( $configs{$domain} )
+	{
+		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain};
+	}
+	else
+	{
+		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain} = Apache2::ASP::GlobalConfig->new();
+	  warn "Apache2::ASP::GlobalConfig($domain) has been loaded into \$ENV{APACHE2_ASP_GLOBALCONFIG}\n";
+	}# end if()
+	
+	$ENV{APACHE2_ASP_CONFIG} = $ENV{APACHE2_ASP_GLOBAL_CONFIG}->find_current_config( $r );
+}# end init_config()
 
 1;# return true:
 

@@ -35,10 +35,10 @@ sub run
     if( $mode eq 'delete' )
     {
       -f $filename or return 404;
-      $s->before_delete( $asp )
+      $s->before_delete( $asp, $filename )
         or return;
       $s->delete_file( $asp, $filename );
-      $s->after_delete( $asp );
+      $s->after_delete( $asp, $filename );
       return;
     }
     elsif( defined($modes{ $mode }) )
@@ -53,11 +53,13 @@ sub run
     $asp->response->{Status} = 404;
     return;
   }# end unless()
-  my $ifh = $s->open_file_for_reading( $asp, $filename );
   
   # Call our before- hook:
   $s->before_download( $asp )
     or return;
+  
+  # Wait until "before_download" has cleared before we open a filehandle:
+  my $ifh = $s->open_file_for_reading( $asp, $filename );
   
   # Send any HTTP headers:
   $s->send_http_headers($asp, $filename, $file, $ext);
@@ -87,6 +89,7 @@ sub send_http_headers
   
   # PDF files should force the "Save file as..." dialog:
   my $disposition = (lc($ext) eq 'pdf') ? 'attachment' : 'inline';
+  $file =~ s/\s/_/g;
   $asp->response->AddHeader( 'content-disposition' => "$disposition;filename=" . $file );
 }# end send_http_headers()
 
@@ -336,7 +339,7 @@ sub after_update
 #==============================================================================
 sub before_delete
 {
-  my ($s, $asp) = @_;
+  my ($s, $asp, $filename) = @_;
   
 }# end before_delete()
 
@@ -344,7 +347,7 @@ sub before_delete
 #==============================================================================
 sub after_delete
 {
-  my ($s, $asp) = @_;
+  my ($s, $asp, $filename) = @_;
   
 }# end after_delete()
 
@@ -498,12 +501,12 @@ Called just after we have finished writing data to the existing file.  This woul
 time to do any post-processing on the file (i.e. store metadata about the upload in a 
 database, delete any cached thumbnails, etc.).
 
-=head2 before_delete($s, $asp)
+=head2 before_delete($s, $asp, $filename)
 
 Called just before we delete the file from disk.  This would be a good time to verify
 that the user is allowed to delete this file.
 
-=head2 after_delete($s, $asp)
+=head2 after_delete($s, $asp, $filename)
 
 Called just after we delete the file from disk.  This would be a good time to do any
 post-processing (i.e. delete any metadata about the file in a database, delete any cached 

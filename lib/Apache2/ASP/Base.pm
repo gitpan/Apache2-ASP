@@ -19,7 +19,7 @@ sub new
   
   my $s = bless {
     config  => $config,
-  }, $class;
+  }, ( ref($class) || $class );
   
   return $s;
 }# end new()
