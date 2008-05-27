@@ -105,6 +105,7 @@ sub execute
       {
         $s->response->{ApacheStatus} = 500;
         $s->response->Flush;
+        $s->session->{__lastArgs} = $s->request->Form;
       }# end unless()
       return 500;
     }# end if()

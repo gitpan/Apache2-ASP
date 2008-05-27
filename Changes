@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.47 2008-05-26
+  - $Request->QueryString('field') returns the querystring value for 'field'.
+  - $Request->QueryString returns $ENV{HTTP_QUERYSTRING}.
+
 1.46 2008-05-21
   - Apache2::ASP::MediaManager::before_download() must return true
     before the filehandle is opened (for the file about to be downloaded).

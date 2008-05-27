@@ -16,7 +16,7 @@ sub new
   }, $class;
   
   # Taken from CGI::Util by Lincoln Stein:
-  my $unescape = sub {
+  $s->{_unescaper} = sub {
     my $todecode = shift;
     return undef unless defined($todecode);
     $todecode =~ tr/+/ /;       # pluses become spaces
@@ -41,7 +41,7 @@ sub new
   {
     if( $data =~ m/\%3D/i )
     {
-      $data = $unescape->( $data );
+      $data = $s->{_unescaper}->( $data );
       my %info = map {
         my ($k,$v) = split /\=/, $_;
         chomp($k);
@@ -52,7 +52,7 @@ sub new
     }
     else
     {
-      $data = $unescape->( $data );
+      $data = $s->{_unescaper}->( $data );
       $s->{cookies}->{$key} = $data;
     }# end if()
   }# end while()
@@ -199,7 +199,20 @@ sub FileUpload
 #==============================================================================
 sub QueryString
 {
-  $ENV{HTTP_QUERYSTRING};
+  my ($s) = shift;
+  if( my $field = shift(@_) )
+  {
+    my @parts = split /\&/, $ENV{HTTP_QUERYSTRING};
+    my %info = map {
+      my ($k,$v) = split /\=/, $_;
+      $s->{_unescaper}->($k) => $s->{_unescaper}->($v)
+    } @parts;
+    return $info{$field};
+  }
+  else
+  {
+    return $ENV{HTTP_QUERYSTRING};
+  }# end if()
 }# end Form()
 
 
