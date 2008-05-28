@@ -111,6 +111,7 @@ sub Form
   }
   else
   {
+    return $s->{_form} if $s->{_form};
     no warnings 'uninitialized';
     my $page_args = { };
     if( my $last = $s->{asp}->session->{__lastArgs} )
@@ -132,7 +133,7 @@ sub Form
       }# end if()
     }# end foreach()
     
-    return \%info;
+    return $s->{_form} = \%info;
   }# end if()
 }# end Form()
 

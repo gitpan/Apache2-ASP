@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.48 2008-05-27
+  - $Request->Form returns a singleton hash for the duration of
+    a request.  This means that modifications to the global $Form
+    object are available to other "areas" of your web application
+    for the rest of the same request.
+
 1.47 2008-05-26
   - $Request->QueryString('field') returns the querystring value for 'field'.
   - $Request->QueryString returns $ENV{HTTP_QUERYSTRING}.

@@ -117,7 +117,7 @@ sub execute
     
     # Using __lastPage instead of HTTP_REFERER prevents us from losing that data
     # after a JavaScript-initialized request:
-    $s->session->{__lastPage} = $s->r->uri;
+    $s->session->{__lastPage} = $ENV{REQUEST_URI};
     $s->session->save();
     $s->application->save();
   }# end if()
