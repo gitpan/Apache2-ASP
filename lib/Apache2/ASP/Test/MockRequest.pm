@@ -213,6 +213,10 @@ sub AUTOLOAD
   
 }# end AUTOLOAD()
 
-sub DESTROY { }
+sub DESTROY
+{
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
+}# end DESTROY()
 
 1;# return true:

@@ -12,10 +12,10 @@ sub new
 {
   my ($class, $asp) = @_;
   my $s = bless {
-    asp => $asp
+#    asp => $asp
   }, $class;
   
-  $s->_init_globals();
+  $s->_init_globals( $asp );
   return $s;
 }# end new()
 
@@ -23,17 +23,17 @@ sub new
 #==============================================================================
 sub _init_globals
 {
-  my ($s) = @_;
+  my ($s, $asp) = @_;
   
   no strict 'refs';
   my $class = ref($s);
-  $Request      = ${"$class\::Request"}     = $s->{asp}->request;
-  $Response     = ${"$class\::Response"}    = $s->{asp}->response;
-  $Session      = ${"$class\::Session"}     = $s->{asp}->session;
-  $Form         = ${"$class\::Form"}        = $s->{asp}->request->Form;
-  $Application  = ${"$class\::Application"} = $s->{asp}->application;
-  $Server       = ${"$class\::Server"}      = $s->{asp}->server;
-  $Config       = ${"$class\::Config"}      = $s->{asp}->config;
+  $Request      = ${"$class\::Request"}     = $asp->request;
+  $Response     = ${"$class\::Response"}    = $asp->response;
+  $Session      = ${"$class\::Session"}     = $asp->session;
+  $Form         = ${"$class\::Form"}        = $asp->request->Form;
+  $Application  = ${"$class\::Application"} = $asp->application;
+  $Server       = ${"$class\::Server"}      = $asp->server;
+  $Config       = ${"$class\::Config"}      = $asp->config;
   
   return 1;
 }# end _init_globals()
@@ -98,7 +98,11 @@ sub Session_OnStart
 
 
 #==============================================================================
-sub DESTROY { }
+sub DESTROY
+{
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
+}# end DESTROY()
 
 1;# return true:
 

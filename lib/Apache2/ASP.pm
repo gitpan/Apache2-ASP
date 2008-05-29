@@ -18,7 +18,7 @@ use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
 use vars '$VERSION';
-$VERSION = 1.48;
+$VERSION = 1.49;
 
 #==============================================================================
 sub handler : method
@@ -27,6 +27,7 @@ sub handler : method
   
   # We function best as an object:
   my $s = $class->SUPER::new( $ENV{APACHE2_ASP_CONFIG} );
+  $main::_ASP::ASP = $s;
   $s->{r} = $r;
   
   # What Apache2::ASP::Handler is going to handle this request?

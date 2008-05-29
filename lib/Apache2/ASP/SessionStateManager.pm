@@ -17,17 +17,17 @@ sub new
   my ($class, $asp) = @_;
   
   my $s = bless {asp => $asp}, $class;
-  $_asp = $asp;
-  __PACKAGE__->set_db('Sessions', $_asp->config->session_state->dsn,
-    $_asp->config->session_state->username,
-    $_asp->config->session_state->password, {
+#  $_asp = $asp;
+  __PACKAGE__->set_db('Sessions', $s->{asp}->config->session_state->dsn,
+    $s->{asp}->config->session_state->username,
+    $s->{asp}->config->session_state->password, {
       RaiseError  => 1,
       AutoCommit  => 1,
     }
   ) unless __PACKAGE__->can('db_Sessions');
   
   # Setup our maximum session timeout:
-  my $dt = DateTime::Duration->new( minutes => $_asp->config->session_state->session_timeout );
+  my $dt = DateTime::Duration->new( minutes => $s->{asp}->config->session_state->session_timeout );
   $s->{interactive_timeout} = join( ':', map { $_ < 10 ? "0$_" : $_ } $dt->in_units("hours", "minutes", "seconds") );
   
   # Prepare our Session:
@@ -59,7 +59,7 @@ sub parse_session_id
 {
   my ($s) = @_;
   
-  my $cookiename = $_asp->config->session_state->cookie_name;
+  my $cookiename = $s->{asp}->config->session_state->cookie_name;
   no warnings 'uninitialized';
   if( my ($id) = $ENV{HTTP_COOKIE} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
   {
@@ -186,9 +186,9 @@ sub write_session_cookie
 {
   my $s = shift;
   
-  my $state = $_asp->config->session_state;
+  my $state = $s->{asp}->config->session_state;
   my $cookiename = $state->cookie_name;
-  $_asp->response->AddHeader(
+  $s->{asp}->response->AddHeader(
     'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/; domain=" . $state->cookie_domain
   );
   
@@ -218,7 +218,8 @@ sub dbh
 #==============================================================================
 sub DESTROY
 {
-  
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
 1;# return true:

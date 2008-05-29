@@ -10,14 +10,19 @@ use HTTP::Body;
 use Apache2::ASP::Test::MockRequest;
 #use CGI::Simple ();
 use Apache2::ASP::SimpleCGI;
+use Apache2::ASP::Base;
+use Apache2::ASP::Config;
+our $ASP_CLASS = 'Apache2::ASP::Base';
 
 #==============================================================================
 sub new
 {
   my ($class, $asp) = @_;
   $ENV{HTTP_COOKIE} ||= '';
+  my $config = Apache2::ASP::Config->new();
   return bless {
-    asp         => $asp,
+#    asp         => Apache2::ASP::Base->new( $config ),
+    config      => $config,
     session_id  => 0,
     cookies     =>  { },
     referer     => '',
@@ -32,6 +37,7 @@ sub submit_form
   
   my $req = $form->click;
   
+  $s->{asp} = $main::_ASP::ASP = $ASP_CLASS->new( $s->config );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
 
@@ -47,10 +53,8 @@ sub submit_form
 
 
 #==============================================================================
-sub asp
-{
-  $_[0]->{asp};
-}# end asp()
+sub asp { $_[0]->{asp} }
+sub config { $_[0]->{config} }
 
 
 #==============================================================================
@@ -69,6 +73,7 @@ sub get
   
   my $req = GET $uri;
   $ENV{REQUEST_METHOD} = 'GET';
+  $s->{asp} = $main::_ASP::ASP = $ASP_CLASS->new( $s->config );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} ||= 'application/x-www-form-urlencoded';
   
@@ -90,6 +95,7 @@ sub post
   my $req = POST $uri, $argref;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
+  $s->{asp} = $main::_ASP::ASP = $ASP_CLASS->new( $s->config );
   my $cgi = $s->_setup_cgi( $req );
 
   my $r = Apache2::ASP::Test::MockRequest->new(
@@ -112,6 +118,7 @@ sub upload
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
   
+  $s->{asp} = $main::_ASP::ASP = $ASP_CLASS->new( $s->config );
   my $cgi = $s->_setup_cgi( $req );
   
   $ENV{CONTENT_TYPE} = 'multipart/form-data';
@@ -171,6 +178,11 @@ sub _setup_response
     $response->header( %$header );
   }# end foreach()
   
+  if( $s->{asp}->session && $s->{asp}->session->{SessionID} )
+  {
+    $s->add_cookie( $s->{asp}->config->session_state->cookie_name => $s->{session_id} );
+  }# end if()
+  
   return $response;
 }# end _setup_response()
 
@@ -181,13 +193,8 @@ sub _setup_cgi
   my ($s, $req) = @_;
   
   # Preserve our session cookie:
-  if( $s->{asp}->session && $s->{asp}->session->{SessionID} )
-  {
-    $s->add_cookie( $s->{asp}->config->session_state->cookie_name => $s->{session_id} );
-  }# end if()
   $s->{c}->DESTROY
     if $s->{c};
-  $s->{asp} = ref($s->{asp})->new( $s->{asp}->config );
   $req->referer( $s->{referer} );
   ($s->{referer}) = $req->uri =~ m/.*?(\/[^\?]+)/;
 

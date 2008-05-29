@@ -11,7 +11,8 @@ sub new
 {
   my ($s, $asp) = @_;
   return bless {
-    asp       => $asp,
+    www_root  => $asp->config->www_root,
+#    asp       => $asp,
     r         => $asp->{r},
     q         => $asp->{q},
     
@@ -89,7 +90,7 @@ sub MapPath
   }
   else
   {
-    my $file = $s->{asp}->config->www_root . $path;
+    my $file = $s->{www_root} . $path;
     return -f $file ? $file : undef;
   }# end if()
 }# end MapPath()
@@ -116,7 +117,8 @@ sub RegisterCleanup
 #==============================================================================
 sub DESTROY
 {
-  
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
 1;# return true:

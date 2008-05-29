@@ -7,8 +7,8 @@ use lib qw(
   lib
   t/lib
 );
-use Apache2::ASP::Config;
-use Apache2::ASP::Base;
+#use Apache2::ASP::Config;
+#use Apache2::ASP::Base;
 use Apache2::ASP::Test::UserAgent;
 use Apache2::ASP::Test::Fixtures;
 use Data::Properties::YAML;
@@ -21,8 +21,7 @@ sub new
   my ($class, %args) = @_;
   
   my $config = Apache2::ASP::Config->new;
-  my $asp = Apache2::ASP::Base->new( $config );
-  my $ua = Apache2::ASP::Test::UserAgent->new( $asp );
+  my $ua = Apache2::ASP::Test::UserAgent->new( );
 
   # Our test fixtures:
   my $data = Apache2::ASP::Test::Fixtures->new(
@@ -35,8 +34,6 @@ sub new
   ) if -f $config->application_root . '/etc/properties.yaml';
   
   return bless {
-    config => $config,
-    asp    => $asp,
     ua     => $ua,
     data   => $data,
     diags  => $diag,
@@ -46,7 +43,7 @@ sub new
 
 #==============================================================================
 # Public properties:
-sub config  { $_[0]->{config}           }
+sub config  { $_[0]->{ua}->{config}     }
 sub asp     { $_[0]->{ua}->asp          }
 sub ua      { $_[0]->{ua}               }
 sub session { $_[0]->{ua}->asp->session }

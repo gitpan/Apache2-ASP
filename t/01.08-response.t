@@ -68,7 +68,7 @@ dies_ok
   qr/Response\.Redirect: Cannot redirect after headers have been sent\./;
 
 # Is the client connected?
-$Response->{r}->connection->aborted( 0 );
+$Response->asp->r->connection->aborted( 0 );
 ok( $Response->IsClientConnected );
 #
 #

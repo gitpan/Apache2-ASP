@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.49 2008-05-29
+  - Memory leaks are now completely gone.
+  - Speed improvements (20% faster than v1.47).
+
 1.48 2008-05-27
   - $Request->Form returns a singleton hash for the duration of
     a request.  This means that modifications to the global $Form

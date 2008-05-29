@@ -1,4 +1,3 @@
-
 package Apache2::ASP::Response;
 
 use strict;
@@ -18,7 +17,7 @@ sub new
   my ($s, $asp) = @_;
   
   return bless {
-    asp            => $asp,
+#    asp            => $asp,
     _buffer         => [ ],
     _buffer_length => 0,
     r               => $asp->r,
@@ -33,6 +32,8 @@ sub new
     ExpiresAbsolute => time2str(time),
   }, $s;
 }# end new()
+
+sub asp { $_[0]->{asp} || $main::_ASP::ASP }
 
 
 #==============================================================================
@@ -161,9 +162,9 @@ sub Flush
   $s->{_buffer} = [ ];
   $s->{_buffer_length} = 0;
 
-  if( $s->{asp}->{handler} && $s->{asp}->{handler}->isa('Apache2::ASP::PageHandler') && $s->{asp}->global_asa )
+  if( $s->asp->{handler} && $s->asp->{handler}->isa('Apache2::ASP::PageHandler') && $s->asp->global_asa )
   {
-    $s->{asp}->global_asa->can('Script_OnFlush')->( \$buffer )
+    $s->asp->global_asa->can('Script_OnFlush')->( \$buffer )
       unless $s->{is_subrequest};
   }# end if()
   
@@ -183,7 +184,7 @@ sub End
   # Cancel execution and force the server to stop processing this request.
   my $sock = $s->{r}->connection->client_socket;
   eval { $sock->close() };
-  $s->{asp}->{did_end} = 1;
+  $s->asp->{did_end} = 1;
 }# end End()
 
 
@@ -229,17 +230,17 @@ sub Include
   }# end unless()
   
   my $uri = $script;
-  my $root = $s->{asp}->config->www_root;
+  my $root = $s->asp->config->www_root;
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
-    r        => $s->{asp}->r,
+    r        => $s->asp->r,
     status   => 200,
     filename => $script,
     uri      => $uri
   );
-  my $asp = ref($s->{asp})->new( $s->{asp}->config );
-  $asp->{ $_ } = $s->{asp}->{ $_ }
-    foreach grep { exists($s->{asp}->{$_}) }
+  my $asp = ref($s->asp)->new( $s->asp->config );
+  $asp->{ $_ } = $s->asp->{ $_ }
+    foreach grep { exists($s->asp->{$_}) }
       qw/
         session
         application
@@ -247,7 +248,7 @@ sub Include
         subservice
         registry_member
       /;
-  $asp->setup_request( $r, $s->{asp}->q() );
+  $asp->setup_request( $r, $s->asp->q() );
   eval {
     $asp->execute( 1, @args );
     $s->Write( $r->buffer );
@@ -272,17 +273,17 @@ sub TrapInclude
   }# end unless()
   
   my $uri = $script;
-  my $root = $s->{asp}->config->www_root;
+  my $root = $s->asp->config->www_root;
   $uri =~ s/^$root//;
   my $r = Apache2::ASP::ApacheRequest->new(
-    r        => $s->{asp}->r,
+    r        => $s->asp->r,
     status   => 200,# '200 OK',
     filename => $script,
     uri      => $uri
   );
-  my $asp = ref($s->{asp})->new( $s->{asp}->config );
-  $asp->{ $_ } = $s->{asp}->{ $_ }
-    foreach grep { exists($s->{asp}->{$_}) }
+  my $asp = ref($s->asp)->new( $s->asp->config );
+  $asp->{ $_ } = $s->asp->{ $_ }
+    foreach grep { exists($s->asp->{$_}) }
       qw/
         session
         application
@@ -290,7 +291,7 @@ sub TrapInclude
         subservice
         registry_member
       /;
-  $asp->setup_request( $r, $s->{asp}->q() );
+  $asp->setup_request( $r, $s->asp->q() );
   
   my $include = eval {
     $asp->execute( 1, @args );
@@ -530,10 +531,12 @@ John Drago L<mailto:jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 
+
 Copyright 2007 John Drago, All rights reserved.
 
 This software is free software.  It may be used and distributed under the
 same terms as Perl itself.
 
 =cut
+
 

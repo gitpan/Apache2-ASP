@@ -13,13 +13,13 @@ sub new
   my ($class, $asp) = @_;
   
   my $s = bless {
-    asp => $asp,
+    application_name => $asp->config->application_name,
   }, $class;
   
   __PACKAGE__->set_db('Apps', 
-    $s->{asp}->config->application_state->dsn,
-    $s->{asp}->config->application_state->username,
-    $s->{asp}->config->application_state->password, {
+    $asp->config->application_state->dsn,
+    $asp->config->application_state->username,
+    $asp->config->application_state->password, {
       RaiseError  => 1,
       AutoCommit  => 1,
     }
@@ -51,7 +51,7 @@ sub create
     )
 
   $sth->execute(
-    $s->{asp}->config->application_name,
+    $s->{application_name},
     freeze( {} )
   );
   $sth->finish();
@@ -70,14 +70,14 @@ sub retrieve
     FROM asp_applications
     WHERE application_id = ?
 
-  $sth->execute( $s->{asp}->config->application_name );
+  $sth->execute( $s->{application_name} );
   my ($data) = $sth->fetchrow;
   $sth->finish();
   
   return unless $data;
   
   $data = thaw($data);
-  $data->{asp} = $s->{asp};
+  $data->{application_name} = $s->{application_name};
   return bless $data, ref($s);
 }# end retrieve()
 
@@ -93,11 +93,11 @@ sub save
     WHERE application_id = ?
 
   my $data = { %$s };
-  delete($data->{asp});
   delete($data->{dbh});
+  delete($data->{application_name});
   $sth->execute(
     freeze( $data ),
-    $s->{asp}->config->application_name
+    $s->{application_name}
   );
   $sth->finish();
   
@@ -117,7 +117,8 @@ sub dbh
 #==============================================================================
 sub DESTROY
 {
-  
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
 

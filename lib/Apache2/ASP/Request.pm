@@ -10,9 +10,9 @@ sub new
   my ($class, $asp) = @_;
   
   my $s = bless {
-    asp => $asp,
-    'q' => $asp->{'q'},
-    r => $asp->{r},
+#    asp => $asp,
+#    'q' => $asp->{'q'},
+#    r => $asp->{r},
   }, $class;
   
   # Taken from CGI::Util by Lincoln Stein:
@@ -96,14 +96,14 @@ sub Form
   if( @_ )
   {
     my $arg = shift;
-    my $val = $s->{'q'}->param( $arg );
+    my $val = $s->_q->param( $arg );
     if( defined($val) )
     {
       return $val;
     }
     else
     {
-      if( my $page_args = $s->{asp}->session->{__lastArgs} )
+      if( my $page_args = $s->asp->session->{__lastArgs} )
       {
         return $page_args->{ $arg };
       }# end if()
@@ -114,15 +114,15 @@ sub Form
     return $s->{_form} if $s->{_form};
     no warnings 'uninitialized';
     my $page_args = { };
-    if( my $last = $s->{asp}->session->{__lastArgs} )
+    if( my $last = $s->asp->session->{__lastArgs} )
     {
       $page_args = ref($last) ? $last : { };
     }# end if()
     
     my %info = %$page_args;
-    foreach my $field ( $s->{'q'}->param )
+    foreach my $field ( $s->_q->param )
     {
-      my @data = $s->{'q'}->param( $field );
+      my @data = $s->_q->param( $field );
       if( scalar(@data) > 1 )
       {
         $info{$field} = [ @data ];
@@ -143,24 +143,24 @@ sub FileUpload
 {
   my ($s, $field, $arg) = @_;
   
-  my $ifh = $s->{'q'}->upload($field);
+  my $ifh = $s->_q->upload($field);
   my %info = ();
   my $upInfo = { };
   
-  if( $s->{'q'}->isa('CGI::Simple') || $s->{'q'}->isa('Apache2::ASP::SimpleCGI') )
+  if( $s->_q->isa('CGI::Simple') || $s->_q->isa('Apache2::ASP::SimpleCGI') )
   {
     no warnings 'uninitialized';
     %info = (
-      ContentType           => $s->{'q'}->upload_info( $field, 'mime' ),
+      ContentType           => $s->_q->upload_info( $field, 'mime' ),
       FileHandle            => $ifh,
       BrowserFile           => $s->Form->{ $field } . "",
       'Content-Disposition' => 'attachment',
-      'Mime-Header'         => $s->{'q'}->upload_info( $field, 'mime' ),
+      'Mime-Header'         => $s->_q->upload_info( $field, 'mime' ),
     );
   }
   else
   {
-    $upInfo = $s->{'q'}->uploadInfo( $ifh );
+    $upInfo = $s->_q->uploadInfo( $ifh );
     no warnings 'uninitialized';
     %info = (
       ContentType           => $upInfo->{'Content-Type'},
@@ -234,12 +234,16 @@ sub ServerVariables
 
 
 #==============================================================================
-sub asp { $_[0]->{asp} }
+sub asp { $main::_ASP::ASP }
+sub _q { $main::_ASP::ASP->{'q'} }
+sub _r { $main::_ASP::ASP->{'r'} }
 
 
 #==============================================================================
 sub DESTROY
 {
+  my $s = shift;
+  delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
 1;# return true:

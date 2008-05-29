@@ -3,7 +3,6 @@ package Apache2::ASP::Base;
 
 use strict;
 use warnings 'all';
-#use CGI::Simple ();
 
 use Apache2::ASP::PageHandler;
 use Apache2::ASP::Request;
@@ -31,7 +30,7 @@ sub setup_request
   my ($s, $r, $q) = @_;
   # Init self:
   $s->{r}           = $r;
-  $s->{'q'}         = $q;# ? $q : CGI::Simple->new();
+  $s->{'q'}         = $q;
   $s->{request}     = Apache2::ASP::Request->new( $s );
   $s->{response}    = Apache2::ASP::Response->new( $s );
   $s->{server}      = Apache2::ASP::Server->new( $s );
@@ -278,12 +277,7 @@ sub _global_asa_class
 sub DESTROY
 {
   my $s = shift;
-  foreach(qw/ r q session application request response server global_asa /)
-  {
-    next unless $s->{ $_ };
-    undef( $s->{ $_ } );
-    delete( $s->{ $_ } );
-  }# end foreach()
+  delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
 1;# return true:
