@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use base 'CGI::Apache2::Wrapper';
 use Apache2::ASP::SimpleCGI;
-#use CGI::Util ();
 
 #==============================================================================
 sub new

@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.51 2008-06-12
+  - Speed improvements, up to 100% faster now due to the following:
+  - Added XML::Parser as a requirement.
+  - Caching (in memory) Configuration data on a per-domain basis.
+
 1.49 2008-05-29
   - Memory leaks are now completely gone.
   - Speed improvements (20% faster than v1.47).

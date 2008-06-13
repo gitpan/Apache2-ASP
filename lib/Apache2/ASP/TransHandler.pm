@@ -46,7 +46,7 @@ sub init_config
 {
   my ($s, $r) = @_;
   
-	my $domain = $r->hostname || $r->server->server_hostname;
+	my $domain = $ENV{HTTP_HOST} = $r->hostname || $r->server->server_hostname;
 	if( $configs{$domain} )
 	{
 		$ENV{APACHE2_ASP_GLOBAL_CONFIG} = $configs{$domain};

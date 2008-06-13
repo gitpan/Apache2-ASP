@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Apache2-ASP
-version:             1.49
+version:             1.51
 abstract:            ~
 license:             ~
 author:              
@@ -28,6 +28,7 @@ requires:
     Storable:                      0
     Sys::Hostname:                 0
     Test::Exception:               0
+    XML::Parser:                   0
     XML::Simple:                   0
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html

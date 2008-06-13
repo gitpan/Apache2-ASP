@@ -28,6 +28,7 @@ my %require = (
   'HTML::Form'              => 0,     # For Apache2::ASP::Test::*
   'Ima::DBI'                => 0.35,  # For sessions & applications.
   'Test::Exception'         => 0,
+  'XML::Parser'             => 0,     # For XML::Simple:
 );
 
 WriteMakefile(

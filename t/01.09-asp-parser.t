@@ -1,5 +1,21 @@
 #!/usr/bin/perl -w
 
+package MyTags;
+
+sub bold
+{
+  my ($args, $html) = @_;
+  qq{<b id="$args->{name}">$html</b>};
+}# end bold()
+
+sub italic
+{
+  my ($args, $html) = @_;
+  qq{<i id="$args->{name}">$html</i>};
+}# end italic()
+
+package main;
+
 use strict;
 use Test::More 'no_plan';
 use Test::Exception;
