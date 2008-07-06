@@ -99,6 +99,7 @@ sub delete_file
 {
   my ($s, $asp, $filename) = @_;
   
+  die "'$filename' is a directory, not a file" if -d $filename;
   unlink( $filename )
     or die "Cannot delete file '$filename' from disk: $!";
 }# end delete_file()
@@ -190,6 +191,11 @@ sub compose_upload_file_name
 sub compose_upload_file_path
 {
   my ($s, $asp, $Upload, $filename) = @_;
+  
+  unless( defined($filename) && length($filename) )
+  {
+    die "\$filename not provided";
+  }# end unless()
   
   return $asp->config->media_manager_upload_root . "/$filename";
 }# end compose_upload_file_path()
