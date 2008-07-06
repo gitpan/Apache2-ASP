@@ -23,6 +23,7 @@ sub new
   return bless {
 #    asp         => Apache2::ASP::Base->new( $config ),
     config      => $config,
+    root_dir    => $config->application_root,
     session_id  => 0,
     cookies     =>  { },
     referer     => '',
@@ -202,6 +203,7 @@ sub _setup_cgi
   *HTTP::Request::AsCGI::stdout = sub { 0 };
   $s->{c} = HTTP::Request::AsCGI->new($req)->setup;
   $ENV{SERVER_NAME} = $ENV{HTTP_HOST} = 'localhost';
+  $ENV{APACHE2_ASP_APPLICATION_ROOT} = $s->{root_dir};
   
   unless( $req->uri =~ m@^/handlers@ )
   {

@@ -3,7 +3,7 @@ package Apache2::ASP::Test::MockRequest;
 
 use strict;
 use warnings 'all';
-use Cwd 'cwd';
+#use Cwd 'cwd';
 
 
 #==============================================================================
@@ -83,8 +83,9 @@ sub filename
   my ($s) = @_;
   
   return if $s->{disable_lookup_uri};
-  my $here = cwd();
-  return $here . $s->uri;
+  my $path = $main::_ASP::ASP->config->www_root . $s->uri;
+
+  return $path;
 }# end filename()
 
 
@@ -102,7 +103,7 @@ sub lookup_uri
   
   return if $s->{disable_lookup_uri};
   
-  my $here = cwd();
+  my $here = $main::_ASP::ASP->config->www_root;
   no warnings 'uninitialized';
   return ref($s)->new(
     cgi         => $s->{cgi},

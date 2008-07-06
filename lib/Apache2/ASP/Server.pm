@@ -81,18 +81,24 @@ sub MapPath
   
   return unless defined($path);
   
-  my $subr = $s->{r}->lookup_uri( $path );
-  my $file = $subr ? $subr->filename : undef;
+  my $subrequest = $s->{r}->lookup_uri( $path );
+  my $file = $subrequest ? $subrequest->filename : undef;
   return unless defined($file);
-  if( -f $file )
-  {
-    return $file;
-  }
-  else
-  {
-    my $file = $s->{www_root} . $path;
-    return -f $file ? $file : undef;
-  }# end if()
+  
+  # New, simplified path finding:
+  my $file2 = $s->{www_root} . $path;
+  return -f $file2 ? $file2 : undef;
+
+#  if( -f $file )
+#  {
+#    return $file;
+#  }
+#  else
+#  {
+#    my $file = $s->{www_root} . $path;
+#    return -f $file ? $file : undef;
+#  }# end if()
+#  return;
 }# end MapPath()
 
 

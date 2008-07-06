@@ -108,7 +108,7 @@ sub domain_config
 sub find_config_path
 {
 	my ($s, $r) = @_;
-	
+		
 	if( $r && $s->test_config_path( $r->dir_config("APACHE2_ASP_CONFIG_PATH") ) )
 	{
 		return $r->dir_config("APACHE2_ASP_CONFIG_PATH");

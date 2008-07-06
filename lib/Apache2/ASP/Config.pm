@@ -24,6 +24,7 @@ sub new
 	
 	$s->{session_state} ||= { };
 	$s->{application_state} ||= { };
+	$s->{request_filters} ||= { };
 	$s->{request_filters}->{filter} ||= [ ];
 	$s->{__path} = 'web_application';
 	$s->init_keys();
@@ -206,7 +207,7 @@ sub _fixup_path
   $fixed =~ s/\@ServerRoot\@/$root/g;
   $s->{"$field\_original"} = $original;
   $s->{"$field\_expanded"} = $fixed;
-  
+
   $s->{$field} = $fixed;
 }# end _fixup_path()
 

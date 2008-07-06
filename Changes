@@ -1,5 +1,15 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.53 2008-07-05
+  - Fixed a bug that caused Apache2::ASP::Config to die if no request filters
+    were specified within the <request_filters> element in the config file.
+
+1.52 2008-06-18
+  - While using Apache2::ASP::Test::Base, $ENV{APACHE2_ASP_APPLICATION_ROOT} 
+    is now persisted between requests.  This means that if (somewhere else)
+    you set $ENV{APACHE2_ASP_APPLICATION_ROOT} in your code, it will persist
+    between requests.
+
 1.51 2008-06-12
   - Speed improvements, up to 100% faster now due to the following:
   - Added XML::Parser as a requirement.
