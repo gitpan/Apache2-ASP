@@ -63,7 +63,8 @@ sub hook
   if( ! $did_init )
   {
     $s->{asp}->r->pnotes( did_init => 1 );
-    $s->{handler_class}->upload_start( $s->{asp}, $Upload );
+    $s->{handler_class}->upload_start( $s->{asp}, $Upload )
+      or return;
     
     # End the upload if we are done:
     $s->{asp}->r->push_handlers(PerlCleanupHandler => sub {

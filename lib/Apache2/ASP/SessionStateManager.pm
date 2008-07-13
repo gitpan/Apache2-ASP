@@ -18,13 +18,14 @@ sub new
   
   my $s = bless {asp => $asp}, $class;
 #  $_asp = $asp;
+  local $^W = 0;
   __PACKAGE__->set_db('Sessions', $s->{asp}->config->session_state->dsn,
     $s->{asp}->config->session_state->username,
     $s->{asp}->config->session_state->password, {
       RaiseError  => 1,
       AutoCommit  => 1,
     }
-  ) unless __PACKAGE__->can('db_Sessions');
+  );# unless __PACKAGE__->can('db_Sessions');
   
   # Setup our maximum session timeout:
   my $dt = DateTime::Duration->new( minutes => $s->{asp}->config->session_state->session_timeout );

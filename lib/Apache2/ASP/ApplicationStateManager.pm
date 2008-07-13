@@ -16,6 +16,7 @@ sub new
     application_name => $asp->config->application_name,
   }, $class;
   
+  local $^W = 0;
   __PACKAGE__->set_db('Apps', 
     $asp->config->application_state->dsn,
     $asp->config->application_state->username,
@@ -23,7 +24,7 @@ sub new
       RaiseError  => 1,
       AutoCommit  => 1,
     }
-  ) unless __PACKAGE__->can('db_Apps');
+  );# unless __PACKAGE__->can('db_Apps');
   
   if( my $res = $s->retrieve )
   {

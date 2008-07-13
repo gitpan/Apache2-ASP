@@ -1,5 +1,19 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.55 2008-07-13
+  - Apache2::ASP::SessionStateManager now uses the correct database connection.
+    This problem would only come up when multiple Apache2::ASP web applications
+    using different session data sources were running under the same Apache
+    instance.
+  - Ditto for Apache2::ASP::ApplicationStateManager.
+
+1.54 2008-07-05
+  - Adjusted Apache2::ASP::MediaManager so that it will not unlink the /MEDIA
+    directory if someone attempts to delete a file and neglects to specify
+    which file should be deleted.
+  - Also updated Apache2::ASP::MediaManager to more gracefully handle missing
+    uploaded files.
+
 1.53 2008-07-05
   - Fixed a bug that caused Apache2::ASP::Config to die if no request filters
     were specified within the <request_filters> element in the config file.

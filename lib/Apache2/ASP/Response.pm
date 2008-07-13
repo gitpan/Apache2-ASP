@@ -296,7 +296,7 @@ sub TrapInclude
   my $include = eval {
     $asp->execute( 1, @args );
     $asp->response->End;
-    return $r->buffer;
+    $r->buffer;
   };
   if( $@ )
   {
