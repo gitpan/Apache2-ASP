@@ -364,6 +364,13 @@ Called without a C<$key>, returns a sorted list of all keys in C<%ENV>.
 
 Called with a C<$key>, returns the value associated with that element in C<%ENV>.
 
+=head2 Document( )
+
+Returns the L<Apache2::ASP::DOM::Document> of the current ASP script.
+
+B<NOTE>: If called from within an Included file, the Document will only contain the
+DOM for that file, not the entire document.
+
 =head1 BUGS
 
 It's possible that some bugs have found their way into this release.

@@ -141,3 +141,92 @@ sub DESTROY
 
 1;# return true:
 
+__END__
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::DOM::Node - A DOM Node for server-side ASP DOM
+
+=head1 EXPERIMENTAL STATUS
+
+B<NOTE>: The entire DOM functionality for Apache2::ASP is still under heavy
+development and is subject to change in dramatic ways without warning.
+
+B<DO NOT> build anything that involves server-side DOM until it has matured.
+
+=head1 SYNOPSIS
+
+  foreach my $node ( $Request->Document->documentElement->childNodes )
+  {
+    print $node->tagName;
+    print $node->innerHTML;
+    $node->parentNode->childNodes;
+    $node->childNodes;
+    $node->appendChild( ... );
+    my $otherNode = $node->getElementById("some-id");
+    
+    my @divs = $node->getElementsByTagName("div");
+  }# end foreach()
+
+=head1 DESCRIPTION
+
+=head1 PUBLIC PROPERTIES
+
+=head2 tagName
+
+Returns the tagName - i.e. "b" or "div" or "hr" or "My:Tag"
+
+=head2 innerHTML
+
+Returns the contents of the tag.
+
+=head2 parentNode
+
+returns C<undef> if there is no parentNode, or the Node that the current Node
+is a child of.
+
+=head2 childNodes
+
+Returns a list of all children of the current node.
+
+=head1 PUBLIC METHODS
+
+=head2 appendChild( $node )
+
+Adds the supplied node to the childNodes array.
+
+=head2 getElementById( $id )
+
+Searches the current node (and all childNodes, recursively) for an element by that id.
+
+=head2 getElementsByTagname( $tagName )
+
+Searches the current node (and all childNodes, recursively) for all elements by that
+tagName.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

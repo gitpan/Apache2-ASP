@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.56_02 2008-08-02
+  - Added documentation for all Apache2::ASP::DOM::* classes.
+
 1.56_1  2008-08-01
   - Added preliminary support for "XMLSubs"-esque tags.
   - Added preliminary (experimental) support for (!simple!) server-side DOM.
