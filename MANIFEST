@@ -44,6 +44,10 @@ lib/Apache2/ASP/Test/Base.pm
 lib/Apache2/ASP/Test/Fixtures.pm
 lib/Apache2/ASP/Test/UploadObject.pm
 lib/Apache2/ASP/RequestFilter.pm
+lib/Apache2/ASP/DOM/Parser.pm
+lib/Apache2/ASP/DOM/Document.pm
+lib/Apache2/ASP/DOM/Node.pm
+lib/Apache2/ASP/Tag.pm
 t/00.01-setup.t
 t/01.01-config.t
 t/01.02-asp_cgi.t

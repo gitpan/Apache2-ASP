@@ -209,6 +209,19 @@ EOF
   return $package_code;
 }# # end asp_to_package()
 
+
+#==============================================================================
+# Called by ASP scripts whenever they need to load a tag's module:
+# Example: <My:Tag/> loads module My::Tag.
+sub _load_tag_class
+{
+  my ($s, $class) = @_;
+  
+  (my $file = "$class.pm") =~ s/::/\//g;
+  no strict 'refs';
+  require $file unless @{"$class\::ISA"};
+}# end _load_tag_class()
+
 1;# return true:
 
 __END__
@@ -272,7 +285,7 @@ containing code like this:
     $Config
   );
   #line 1
-  sub process_request { $Response->Write(q~~);
+  sub process_request {my $SELF = shift; $Response->Write(q~~);
     $Response->Write("Hello, World!");
     return;
   ;$Response->Write(q~

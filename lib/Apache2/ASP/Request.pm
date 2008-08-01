@@ -234,6 +234,27 @@ sub ServerVariables
 
 
 #==============================================================================
+# Be Lazy - only parse the DOM if asked:
+# Secret functionality until finalized - do not use!
+sub Document
+{
+  my $s = shift;
+  
+  return $s->{_document} if $s->{_document};
+  
+  # We haven't parsed it yet - do it now:
+  my $file = $s->ServerVariables('SCRIPT_FILENAME');
+  open my $ifh, '<', $file
+    or die "Cannot open '$file': $!";
+  local $/ = undef;
+  my $txt = <$ifh>;
+  close($ifh);
+  require Apache2::ASP::DOM::Parser;
+  $s->{_document} = Apache2::ASP::DOM::Parser->parse( $txt );
+}# end Document()
+
+
+#==============================================================================
 sub asp { $main::_ASP::ASP }
 sub _q { $main::_ASP::ASP->{'q'} }
 sub _r { $main::_ASP::ASP->{'r'} }

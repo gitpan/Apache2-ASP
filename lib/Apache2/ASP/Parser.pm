@@ -3,6 +3,7 @@ package Apache2::ASP::Parser;
 
 use strict;
 use warnings 'all';
+use Data::Dumper;
 
 
 #==============================================================================
@@ -23,7 +24,110 @@ sub parse_file
 #==============================================================================
 sub parse_string
 {
-  my ($s, $txt) = @_;
+  my ($class, $txt) = @_;
+  
+  # Look for <My:Tag>...</My:Tag> elements:
+  while(
+    $txt =~ m@
+      (<(([a-z]+?[a-z0-9_]*\:[a-z0-9_\:]+)\s*(.*?))>(.*?)</\3\s*>)
+    @xi #@ Make Gedit Happy
+  ) {
+    my $tagname = $3;
+    my $argstr = $4;
+    my $fulltag = $1;
+    my $innerHTML = $5;
+    $class->_render_tag(
+      \$txt, $tagname, $argstr, $fulltag, $innerHTML
+    );
+  }# end while()
+  
+  # Look for <My:Tag /> elements:
+  while(
+    $txt =~ m@
+      (<(([a-z]+?[a-z0-9_]*\:[a-z0-9_\:]+)\s*(.*?))/>)
+    @xi #@ Make Gedit Happy
+  )
+  {
+    my $tagname = $3;
+    my $argstr = $4;
+    my $fulltag = $1;
+    $class->_render_tag(
+      \$txt, $tagname, $argstr, $fulltag
+    );
+  }# end while()
+  
+  $txt = $class->_parse_asp_tags( $txt );
+}# end parse_string()
+
+
+#==============================================================================
+sub _render_tag
+{
+  my ($class, $aspstr, $tagname, $argstr, $fulltag, $innerHTML) = @_;
+  
+  no strict 'refs';
+  (my $pkg = $tagname) =~ s/:/::/g;
+  (my $pkgfile = "$pkg.pm") =~ s/::/\//g;
+  eval { require $pkgfile } unless @{"$pkg\::ISA"};
+  no warnings 'uninitialized';
+  $innerHTML =~ s/\~/\\~/g;
+  if( @{"$pkg\::ISA"} )
+  {
+    (my $args = Dumper($class->_parse_tag_args( $argstr ))) =~ s/^\$VAR1\s+\=\s+//;
+    $args =~ s/;$//;
+    $$aspstr =~ s@
+      \Q$fulltag\E
+    @~);__PACKAGE__->_load_tag_class('$pkg');\$Response->Write($pkg\->new->render( $args, q~$innerHTML~ ));\$Response->Write(q~@xi; #@ Make Gedit Happy
+  }
+  elsif( defined *{"$pkg"} )
+  {
+    my @parts = split /::/, $pkg;
+    pop(@parts);
+    my $pkg_class = join '::', @parts;
+    (my $args = Dumper($class->_parse_tag_args( $argstr ))) =~ s/^\$VAR1\s+\=\s+//;
+    $args =~ s/;$//;
+    $$aspstr =~ s@
+      \Q$fulltag\E
+    @~);__PACKAGE__->_load_tag_class('$pkg_class');\$Response->Write(\&$pkg( $args, q~$innerHTML~ ));\$Response->Write(q~@xi; #@ Make Gedit Happy
+  }
+  else
+  {
+    die "Cannot load tag '$tagname': $@";
+  }# end if()
+}# end _render_tag()
+
+
+#==============================================================================
+sub _parse_tag_args
+{
+  my ($s, $str) = @_;
+  
+  my $attr = { };
+  while( $str =~ m@([^\s\=\"\']+)(\s*=\s*(?:(")(.*?)"|(')(.*?)'|([^'"\s=]+)['"]*))?@sg ) #@
+  {
+    my $key = $1;
+    my $test = $2;
+    my $val  = ( $3 ? $4 : ( $5 ? $6 : $7 ));
+    my $lckey = lc($key);
+    if( $test )
+    {
+      $key =~ tr/A-Z/a-z/;
+      $attr->{$lckey} = $val;
+    }
+    else
+    {
+      $attr->{$lckey} = $key;
+    }# end if()
+  }# end while()
+  
+  return $attr;
+}# end _parse_tag_args()
+
+
+#==============================================================================
+sub _parse_asp_tags
+{
+  my ($class, $txt) = @_;
   
   $txt = '$Response->Write(q~' . $txt . '~);';
   $txt =~ s@
@@ -42,7 +146,7 @@ sub parse_string
   @sxge;
 
   return $txt;
-}# end parse_string()
+}# end _parse_asp_tags()
 
 
 #==============================================================================
