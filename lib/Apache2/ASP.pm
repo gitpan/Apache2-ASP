@@ -18,7 +18,7 @@ use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
 use vars '$VERSION';
-$VERSION = '1.57';
+$VERSION = '1.58';
 
 #==============================================================================
 sub handler : method
@@ -105,6 +105,9 @@ Apache2::ASP - Perl extension for ASP on mod_perl2.
           $Response->Write( "Hello from ASP ($_)<br>" );
         }
       %>
+      
+      Supports Apache-style includes as well:
+      <!-- #include virtual="/include-file.asp" -->
     </body>
   </html>
 

@@ -12,6 +12,9 @@ SYNOPSIS
               $Response->Write( "Hello from ASP ($_)<br>" );
             }
           %>
+      
+          Supports Apache-style includes as well:
+          <!-- #include virtual="/include-file.asp" -->
         </body>
       </html>
 

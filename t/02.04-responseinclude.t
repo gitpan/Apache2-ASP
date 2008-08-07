@@ -12,8 +12,7 @@ my $s = __PACKAGE__->SUPER::new();
 
 my $res = $s->ua->get("/responseinclude.asp");
 
-is(
-  $res->content => 'Before Include
+my $expected = 'Before Include
 Include Me 1!<br>
 Include Me 2!<br>
 Include Me 3!<br>
@@ -27,8 +26,17 @@ Include Me 10!<br>
 
 
 After Include
-',
+';
+
+is(
+  $res->content => $expected,
   "Response->Include worked correctly"
+);
+
+$res = $s->ua->get("/virtualinclude.asp");
+is(
+  $res->content => $expected,
+  "<!-- #include virtual=... --> works"
 );
 
 

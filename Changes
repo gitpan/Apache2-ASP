@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.58 2008-08-06
+  - Now <!-- #include virtual="/file.asp" --> and 
+    <!-- #include file="/abs/path/to/file.asp" --> work as you might expect.
+    This means that Apache2::ASP will work nicely with DreamWeaver and other
+    popular WYSIWYG's that can parse that sort of include directive.
+
 1.57 2008-08-06
   - Removed POD for Request->Document.  Server-side DOM will have to wait.
   - New in this release is basic "Tags" support.  See Apache2::ASP::Tag for details.

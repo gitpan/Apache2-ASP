@@ -3,6 +3,7 @@ package Apache2::ASP::Parser;
 
 use strict;
 use warnings 'all';
+use Carp 'confess';
 use Data::Dumper;
 
 
@@ -13,7 +14,7 @@ sub parse_file
   
   no warnings 'uninitialized';
   open my $ifh, '<', $file
-    or die "Cannot open file '$file': $!";
+    or confess "Cannot open file '$file': $!";
   local $/;
   my $txt = <$ifh>;
   close($ifh);
@@ -56,8 +57,41 @@ sub parse_string
     );
   }# end while()
   
+  $txt = $class->_parse_include_tags( $txt );
+  
   $txt = $class->_parse_asp_tags( $txt );
 }# end parse_string()
+
+
+#==============================================================================
+sub _parse_include_tags
+{
+  my ($class, $txt) = @_;
+  
+  while( $txt =~ m@(<\!\-\-\s+\#include\s+(.*?)\s+\-\->)@si ) #@ Make GEdit Happy
+  {
+    my $wholetag = $1;
+    my $include = $2;
+    my $replacement = '';
+    
+    if( $include =~ m/^virtual\=\"(.*?)\"/ )
+    {
+      $replacement = qq/<% \$Response->Include( \$Server->MapPath("$1") ); %>/;
+    }
+    elsif( $include =~ m/^file\=\"(.*?)\"/ )
+    {
+      $replacement = qq/<% \$Response->Include( "$1" ); %>/;
+    }
+    else
+    {
+      confess "Invalid include directive '$wholetag'";
+    }# end if()
+    
+    $txt =~ s/\Q$wholetag\E/$replacement/;
+  }# end while()
+  
+  return $txt;
+}# end _parse_include_tags()
 
 
 #==============================================================================
@@ -92,7 +126,7 @@ sub _render_tag
   }
   else
   {
-    die "Cannot load tag '$tagname': $@";
+    confess "Cannot load tag '$tagname': $@";
   }# end if()
 }# end _render_tag()
 
