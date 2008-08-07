@@ -5,7 +5,6 @@ use strict;
 use warnings 'all';
 use Apache2::ASP::DOM::Document;
 use Apache2::ASP::DOM::Node;
-use Scalar::Util 'weaken';
 
 
 #==============================================================================

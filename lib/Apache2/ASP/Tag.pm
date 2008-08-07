@@ -10,12 +10,26 @@ use vars qw(
   $Form
 );
 
+#==============================================================================
 sub new
 {
   my ($class, %args) = @_;
   
-  return bless \%args, $class;
+  $args{Visible} ||= 1;
+  my $s = bless \%args, $class;
+  $s->_init_asp_objects( );
+  return $s;
 }# end new()
+
+
+#==============================================================================
+sub Visible
+{
+  my $s = shift;
+  
+  $s->{Visible} = shift if @_;
+  $s->{Visible};
+}# end Visible()
 
 
 #==============================================================================
@@ -37,6 +51,7 @@ sub _init_asp_objects
 	my %saw = ($s => 1);
   foreach my $pkg ( ( $s, @{"$s\::ISA"} ) )
   {
+    $pkg = ref($pkg) ? ref($pkg) : $pkg;
     ${"$pkg\::Session"}     = $Session;
     ${"$pkg\::Server"}      = $Server;
     ${"$pkg\::Request"}     = $Request;
@@ -46,7 +61,7 @@ sub _init_asp_objects
     ${"$pkg\::Config"}      = $Config;
 		
 		# Recurse upward:
-		$pkg->init_asp_objects( $asp )
+		$pkg->_init_asp_objects( $asp )
 			unless $saw{$pkg}++;
   }# end foreach()
   
@@ -94,12 +109,28 @@ because they B<will change in a future release>.
   
   1;# return true:
 
+B<Then> in your ASP script, you could simply do this:
+
+  <html>
+    <body>
+      This is my <My:Bold>name</My:Bold>
+    </body>
+  </html>
+
+The output would be this:
+
+  <html>
+    <body>
+      This is my <b>name</b>
+    </body>
+  </html>
+
 =head1 DESCRIPTION
 
-ASP Tag Extensions (will eventually) provide a means of abstracting including logic in ASP scripts
-without adding large chunks of complicated Perl code.
+ASP Tag Extensions provides a means of abstracting logic in ASP scripts without
+adding large chunks of complicated Perl code.
 
-Tag Extensions are object-oriented and can subclass each other.
+B<NOTE>: Tag Extensions are object-oriented and can subclass each other.
 
 =head1 PUBLIC METHODS
 
@@ -111,7 +142,17 @@ Returns a blessed hashref-based object.
 
 =head2 render( $args, $innerHTML )
 
-Should return a string.
+Should return a string.  C<$args> is a hashref of all the "attributes" from the 
+tag itself.  For example:
+
+  <My:Bold arg1="val1" id="bold123">Text</My:Bold>
+
+Would equate to the following call:
+
+  My::Bold->new()->render({
+    arg1 => 'val1',
+    id   => 'bold123',
+  }, 'Text');
 
 =head1 BUGS
 

@@ -18,7 +18,7 @@ use Apache2::SubRequest ();
 use Apache2::RequestUtil ();
 
 use vars '$VERSION';
-$VERSION = '1.56_2';
+$VERSION = '1.57';
 
 #==============================================================================
 sub handler : method

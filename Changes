@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.57 2008-08-06
+  - Removed POD for Request->Document.  Server-side DOM will have to wait.
+  - New in this release is basic "Tags" support.  See Apache2::ASP::Tag for details.
+
 1.56_02 2008-08-02
   - Added documentation for all Apache2::ASP::DOM::* classes.
 
