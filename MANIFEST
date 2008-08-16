@@ -92,6 +92,7 @@ t/htdocs/index.asp
 t/htdocs/members_only/index.asp
 t/htdocs/responseinclude.asp
 t/htdocs/responsetrapinclude.asp
+t/htdocs/virtualinclude.asp
 t/htdocs/syntax_error.asp
 t/htdocs/updated.asp
 t/lib/My/MemberFilter.pm

@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+1.59 2008-08-16
+  - Added missing file t/htdocs/virtualinclude.asp to the MANIFEST
+    so all tests should pass now.
+
 1.58 2008-08-06
   - Now <!-- #include virtual="/file.asp" --> and 
     <!-- #include file="/abs/path/to/file.asp" --> work as you might expect.
