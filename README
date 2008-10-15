@@ -1,40 +1,45 @@
 NAME
-    Apache2::ASP - Perl extension for ASP on mod_perl2.
+    Apache2::ASP - ASP for Perl, reloaded.
+
+WARNING - ALPHA SOFTWARE!
+    This software is still considered Alpha (or Pre-Beta) and should *NOT*
+    yet be used for anything except for testing.
 
 SYNOPSIS
-  In your ASP script
-      <html>
-        <body>
-          <%= "Hello, World!" %>
-          <br>
-          <%
-            for( 1...10 ) {
-              $Response->Write( "Hello from ASP ($_)<br>" );
-            }
-          %>
-      
-          Supports Apache-style includes as well:
-          <!-- #include virtual="/include-file.asp" -->
-        </body>
-      </html>
-
-INSTALLATION
-    For installation instructions, please refer to
-    Apache2::ASP::Manual::Intro.
-
-INTRODUCTION
-    For an introduction to Apache2::ASP, please see
-    Apache2::ASP::Manual::Intro.
+      1: use Apache2::ASP;
+      2: ???
+      3: Profit!!
 
 DESCRIPTION
-    Apache2::ASP is a mod_perl2-specific subclass of Apache2::ASP::Base.
+    Apache2::ASP scales well and brought the ASP programming model to Perl
+    in a more modern way.
 
-METHODS
-  handler( $r )
-    Used by mod_perl - you can safely ignore this one for now.
+    This rewrite had a few major goals:
 
-    If you are really interested in what goes on in there, please read the
-    source.
+    *   Master pages
+
+        Like ASP.Net has.
+
+    *   Partial-page caching
+
+        Like ASP.Net has.
+
+    *   Better configuration
+
+        The original config format was unsatisfactory.
+
+    *   Handle multiple VirtualHosts better.
+
+        Configuration was the root of this problem.
+
+    *   Better performance
+
+        Server resources were being wasted on unnecessary activities like
+        storing session state even when it had not changed, etc.
+
+    As of this afternoon, each of the goals above have been reached with the
+    exception of Partial-page caching. That's why this is a "developer
+    release."
 
 BUGS
     It's possible that some bugs have found their way into this release.
@@ -47,11 +52,12 @@ HOMEPAGE
     see examples of Apache2::ASP in action.
 
 AUTHOR
-    John Drago <mailto:jdrago_999@yahoo.com>
+    John Drago <jdrago_999@yahoo.com>
 
-COPYRIGHT AND LICENSE
-    Copyright 2007 John Drago, All rights reserved.
+COPYRIGHT
+    Copyright 2008 John Drago. All rights reserved.
 
-    This software is free software. It may be used and distributed under the
-    same terms as Perl itself.
+LICENSE
+    This software is Free software and is licensed under the same terms as
+    perl itself.
 

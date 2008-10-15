@@ -5,31 +5,27 @@ use strict;
 use warnings 'all';
 use base 'Ima::DBI';
 use Digest::MD5 'md5_hex';
-use DateTime::Duration;
 use Storable qw( freeze thaw );
-use HTTP::Date 'time2iso';
-our ($_asp, $_dbh);
+use HTTP::Date qw( time2iso str2time );
+use Scalar::Util 'weaken';
 
 
 #==============================================================================
 sub new
 {
-  my ($class, $asp) = @_;
+  my ($class, %args) = @_;
   
-  my $s = bless {asp => $asp}, $class;
-#  $_asp = $asp;
+  my $s = bless {context => $args{context}}, $class;
+  my $conn = $s->{context}->config->data_connections->session;
+  
   local $^W = 0;
-  __PACKAGE__->set_db('Sessions', $s->{asp}->config->session_state->dsn,
-    $s->{asp}->config->session_state->username,
-    $s->{asp}->config->session_state->password, {
+  __PACKAGE__->set_db('Sessions', $conn->dsn,
+    $conn->username,
+    $conn->password, {
       RaiseError  => 1,
       AutoCommit  => 1,
     }
-  );# unless __PACKAGE__->can('db_Sessions');
-  
-  # Setup our maximum session timeout:
-  my $dt = DateTime::Duration->new( minutes => $s->{asp}->config->session_state->session_timeout );
-  $s->{interactive_timeout} = join( ':', map { $_ < 10 ? "0$_" : $_ } $dt->in_units("hours", "minutes", "seconds") );
+  );
   
   # Prepare our Session:
   if( my $id = $s->parse_session_id() )
@@ -56,11 +52,18 @@ sub new
 
 
 #==============================================================================
+sub context
+{
+  Apache2::ASP::HTTPContext->current;
+}# end context()
+
+
+#==============================================================================
 sub parse_session_id
 {
   my ($s) = @_;
   
-  my $cookiename = $s->{asp}->config->session_state->cookie_name;
+  my $cookiename = $s->context->config->data_connections->session->cookie_name;
   no warnings 'uninitialized';
   if( my ($id) = $ENV{HTTP_COOKIE} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
   {
@@ -78,14 +81,15 @@ sub parse_session_id
 sub verify_session_id
 {
   my ($s, $id) = @_;
-  
+
+  my $range_start = time() - ( $s->context->config->data_connections->session->session_timeout * 60 );
   my $sth = $s->dbh->prepare(<<"");
     SELECT COUNT(*)
     FROM asp_sessions
     WHERE session_id = ?
-    AND ADDTIME(modified_on, ?) >= NOW()
+    AND modified_on BETWEEN ? AND ?
 
-  $sth->execute( $id, $s->{interactive_timeout} );
+  $sth->execute( $id, $range_start, time2iso() );
   my ($active) = $sth->fetchrow();
   $sth->finish();
   
@@ -110,8 +114,15 @@ sub create
     )
 
   my $now = time2iso();
+  
+  no warnings 'uninitialized';
+  $s->{__signature} = md5_hex(
+    join ":", 
+      map { "$_:$s->{$_}" }
+        grep { $_ ne '__signature' } sort keys(%$s)
+  );
+  
   my %clone = %$s;
-  delete($clone{asp});
   
   $sth->execute(
     $id,
@@ -131,15 +142,39 @@ sub retrieve
   my ($s, $id) = @_;
   
   my $sth = $s->dbh->prepare(<<"");
-    SELECT session_data
+    SELECT session_data, modified_on
     FROM asp_sessions
     WHERE session_id = ?
 
+  my $now = time2iso();
   $sth->execute( $id );
-  my ($data) = thaw( $sth->fetchrow );
+  my ($data, $modified_on) = $sth->fetchrow;
+  $data = thaw($data);
   $sth->finish();
+
+  if( time() - str2time($modified_on) >= ( $s->context->config->data_connections->session->session_timeout * 59 ) )
+  {
+    my $sth = $s->dbh->prepare(<<"");
+    UPDATE asp_sessions SET
+      modified_on = ?
+    WHERE session_id = ?
+
+    $sth->execute( time2iso(), $id );
+    $sth->finish();
+  }# end if()
   
-  return bless $data, ref($s);
+  undef(%$s);
+  $s = bless $data, ref($s);
+  weaken($s);
+  
+  no warnings 'uninitialized';
+  $s->{__signature} = md5_hex(
+    join ":",
+      map { "$_:$s->{$_}" } 
+        grep { $_ ne '__signature' } sort keys(%$s)
+  );
+  
+  return $s;
 }# end retrieve()
 
 
@@ -148,6 +183,17 @@ sub save
 {
   my ($s) = @_;
   
+  no warnings 'uninitialized';
+  return if $s->{__signature} eq md5_hex(
+    join ":", map { "$_:$s->{$_}" }
+                grep { $_ ne '__signature' } sort keys(%$s)
+  );
+  $s->{__signature} = md5_hex(
+    join ":",
+      map { "$_:$s->{$_}" } 
+        grep { $_ ne '__signature' } sort keys(%$s)
+  );
+  
   my $sth = $s->dbh->prepare(<<"");
     UPDATE asp_sessions SET
       session_data = ?,
@@ -155,7 +201,6 @@ sub save
     WHERE session_id = ?
 
   my %clone = %$s;
-  delete($clone{asp});
   my $data = freeze( \%clone );
   $sth->execute( $data, time2iso(), $s->{SessionID} );
   $sth->finish();
@@ -169,8 +214,9 @@ sub reset
 {
   my ($s) = @_;
   
-  # Remove everything *but* our session id:
-  delete( $s->{$_} ) foreach grep { $_ ne 'SessionID' } keys(%$s);
+  # Remove everything *but* our important parts:
+  my %saves = map { $_ => 1 } qw/ SessionID /;
+  delete( $s->{$_} ) foreach grep { ! $saves{$_} } keys(%$s);
   $s->save;
 }# end reset()
 
@@ -187,9 +233,9 @@ sub write_session_cookie
 {
   my $s = shift;
   
-  my $state = $s->{asp}->config->session_state;
+  my $state = $s->context->config->data_connections->session;
   my $cookiename = $state->cookie_name;
-  $s->{asp}->response->AddHeader(
+  $s->context->response->AddHeader(
     'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/; domain=" . $state->cookie_domain
   );
   
@@ -211,7 +257,6 @@ sub write_session_cookie
 sub dbh
 {
   my $s = shift;
-  
   return $s->db_Sessions;
 }# end dbh()
 
@@ -220,6 +265,7 @@ sub dbh
 sub DESTROY
 {
   my $s = shift;
+  
   delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 
@@ -254,43 +300,7 @@ different processes/threads at this time.
 
 =head1 METHODS
 
-=head2 new( $asp )
-
-Returns a new C<Apache2::ASP::SessionStateManager> object, using C<$asp>.
-
-C<$asp> should be a valid L<Apache2::ASP> object.
-
-=head2 parse_session_id( )
-
-=head2 verify_session_id( $id )
-
-=head2 create( $id )
-
-Creates a new Session.  Returns a new C<Apache2::ASP::SessionStateManager> object.
-
-=head2 retrieve( $id )
-
-Attempts to retrieve the Session by that ID from the database.
-
-=head2 save( )
-
-Stores the session in the database.
-
-=head2 reset( )
-
-Deletes all data from the session except for its C<SessionID> value.
-
-=head2 new_session_id( )
-
-Generates a new session id.  Currently this is a 32-character random string of hexadecimal digits (0-9, a-f).
-
-=head2 write_session_cookie( )
-
-Adds the 'Set-Cookie' header to the outgoing HTTP headers.
-
-=head2 dbh( )
-
-Returns a blessed L<DBI> connection to the data source specified in the global config.
+TBD
 
 =head1 BUGS
 

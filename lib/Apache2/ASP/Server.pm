@@ -2,24 +2,26 @@
 package Apache2::ASP::Server;
 
 use strict;
-use warnings;
+use warnings 'all';
 use Mail::Sendmail;
 
 
 #==============================================================================
 sub new
 {
-  my ($s, $asp) = @_;
-  return bless {
-    www_root  => $asp->config->www_root,
-#    asp       => $asp,
-    r         => $asp->{r},
-    q         => $asp->{q},
-    
-    # This may be deprecated soon:
-    ScriptRef => \"",
-  }, $s;
+  my ($class, %args) = @_;
+
+  my $s = bless { }, $class;
+  
+  return $s;
 }# end new()
+
+
+#==============================================================================
+sub context
+{
+  Apache2::ASP::HTTPContext->current;
+}# end context()
 
 
 #==============================================================================
@@ -81,24 +83,7 @@ sub MapPath
   
   return unless defined($path);
   
-  my $subrequest = $s->{r}->lookup_uri( $path );
-  my $file = $subrequest ? $subrequest->filename : undef;
-  return unless defined($file);
-  
-  # New, simplified path finding:
-  my $file2 = $s->{www_root} . $path;
-  return -f $file2 ? $file2 : undef;
-
-#  if( -f $file )
-#  {
-#    return $file;
-#  }
-#  else
-#  {
-#    my $file = $s->{www_root} . $path;
-#    return -f $file ? $file : undef;
-#  }# end if()
-#  return;
+  $s->context->config->web->www_root . $path;
 }# end MapPath()
 
 
@@ -107,116 +92,31 @@ sub Mail
 {
   my ($s, %args) = @_;
   
+  # XXX: Base64-encode the content, and update the content-type to reflect that
+  # if content-type === 'text/html'.
+  # XXX: Consider updating this so that we can send attachments as well.
   Mail::Sendmail::sendmail( %args );
 }# end Mail()
 
 
 #==============================================================================
-sub RegisterCleanup
-{
-  my ($s, $sub) = @_;
-  
-  $s->{r}->pool->cleanup_register( $sub );
-}# end RegisterCleanup()
+sub RegisterCleanup;
+#{
+#  my ($s, $sub) = @_;
+#  
+#  # This is too tightly-coupled:
+#  $s->context->r->pool->cleanup_register( $sub );
+#}# end RegisterCleanup()
 
 
 #==============================================================================
 sub DESTROY
 {
   my $s = shift;
-  delete($s->{$_}) foreach keys(%$s);
+  
+  undef(%$s);
 }# end DESTROY()
 
 1;# return true:
 
-__END__
 
-=pod
-
-=head1 NAME
-
-Apache2::ASP::Server - Utility object for Apache2::ASP programming
-
-=head1 DESCRIPTION
-
-The global C<$Server> object is used in ASP programming for utility tasks such as
-string sanitation, finding files, sending email and registering subroutines to be
-performed asynchronously.
-
-=head1 EXAMPLES
-
-=head1 PUBLIC METHODS
-
-=head2 new( $asp )
-
-=head2 URLEncode( $str )
-
-Returns a URL-Encoded version of the string provided.
-
-For example, "test@test.com" becomes "test%40test.com" with C<URLEncode()>.
-
-=head2 URLDecode( $str )
-
-Takes a URL-Encoded string and returns the URL-Decoded version.
-
-For example, "test%40test.com" becomes "test@test.com" with C<URLDecode()>.
-
-=head2 HTMLEncode( $str )
-
-Returns an HTML-Encoded version of the string provided.
-
-For example, "<b>Hello</b>" becomes "C<&lt;b&gt;Hello&lt;/b&gt;>" with C<HTMLEncode()>.
-
-=head2 HTMLDecode( $str )
-
-Returns an HTML-Decoded version of the string provided.
-
-For example, "C<&lt;b&gt;Hello&lt;/b&gt;>" becomes "<b>Hello</b>" with C<HTMLDecode()>.
-
-=head2 MapPath( $path )
-
-Given a relative path C<MapPath()> returns the absolute path to the file on disk.
-
-For example, C<'/index.asp'> might return C<'/usr/local/dstack/www/index.asp'>.
-
-=head2 Mail( %args )
-
-A wrapper around the C<sendmail()> function from L<Mail::Sendmail>.
-
-=head2 RegisterCleanup( $sub )
-
-A wrapper around the function C<cleanup_register( $sub )> function provided by mod_perl2.
-
-Pass in a subref that should be executed after the current request has completed.
-
-For example:
-
-  <%
-    $Server->RegisterCleanup(sub { do_something_later() });
-    # Do more stuff here:
-    $Response->Write("Hello!");
-  %>
-
-=head1 BUGS
-
-It's possible that some bugs have found their way into this release.
-
-Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
-
-=head1 HOMEPAGE
-
-Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
-of Apache2::ASP in action.
-
-=head1 AUTHOR
-
-John Drago L<mailto:jdrago_999@yahoo.com>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright 2007 John Drago, All rights reserved.
-
-This software is free software.  It may be used and distributed under the
-same terms as Perl itself.
-
-=cut

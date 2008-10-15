@@ -1,7 +1,1 @@
-<%
-  for( 1...10 )
-  {
-%>Include Me <%= $_ %>!<br>
-<%
-  }# end for()
-%>
+Included! <%= join ":", 1...10 %>

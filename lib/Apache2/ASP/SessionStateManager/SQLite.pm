@@ -3,27 +3,7 @@ package Apache2::ASP::SessionStateManager::SQLite;
 
 use strict;
 use warnings 'all';
-
 use base 'Apache2::ASP::SessionStateManager';
-
-
-#==============================================================================
-# Returns true if the session exists and has not timed out:
-sub verify_session_id
-{
-  my ($s, $id) = @_;
-  
-  my $sth = $s->dbh->prepare(<<"");
-    SELECT COUNT(*)
-    FROM asp_sessions
-    WHERE session_id = ?
-
-  $sth->execute( $id );
-  my ($active) = $sth->fetchrow();
-  $sth->finish();
-  
-  return $active;
-}# end verify_session_id()
 
 1;# return true:
 

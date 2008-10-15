@@ -1,6 +1,25 @@
 <?xml version="1.0" ?>
-<config>
-  <web_application>
+<configuration>
+
+  <system>
+    <libs>
+      <lib>@ServerRoot@/lib</lib>
+    </libs>
+    <load_modules>
+      <module>DBI</module>
+      <module>Class::DBI::Lite</module>
+    </load_modules>
+    <env_vars>
+      <var>
+        <myvar>value</myvar>
+      </var>
+    </env_vars>
+    <settings>
+      <a_setting>a_setting_value</a_setting>
+    </settings>
+  </system>
+
+  <web>
     <domain_re>.*</domain_re>
     <do_reload_on_script_change>1</do_reload_on_script_change>
     <application_name>DefaultApp</application_name>
@@ -9,33 +28,42 @@
     <media_manager_upload_root>@ServerRoot@/MEDIA</media_manager_upload_root>
     <www_root>@ServerRoot@/htdocs</www_root>
     <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
-    <application_state>
-      <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
-      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
-      <password></password>
-      <username></username>
-    </application_state>
-    <session_state>
+    <request_filters>
+<!--
+      <filter>
+        <uri_match>/.*</uri_match>
+        <class>My::MemberFilter</class>
+      </filter>
+      <filter>
+        <uri_equals>/index.asp</uri_equals>
+        <class>My::MemberFilter2</class>
+      </filter>
+-->
+    </request_filters>
+  </web>
+
+  <data_connections>
+    <session>
       <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
       <cookie_domain>localhost</cookie_domain>
       <cookie_name>session-id</cookie_name>
-      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_sessions</dsn>
-      <password></password>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
       <username></username>
+      <password></password>
       <session_timeout>30</session_timeout>
-    </session_state>
-    <settings>
-      <lib>@ServerRoot@/lib</lib>
-			<orm_base_class>MyDBI</orm_base_class>
-      <dsn>DBI:mysql:databasename:localhost</dsn>
-      <username>my-username</username>
-      <password>swordfish</password>
-    </settings>
-    <request_filters>
-      <filter>
-        <uri_match>/members_only/.*</uri_match>
-        <class>My::MemberFilter</class>
-      </filter>
-    </request_filters>
-  </web_application>
-</config>
+    </session>
+    <application>
+      <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
+      <username></username>
+      <password></password>
+    </application>
+    <main>
+      <dsn>DBI:SQLite:dbname=cloud_t3n_test</dsn>
+      <username></username>
+      <password></password>
+    </main>
+  </data_connections>
+
+</configuration>
+

@@ -1,78 +1,99 @@
+
 package Apache2::ASP::Response;
 
 use strict;
 use warnings 'all';
-use Carp qw( cluck confess croak );
-use Apache2::Const "-compile" => ':common';
 use HTTP::Date qw( time2iso str2time time2str );
-
-use Apache2::ASP::ApacheRequest;
+use Carp qw( croak confess );
+use HTTP::Headers;
+use Scalar::Util 'weaken';
 
 our $MAX_BUFFER_LENGTH = 1024 ** 2;
 
+$SIG{__DIE__} = \&confess;
+our $IS_TRAPINCLUDE = 0;
 
 #==============================================================================
 sub new
 {
-  my ($s, $asp) = @_;
+  my ($class, %args) = @_;
   
-  return bless {
-#    asp            => $asp,
-    _buffer         => [ ],
-    _buffer_length => 0,
-    r               => $asp->r,
-    q               => $asp->q,
-    _headers        => [ {name => 'connection', value => 'close'} ],
-    _sent_headers   => 0,
-    Buffer          => 1,
-    ContentType     => 'text/html',
-    Status          => 200,
-    ApacheStatus    => Apache2::Const::OK,
-    Expires         => 0,
-    ExpiresAbsolute => time2str(time),
-  }, $s;
+  # Just guessing:
+  my $s = bless {
+    %args,
+    _status           => 200,
+    _output_buffer    => [ ],
+    _do_buffer        => 1,
+    _buffer_length    => 0,
+    _did_send_headers => 0,
+  }, $class;
+  
+  $s->Expires( $args{_expires} || 0 );
+  weaken($s->{context});
+  return $s;
 }# end new()
 
-sub asp { $_[0]->{asp} || $main::_ASP::ASP }
+
+#==============================================================================
+sub context
+{
+  Apache2::ASP::HTTPContext->current;
+#  $_[0]->{context};
+}# end context()
 
 
 #==============================================================================
-sub Declined
+sub ContentType
 {
   my $s = shift;
-
-  return -1;
-}# end Declined()
-
-
-#==============================================================================
-sub Buffer
-{
-  my $s = shift;
+  
   if( @_ )
   {
-    return $s->{Buffer} = shift;
+    confess "Response.ContentType cannot be changed after headers have been sent"
+      if $s->{_did_send_headers};
+    $s->context->content_type( shift );
   }
   else
   {
-    return $s->{Buffer};
+   return $s->context->content_type;
   }# end if()
-}# end Buffer()
+}# end ContentType()
+
+
+#==============================================================================
+sub Status
+{
+  my $s = shift;
+  
+  if( @_ )
+  {
+    confess "Response.Status cannot be changed after headers have been sent"
+      if $s->{_did_send_headers};
+    
+    $s->{_status} = shift;
+  }
+  else
+  {
+    return $s->{_status};
+  }# end if()
+}# end Status()
 
 
 #==============================================================================
 sub Expires
 {
   my $s = shift;
+  
   if( @_ )
   {
-    $s->{Expires} = shift;
-    $s->ExpiresAbsolute( time2str( time() + $s->{Expires} ) );
-    return $s->{Expires};
+    # Setter:
+    $s->{_expires} = shift;
+    $s->ExpiresAbsolute( time2str(time + $s->{_expires} * 60 ) );
   }
   else
   {
-    return $s->{Expires};
+    # Getter:
+    return $s->{_expires};
   }# end if()
 }# end Expires()
 
@@ -81,462 +102,233 @@ sub Expires
 sub ExpiresAbsolute
 {
   my $s = shift;
-  if( @_ )
+  if( my $when = shift )
   {
-    return $s->{ExpiresAbsolute} = shift;
+    $s->DeleteHeader('expires');
+    $s->{_expires_absolute} = $when;
+#    $s->AddHeader( expires => shift );
   }
   else
   {
-    return $s->{ExpiresAbsolute};
+    return $s->{_expires_absolute};
   }# end if()
-}# end Expires()
+}# end ExpiresAbsolute()
 
 
 #==============================================================================
-sub AddHeader
+sub Declined
 {
-  my ($s, $key, $val) = @_;
-  push @{$s->{_headers}}, {
-    name  => $key,
-    value => $val,
-  };
-}# end AddHeader()
+  return -1;
+}# end Declined()
 
 
 #==============================================================================
-sub Headers
+sub Redirect
 {
-  my $s = shift;
+  my ($s, $url) = @_;
   
-  return {
-    map {
-      $_->{name} => $_->{value}
-    } @{$s->{_headers}}
-  };
-}# end Headers()
-
-
-#==============================================================================
-sub Cookies
-{
-  my ($s, $name, $value) = @_;
+  confess "Response.Redirect cannot be called after headers have been sent"
+    if $s->{_did_send_headers};
   
-  no warnings 'uninitialized';
-  my $escape = $s->{q}->can('escape') ? sub { $s->{q}->escape(@_) } : sub { $s->{q}->url_encode(@_) };
-  return $s->AddHeader( "Set-Cookie" => "$name=" . $escape->("$value") );
-}# end Cookies()
-
-
-#==============================================================================
-sub Write
-{
-  my ($s, $str) = @_;
-  
-  $str = "" unless defined($str);
-  my $len = length($str);
-  $str =~ s/_____TILDE_____/\~/g;
-  
-  no warnings 'uninitialized';
-  push @{$s->{_buffer}}, $str;
-  if( $s->{Buffer} )
-  {
-    $s->{_buffer_length} += $len;
-    if( $s->{_buffer_length} >= $MAX_BUFFER_LENGTH )
-    {
-      $s->Flush;
-    }# end if()
-  }
-  else
-  {
-    $s->Flush;
-  }# end if()
-}# end Write()
-
-
-#==============================================================================
-sub Flush
-{
-  my $s = shift;
-  
-  my $buffer = join '', @{delete( $s->{_buffer} )};
-  $s->{_buffer} = [ ];
-  $s->{_buffer_length} = 0;
-
-  if( $s->asp->{handler} && $s->asp->{handler}->isa('Apache2::ASP::PageHandler') && $s->asp->global_asa )
-  {
-    $s->asp->global_asa->can('Script_OnFlush')->( \$buffer )
-      unless $s->{is_subrequest};
-  }# end if()
-  
-  $s->_print_headers();
-  
-  no warnings 'uninitialized';
-  $s->{r}->print( $buffer );
-  $s->{r}->rflush();
-}# end Flush()
+  $s->Clear;
+  $s->AddHeader( location => $url );
+  $s->Status( '301 Found' );
+  $s->End;
+}# end Redirect()
 
 
 #==============================================================================
 sub End
 {
   my $s = shift;
+  
   $s->Flush;
   # Cancel execution and force the server to stop processing this request.
-  my $sock = $s->{r}->connection->client_socket;
+  my $sock = $s->context->connection->client_socket;
   eval { $sock->close() };
-  $s->asp->{did_end} = 1;
+  $s->context->{did_end} = 1;
 }# end End()
 
 
 #==============================================================================
-sub Clear
+sub Flush
 {
-  my $s = shift;
-  $s->{_buffer} = [ ];
+  my ($s) = @_;
+  
+  if( $s->context->{parent} )
+  {
+    if( $IS_TRAPINCLUDE )
+    {
+      # Do nothing?
+    }
+    else
+    {
+      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
+      return $s->context->response->Flush;
+    }# end if()
+  }# end if()
+  return unless $s->IsClientConnected;
+  $s->_send_headers unless $s->context->did_send_headers;
+  
+  $s->context->print( join '', @{delete($s->{_output_buffer})} );
+  $s->context->rflush;
+  $s->{_output_buffer} = [ ];
   $s->{_buffer_length} = 0;
-}# end Clear()
+}# end Flush()
 
 
 #==============================================================================
-sub Redirect
+our $WRITES = 0;
+sub Write
 {
-  my ($s, $location) = @_;
+  my $s = shift;
   
-  if( $s->{_sent_headers} )
+  if( $s->context->{parent} && ! $IS_TRAPINCLUDE )
   {
-    croak "Response.Redirect: Cannot redirect to '$location' after headers have been sent.";
+    local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
+    $s->context->response->Write( @_ );
+  }
+  else
+  {
+    $s->{_buffer_length} += length($_[0]);
+    push @{$s->{_output_buffer}}, shift;
+    $s->Flush if (! $s->{_do_buffer}) || $s->{_buffer_length} >= $MAX_BUFFER_LENGTH;
   }# end if()
-  
-  $s->Clear();
-  $s->{ContentType} = '';
-  $s->{Status} = 302; # '302 Found';
-  $s->AddHeader('Location' => $location);
-  $s->Flush();
-  $s->End;
-  return 302;
-}# end Redirect()
+}# end Write()
 
 
 #==============================================================================
 sub Include
 {
-  my ($s, $script, @args) = @_;
+  my ($s, $path) = @_;
   
-  no warnings 'uninitialized';
-  unless( -f $script )
-  {
-    $s->Write("[ Cannot Response.Include '$script': File not found ]");
-    croak "Cannot Response.Include '$script': File not found";
-  }# end unless()
+  my $ctx = $s->context;
+  local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
   
-  my $uri = $script;
-  my $root = $s->asp->config->www_root;
-  $uri =~ s/^$root//;
-  my $r = Apache2::ASP::ApacheRequest->new(
-    r        => $s->asp->r,
-    status   => 200,
-    filename => $script,
-    uri      => $uri
-  );
-  my $asp = ref($s->asp)->new( $s->asp->config );
-  $asp->{ $_ } = $s->asp->{ $_ }
-    foreach grep { exists($s->asp->{$_}) }
-      qw/
-        session
-        application
-        service
-        subservice
-        registry_member
-      /;
-  $asp->setup_request( $r, $s->asp->q() );
-  eval {
-    $asp->execute( 1, @args );
-    $s->Write( $r->buffer );
-  };
-  if( $@ )
-  {
-    croak "Cannot Include script '$script': $@";
-  }# end if()
+  my $root = $s->context->config->web->www_root;
+  $path =~ s@^\Q$root\E@@;
+  local $ENV{REQUEST_URI} = $path;
+  local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
+  
+  use Apache2::ASP::Mock::RequestRec;
+  my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
+  $clone_r->uri( $path );
+  $s->context->setup_request( $clone_r, $ctx->cgi );
+  $s->context->execute();
 }# end Include()
 
 
 #==============================================================================
 sub TrapInclude
 {
-  my ($s, $script, @args) = @_;
+  my ($s, $path) = @_;
   
-  no warnings 'uninitialized';
-  unless( -f $script )
-  {
-    $s->Write("[ Cannot Response.TrapInclude '$script': File not found ]");
-    croak "Cannot Response.TrapInclude '$script': File not found";
-  }# end unless()
+  my $ctx = $s->context;
+  local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
   
-  my $uri = $script;
-  my $root = $s->asp->config->www_root;
-  $uri =~ s/^$root//;
-  my $r = Apache2::ASP::ApacheRequest->new(
-    r        => $s->asp->r,
-    status   => 200,# '200 OK',
-    filename => $script,
-    uri      => $uri
-  );
-  my $asp = ref($s->asp)->new( $s->asp->config );
-  $asp->{ $_ } = $s->asp->{ $_ }
-    foreach grep { exists($s->asp->{$_}) }
-      qw/
-        session
-        application
-        service
-        subservice
-        registry_member
-      /;
-  $asp->setup_request( $r, $s->asp->q() );
+  my $root = $s->context->config->web->www_root;
+  $path =~ s@^\Q$root\E@@;
+  local $ENV{REQUEST_URI} = $path;
+  local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
   
-  my $include = eval {
-    $asp->execute( 1, @args );
-    $asp->response->End;
-    $r->buffer;
-  };
-  if( $@ )
-  {
-    croak "Cannot TrapInclude script '$script': $@";
-  }# end if()
+  use Apache2::ASP::Mock::RequestRec;
+  my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
+  $clone_r->uri( $path );
+  $s->context->setup_request( $clone_r, $ctx->cgi );
+
+  $IS_TRAPINCLUDE = 1;
+  $s->context->execute();
+  $s->context->response->Flush;
   
-  return $include;
+  $IS_TRAPINCLUDE = 0;
+  return $clone_r->{buffer};
 }# end TrapInclude()
 
 
 #==============================================================================
-sub IsClientConnected
+sub Cookies
+{
+  $_[0]->context->headers_out->{'set-cookie'};
+}# end Cookies()
+
+
+#==============================================================================
+sub AddCookie
 {
   my $s = shift;
-  return ! $s->{r}->connection->aborted;
+  
+  my ($name, $val) = @_;
+  die "Usage: Response.AddCookie(name, value)"
+    unless defined($name) && defined($val);
+  
+  my $cookie = join '=', map { $s->context->r->cgi->escape( $_ ) } ( $name => $val );
+  $s->context->headers_out->push_header( 'set-cookie' => $cookie );
+}# end AddCookie()
+
+
+#==============================================================================
+sub AddHeader
+{
+  my ($s, $name, $val) = @_;
+  
+  return unless defined($name) && defined($val);
+  
+  $s->context->headers_out->push_header( $name => $val );
+}# end AddHeader()
+
+
+#==============================================================================
+sub DeleteHeader
+{
+  my ($s, $name) = @_;
+  
+  $s->context->headers_out->remove_header( $name );
+}# end DeleteHeader()
+
+
+#==============================================================================
+sub Headers
+{
+  $_[0]->context->headers_out;
+}# end Headers()
+
+
+#==============================================================================
+sub Clear
+{
+  $_[0]->{_output_buffer} = [ ];
+}# end Clear()
+
+
+#==============================================================================
+# XXX: Decouple
+sub IsClientConnected
+{
+  return ! $_[0]->context->connection->aborted;
 }# end IsClientConnected()
 
 
 #==============================================================================
-sub _print_headers
+sub _send_headers
 {
   my $s = shift;
   
-  return if $s->{_sent_headers};
+  my ($status) = $s->{_status} =~ m/^(\d+)/;
   
-  $s->{r}->content_type( $s->{ContentType} || 'text/html' );
-  my ($status) = $s->{Status} =~ m/^(\d+)/;
-  $s->{r}->status( $status )
-    if defined( $status );
+  $s->context->content_type('text/html') unless $s->context->content_type;
+  $s->context->headers_out->push_header( Expires => $s->{_expires_absolute} );
+  $s->context->send_headers;
   
-  my $headers = $s->{r}->headers_out;
-  foreach my $header ( @{$s->{_headers}} )
-  {
-    $headers->{ $header->{name} } = $header->{value};
-  }# end foreach()
-  $headers->{Expires} = $s->{ExpiresAbsolute};
-  
-  $s->{r}->headers_out( $headers );
-  
-  $s->{_sent_headers} = 1;
-}# end _print_headers()
+}# end _send_headers()
 
 
 #==============================================================================
 sub DESTROY
 {
-
+  my $s = shift;
+  
+  undef(%$s);
 }# end DESTROY()
 
-
 1;# return true:
-
-__END__
-
-=pod
-
-=head1 NAME
-
-Apache2::ASP::Response - Interact with the client.
-
-=head1 SYNOPSIS
-
-  <%
-    # Add a cookie:
-    $Response->Cookies( cookiename => "cookie value" );
-    
-    # Add another HTTP header:
-    $Response->AddHeader( 'x-micro-payment-required' => '0.001' );
-    
-    # Set the content-type header:
-    $Response->{ContentType} = 'text/html';
-    
-    # Set the expiration date to 3 minutes ago:
-    $Response->{Expires} = -3;
-    
-    # Print data to the client:
-    $Response->Write("Welcome to the web page.<br>");
-    
-    # Include another file:
-    $Response->Include(
-      $Server->MapPath("/my-script.asp"),
-      {arg => 'value'}
-    );
-    
-    # Get the output from another file:
-    my $result = $Response->TrapInclude(
-      $Server->MapPath("/another-script.asp")
-    );
-    
-    # Get a server variable:
-    my $host = $Request->ServerVariables("HTTP_HOST");
-    
-    # Redirect:
-    $Response->Redirect( "/new/page.asp" );
-    
-    # End processing and stop transmission:
-    $Response->End;
-    
-    # Flush data to the client:
-    $Response->Flush;
-    
-    # Clear the buffer:
-    $Response->Clear();
-    
-    # Force auto-flush (no buffering):
-    $Response->{Buffer} = 0;
-    
-    # Do something that takes a long time:
-    while( not_done_yet() && $Response->IsClientConnected )
-    {
-      # do stuff...
-    }# end while()
-  %>
-
-=head1 DESCRIPTION
-
-The global C<$Response> object is an instance of C<Apache2::ASP::Response>.
-
-=head1 PUBLIC METHODS
-
-=head2 new( $asp )
-
-=head2 AddHeader( $name, $value )
-
-Adds a new header to the HTTP response
-
-For example, the following:
-
-  <%
-    $Response->AddHeader( "funny-factor" => "funny" );
-  %>
-
-Sends the following in the HTTP response:
-
-  funny-factor: funny
-
-=head2 Headers( )
-
-Returns a name/value hash of all the HTTP headers that have been set via C<AddHeader>.
-
-=head2 Cookies( $name, $value )
-
-Sends a cookie to the client.
-
-=head2 Write( $str )
-
-Writes data to the client.  If buffering is enabled, the output will be 
-deferred until C<Flush()> is finally called (automatically or manually).
-
-If buffering is disabled, the output will be sent immediately.
-
-=head2 Flush( )
-
-Causes the response buffer to be printed to the client immediately.
-
-If the HTTP headers have not been sent, they are sent first before the 
-response buffer is sent.
-
-=head2 End( )
-
-Stops processing and closes the connection to the client.  The script will
-abort right after calling C<End()>.
-
-=head2 Clear( )
-
-Empties the response buffer.  If C<Flush()> has already been called, an exception
-is thrown instead.
-
-=head2 Redirect( $url )
-
-Causes the client to be redirected to C<$url>.
-
-If C<Flush()> has already been called, an exception is thrown instead.
-
-=head2 Include( $path, %args )
-
-Executes the script located at C<$path> and passes C<%args> to the script.  The 
-result of the included script is included into the current response buffer.
-
-The contents of C<%args> are available to the included script as C<@_>.
-
-=head2 TrapInclude( $path )
-
-Executes the ASP script located at C<$path> and returns its results as a string.
-
-=head2 IsClientConnected( )
-
-Checks to see if the client is still connected.  Returns 1 if connected, 0 if not.
-
-=head2 Expires( [$minutes] )
-
-Set/get the number of minutes between now and when the content will expire.
-
-Negative values are permitted.
-
-Default is C<0>.
-
-=head2 ExpiresAbsolute( [$http_datetime] )
-
-Set/get the date in HTTP date format when the content will expire.
-
-Default is now.
-
-=head2 Buffer( [$bool] )
-
-Gets/sets the buffering behavior.  Default value is C<1>.
-
-  # Turn off buffering, forcing output to be flushed to the client immediately:
-  $Response->Buffer(0);
-  
-  # Turn on buffering.  Wait until the request is finished before the buffer is sent:
-  $Response->Buffer(1);
-
-=head2 Declined( )
-
-Intended for use within an L<Apache2::ASP::RequestFilter> subclass, C<Declined> returns
-a value of C<-1>, which is equivallent to C<Apache2::Const::DECLINED>.
-
-=head1 BUGS
-
-It's possible that some bugs have found their way into this release.
-
-Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
-
-=head1 HOMEPAGE
-v
-of Apache2::ASP in action.
-
-=head1 AUTHOR
-
-John Drago L<mailto:jdrago_999@yahoo.com>
-
-=head1 COPYRIGHT AND LICENSE
-
-
-Copyright 2007 John Drago, All rights reserved.
-
-This software is free software.  It may be used and distributed under the
-same terms as Perl itself.
-
-=cut
-
 

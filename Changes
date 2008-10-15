@@ -1,5 +1,20 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_01   2008-10-15
+  - Complete rewrite.
+  !!!! BREAKING CHANGES !!!!
+    - XML Config file format is different!  See docs for details!
+    - Apache Config file is different!  See docs for details!
+  - Now "master pages" are supported a la ASP.Net (i.e. named placeholders).
+  - Session and Application are only saved to database if they have been changed
+    during the course of the request:
+  - Major performance increase.  Using master pages instead of includes can
+    further increase performance.
+  - Basic tags support has been suspended for now.
+  - Removed dependency Datetime::Duration.
+  - Removed dependency Sys::Hostname.
+  
+
 1.59 2008-08-16
   - Added missing file t/htdocs/virtualinclude.asp to the MANIFEST
     so all tests should pass now.

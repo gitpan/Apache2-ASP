@@ -1,8 +1,0 @@
----
-password_resend:
-  general:
-    is_not_found: Invalid email address
-  contact_email:
-    is_missing: Required
-    is_invalid: Invalid email address
-    is_not_found: Email is not valid - please try again.

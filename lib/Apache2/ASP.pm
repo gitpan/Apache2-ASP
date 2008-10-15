@@ -1,86 +1,11 @@
 
 package Apache2::ASP;
 
-
 use strict;
 use warnings 'all';
-use base 'Apache2::ASP::Base';
-
-use Apache2::ASP::CGI;
-use Apache2::ASP::UploadHook;
-
-use APR::Table ();
-use Apache2::RequestRec ();
-use Apache2::RequestIO ();
-use Apache2::Directive ();
-use Apache2::Connection ();
-use Apache2::SubRequest ();
-use Apache2::RequestUtil ();
-
 use vars '$VERSION';
-$VERSION = '1.59';
 
-#==============================================================================
-sub handler : method
-{
-  my ($class, $r) = @_;
-  
-  # We function best as an object:
-  my $s = $class->SUPER::new( $ENV{APACHE2_ASP_CONFIG} );
-  $main::_ASP::ASP = $s;
-  $s->{r} = $r;
-  
-  # What Apache2::ASP::Handler is going to handle this request?
-  if( uc($ENV{REQUEST_METHOD}) eq 'POST'  )
-  {
-    my $handler_class = $s->resolve_request_handler( $r->uri );
-    if( $handler_class->isa('Apache2::ASP::UploadHandler') )
-    {
-      # We use the upload_hook functionality from Apache::Request
-      # to process uploads:
-      my $hook_obj = Apache2::ASP::UploadHook->new(
-        asp           => $s,
-        handler_class => $handler_class,
-      );
-      $s->{'q'} = Apache2::ASP::CGI->new( $r, sub { $hook_obj->hook( @_ ) } );
-    }
-    else
-    {
-      # Not an upload - normal CGI functionality will work fine:
-      $s->{'q'} = Apache2::ASP::CGI->new( $r );
-    }# end if()
-  }
-  else
-  {
-    # Not an upload - normal CGI functionality will work fine:
-    $s->{'q'} = Apache2::ASP::CGI->new( $r );
-  }# end if()
-  
-  # Get our subref and execute it:
-  $s->setup_request( $r, $s->{'q'} );
-  my $status = eval { $s->execute() };
-  if( $@ )
-  {
-    warn "ERROR AFTER CALLING \$handler->( ): $@";
-    return $s->_handle_error( $@ );
-  }# end if()
-  
-  # 0 = OK, everything else means errors of some kind:
-  return $status eq '200' ? 0 : $status;
-}# end handler()
-
-
-#==============================================================================
-sub _handle_error
-{
-  my ($s, $err) = @_;
-  
-  warn $err;
-  $s->response->Clear();
-  $s->global_asa->can('Script_OnError')->( $err );
-  
-  return 500;
-}# end _handle_error()
+$VERSION = '2.00_01';
 
 1;# return true:
 
@@ -90,46 +15,53 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP - Perl extension for ASP on mod_perl2.
+Apache2::ASP - ASP for Perl, reloaded.
+
+=head1 WARNING - ALPHA SOFTWARE!
+
+This software is still considered Alpha (or Pre-Beta) and should *NOT* yet be
+used for anything except for testing.
 
 =head1 SYNOPSIS
 
-=head2 In your ASP script
-
-  <html>
-    <body>
-      <%= "Hello, World!" %>
-      <br>
-      <%
-        for( 1...10 ) {
-          $Response->Write( "Hello from ASP ($_)<br>" );
-        }
-      %>
-      
-      Supports Apache-style includes as well:
-      <!-- #include virtual="/include-file.asp" -->
-    </body>
-  </html>
-
-=head1 INSTALLATION
-
-For installation instructions, please refer to L<Apache2::ASP::Manual::Intro>.
-
-=head1 INTRODUCTION
-
-For an introduction to B<Apache2::ASP>, please see L<Apache2::ASP::Manual::Intro>.
+  1: use Apache2::ASP;
+  2: ???
+  3: Profit!!
 
 =head1 DESCRIPTION
 
-Apache2::ASP is a mod_perl2-specific subclass of L<Apache2::ASP::Base>.
+Apache2::ASP scales well and brought the ASP programming model to Perl in a more
+modern way.
 
-=head1 METHODS
+This rewrite had a few major goals:
 
-=head2 handler( $r )
+=over 4
 
-Used by mod_perl - you can safely ignore this one for now.
+=item * Master pages
 
-If you are really interested in what goes on in there, please read the source.
+Like ASP.Net has.
+
+=item * Partial-page caching
+
+Like ASP.Net has.
+
+=item * Better configuration
+
+The original config format was unsatisfactory.
+
+=item * Handle multiple VirtualHosts better.
+
+Configuration was the root of this problem.
+
+=item * Better performance
+
+Server resources were being wasted on unnecessary activities like storing
+session state even when it had not changed, etc.
+
+=back
+
+As of this afternoon, each of the goals above have been reached with the exception
+of Partial-page caching.  That's why this is a "developer release."
 
 =head1 BUGS
 
@@ -144,13 +76,15 @@ of Apache2::ASP in action.
 
 =head1 AUTHOR
 
-John Drago L<mailto:jdrago_999@yahoo.com>
+John Drago <jdrago_999@yahoo.com>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
-Copyright 2007 John Drago, All rights reserved.
+Copyright 2008 John Drago.  All rights reserved.
 
-This software is free software.  It may be used and distributed under the
-same terms as Perl itself.
+=head1 LICENSE
+
+This software is Free software and is licensed under the same terms as perl itself.
 
 =cut
+
