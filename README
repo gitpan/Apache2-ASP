@@ -37,10 +37,6 @@ DESCRIPTION
         Server resources were being wasted on unnecessary activities like
         storing session state even when it had not changed, etc.
 
-    As of this afternoon, each of the goals above have been reached with the
-    exception of Partial-page caching. That's why this is a "developer
-    release."
-
 BUGS
     It's possible that some bugs have found their way into this release.
 

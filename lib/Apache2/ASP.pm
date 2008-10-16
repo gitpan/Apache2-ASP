@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.00_01';
+$VERSION = '2.00_02';
 
 1;# return true:
 
@@ -60,8 +60,6 @@ session state even when it had not changed, etc.
 
 =back
 
-As of this afternoon, each of the goals above have been reached with the exception
-of Partial-page caching.  That's why this is a "developer release."
 
 =head1 BUGS
 

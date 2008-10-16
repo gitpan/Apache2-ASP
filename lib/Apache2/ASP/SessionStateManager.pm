@@ -89,7 +89,7 @@ sub verify_session_id
     WHERE session_id = ?
     AND modified_on BETWEEN ? AND ?
 
-  $sth->execute( $id, $range_start, time2iso() );
+  $sth->execute( $id, time2iso($range_start), time2iso() );
   my ($active) = $sth->fetchrow();
   $sth->finish();
   

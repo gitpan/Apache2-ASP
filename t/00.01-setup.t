@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/env perl -w
 
 use strict;
 use warnings 'all';
@@ -16,3 +16,11 @@ else
   ok( copy( 't/sessiontest', '/tmp/apache2_asp_sessions' ) );
   ok( copy( 't/sessiontest', '/tmp/apache2_asp_applications' ) );
 }# end if()
+
+# Also clear the cache:
+my $dir = 't/PAGE_CACHE/DefaultApp';
+foreach my $file ( <$dir/*.pm> )
+{
+  unlink( $file );
+}# end foreach()
+

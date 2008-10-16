@@ -128,7 +128,16 @@ sub execute
   eval {; $s->load_class( $s->handler ); $s->handler->init_asp_objects( $s ); $s->handler->new()->run( $s ) };
   $s->handle_error if $@;
   
+  $s->response->Flush;
   my $res = $s->{parent} ? $s->response->Status : $s->end_request();
+  if( $s->page && $s->page->directives->{OutputCache} && defined($s->{_cache_buffer}) )
+  {
+    if( $res == 200 || $res == 0 )
+    {
+      $s->page->_write_cache( \$s->{_cache_buffer} );
+    }# end if()
+  }# end if()
+  
   return $res;
 }# end execute()
 
@@ -246,6 +255,7 @@ sub end_request
   $s->session->save;
   $s->application->save;
   my $res = $s->response->Status == 200 ? 0 : $s->response->Status;
+  
   return $res;
 }# end end_request()
 
@@ -270,9 +280,9 @@ sub stash        { $_[0]->{stash}                 }
 sub global_asa   { $_[0]->{global_asa}            }
 sub r            { $_[0]->{r}                     }
 sub cgi          { $_[0]->{cgi}                   }
-#sub req          { $_[0]->{req}                   }
 sub handler      { $_[0]->{handler}               }
 sub connection   { $_[0]->{connection}            }
+sub page         { $_[0]->{page}                  }
 
 # Need to get this figured out:
 sub headers_in   { shift->{headers_in}       }
@@ -301,7 +311,12 @@ sub send_headers
 
 sub headers_out  { shift->{headers_out} }
 sub content_type { shift->{r}->content_type( @_ ) }
-sub print        { shift->{r}->print( @_ )        }
+sub print
+{
+  my ($s, $str) = @_;
+  $s->{_cache_buffer} .= $str;
+  $s->{r}->print( $str );
+}# end print()
 sub rflush       { shift->{r}->rflush( @_ )       }
 sub did_send_headers { shift->{_did_send_headers} }
 

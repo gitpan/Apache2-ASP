@@ -209,6 +209,7 @@ sub Include
   $path =~ s@^\Q$root\E@@;
   local $ENV{REQUEST_URI} = $path;
   local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
+  local $ENV{SCRIPT_NAME} = $path;
   
   use Apache2::ASP::Mock::RequestRec;
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
@@ -230,6 +231,7 @@ sub TrapInclude
   $path =~ s@^\Q$root\E@@;
   local $ENV{REQUEST_URI} = $path;
   local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
+  local $ENV{SCRIPT_NAME} = $path;
   
   use Apache2::ASP::Mock::RequestRec;
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
