@@ -46,5 +46,7 @@ t/02.01-benchmark.t
 t/01.05-memcycle.t
 t/conf/apache2-asp-config.xml
 t/htdocs/inc.asp
+t/htdocs/masters/main.asp
+t/htdocs/index.asp
 
 META.yml                                 Module meta-data (added by MakeMaker)

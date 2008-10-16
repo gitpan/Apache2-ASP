@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_03   2008-10-16
+  - Added missing files to MANIFEST.
+
+2.00_02   2008-10-15
+  - Partial page caching has been realized.
+
 2.00_01   2008-10-15
   - Complete rewrite.
   !!!! BREAKING CHANGES !!!!

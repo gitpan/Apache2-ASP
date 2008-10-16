@@ -1,0 +1,25 @@
+<%@ OutputCache Duration="60" VaryByParam="someparam" VaryBySession="user_id" %>
+<%@ Page UseMasterPage="/masters/main.asp" %>
+
+<asp:PlaceHolderContent PlaceHolderID="ph_title" id="content2" runat="server">This is the title</asp:PlaceHolderContent>
+
+<asp:PlaceHolderContent PlaceHolderID="placeholder1" id="content1" runat="server">
+  Page content inside of content1:
+  <%= "Hello, World!\n"x2 %>
+<%
+  for( 1...100_000 )
+  {
+    my $ok = $_;
+  }
+%>
+<%
+  if( 0 ) {
+%>
+  Include: <% $Response->Include( $Server->MapPath("/inc.asp") ); %>
+  VirtualInclude: <!-- #include virtual="/inc.asp" -->
+  TrapInclude: <%= join ", ", reverse split /:/, $Response->TrapInclude( $Server->MapPath("/inc.asp") ) %>
+<%
+  }# end if()
+%>
+</asp:PlaceHolderContent>
+
