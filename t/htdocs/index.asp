@@ -12,12 +12,14 @@
     my $ok = $_;
   }
 %>
+
+  Include: <% $Response->Include( $Server->MapPath("/inc.asp"), { somevar => "val1", anothervar => "val2" } ); %>
+
 <%
-  if( 0 ) {
+  if( 1 ) {
 %>
-  Include: <% $Response->Include( $Server->MapPath("/inc.asp") ); %>
   VirtualInclude: <!-- #include virtual="/inc.asp" -->
-  TrapInclude: <%= join ", ", reverse split /:/, $Response->TrapInclude( $Server->MapPath("/inc.asp") ) %>
+  TrapInclude: <%= join ", ", reverse split /:/, $Response->TrapInclude( $Server->MapPath("/inc.asp"), { trap_arg => time() } ) %>
 <%
   }# end if()
 %>

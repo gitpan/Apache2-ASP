@@ -11,10 +11,17 @@ sub new
 {
   my ($class, %args) = @_;
 
-  my $s = bless { }, $class;
+  my $s = bless {LastError => undef}, $class;
   
   return $s;
 }# end new()
+
+
+#==============================================================================
+sub GetLastError
+{
+  $_[0]->{LastError};
+}# end GetLastError()
 
 
 #==============================================================================

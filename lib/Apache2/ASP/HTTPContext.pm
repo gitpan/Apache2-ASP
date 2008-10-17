@@ -97,7 +97,7 @@ sub setup_request
 #==============================================================================
 sub execute
 {
-  my ($s) = @_;
+  my ($s, $args) = @_;
   
   unless( $s->{parent} )
   {
@@ -125,8 +125,13 @@ sub execute
     return $res if defined( $res );
   }# end unless()
   
-  eval {; $s->load_class( $s->handler ); $s->handler->init_asp_objects( $s ); $s->handler->new()->run( $s ) };
-  $s->handle_error if $@;
+  eval {
+    $s->load_class( $s->handler );
+    $s->handler->init_asp_objects( $s );
+    $s->handler->new()->run( $s, $args );
+  };
+  $s->server->{LastError} = $@ if $@;
+  return $s->handle_error if $@;
   
   $s->response->Flush;
   my $res = $s->{parent} ? $s->response->Status : $s->end_request();
@@ -232,14 +237,8 @@ sub handle_phase
 sub handle_error
 {
   my $s = shift;
-  
-  cluck $@;
-  my $error = $@;
-  eval { $s->global_asa->can('Script_OnError')->( ) };
-  if( $@ )
-  {
-    warn "Error: [[$error]] And an additional error was encountered during Script_OnError: $@";
-  }# end if()
+  warn $@;
+  eval { $s->global_asa->can('Script_OnError')->( $@ ) };
   $s->response->Status( 500 );
 }# end handle_error()
 
@@ -326,9 +325,21 @@ sub resolve_request_handler
 {
   my ($s, $uri) = @_;
   
-  my $handler = 'Apache2::ASP::ASPHandler';
-  $s->load_class( $handler );
-  return $handler;
+  ($uri) = split /\?/, $uri;
+  if( $uri =~ m/\.asp$/ )
+  {
+    my $handler = 'Apache2::ASP::ASPHandler';
+    $s->load_class( $handler );
+    return $handler;
+  }
+  elsif( $uri =~ m/^\/handlers\// )
+  {
+    (my $handler = $uri) =~ s/^\/handlers\///;
+    $handler =~ s/[^a-z0-9_\.]/::/g;
+warn "HANDLER: '$handler'";
+    $s->load_class( $handler );
+    return $handler;
+  }# end if()
 }# end resolve_request_handler()
 
 

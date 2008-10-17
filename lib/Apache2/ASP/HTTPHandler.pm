@@ -10,11 +10,12 @@ BEGIN {
     $Server   $Application
     $Session  $Form
     $Config   $Stash
+    %modes
   );
-  use vars @VARS;
+  sub VARS { @VARS }
 }
+use vars __PACKAGE__->VARS;
 
-sub VARS { @VARS }
 
 
 #==============================================================================
@@ -27,7 +28,34 @@ sub new
 
 
 #==============================================================================
-sub run;
+sub before_run { }
+sub after_run  { }
+
+
+#==============================================================================
+sub run
+{
+  my ($s, $context, @args) = @_;
+  
+  # Call our extension hooks:
+  if( my $mode = $context->request->Form->{mode} )
+  {
+    if( defined( my $handler = $s->modes( $mode )) )
+    {
+      return $handler->( @_ );
+    }
+    else
+    {
+      $context->response->Write("Unknown mode '$mode'.");
+    }# end if()
+  }
+  else
+  {
+    $context->response->Write("This is the default handler response.");
+  }# end if()
+  
+  $context->response->Flush;
+}# end run()
 
 
 #==============================================================================
@@ -51,6 +79,25 @@ sub init_asp_objects
   
   1;
 }# end init_asp_objects()
+
+
+#==============================================================================
+sub register_mode
+{
+  my ($s, %info) = @_;
+  
+  $modes{ $info{name} } = $info{handler};
+}# end register_mode()
+
+
+#==============================================================================
+sub modes
+{
+  my $s = shift;
+  my $key = shift;
+  
+  @_ ? $modes{$key} = shift : $modes{$key};
+}# end modes()
 
 1;# return true:
 

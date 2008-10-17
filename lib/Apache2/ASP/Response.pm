@@ -7,6 +7,7 @@ use HTTP::Date qw( time2iso str2time time2str );
 use Carp qw( croak confess );
 use HTTP::Headers;
 use Scalar::Util 'weaken';
+use Apache2::ASP::Mock::RequestRec;
 
 our $MAX_BUFFER_LENGTH = 1024 ** 2;
 
@@ -200,7 +201,7 @@ sub Write
 #==============================================================================
 sub Include
 {
-  my ($s, $path) = @_;
+  my ($s, $path, $args) = @_;
   
   my $ctx = $s->context;
   local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
@@ -215,14 +216,14 @@ sub Include
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
   $clone_r->uri( $path );
   $s->context->setup_request( $clone_r, $ctx->cgi );
-  $s->context->execute();
+  $s->context->execute( $args );
 }# end Include()
 
 
 #==============================================================================
 sub TrapInclude
 {
-  my ($s, $path) = @_;
+  my ($s, $path, $args) = @_;
   
   my $ctx = $s->context;
   local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
@@ -233,13 +234,12 @@ sub TrapInclude
   local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
   local $ENV{SCRIPT_NAME} = $path;
   
-  use Apache2::ASP::Mock::RequestRec;
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
   $clone_r->uri( $path );
   $s->context->setup_request( $clone_r, $ctx->cgi );
 
   $IS_TRAPINCLUDE = 1;
-  $s->context->execute();
+  $s->context->execute( $args );
   $s->context->response->Flush;
   
   $IS_TRAPINCLUDE = 0;

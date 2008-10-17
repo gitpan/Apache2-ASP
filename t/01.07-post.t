@@ -13,7 +13,7 @@ my $ua = Apache2::ASP::Test::UserAgent->new(
 );
 
 my $res = $ua->post('/index.asp', [ somevar => 'someval' ]);
-warn $res->content;
+#warn $res->content;
 
 
 

@@ -17,8 +17,32 @@ sub new
     uri    => '',
     headers_out => { },
     headers_in  => { },
+    pnotes => { },
+    cleanup_handlers => [ ],
   }, $class;
 }# end new()
+
+
+#==============================================================================
+sub push_handlers
+{
+  my ($s, $ref, @args) = @_;
+  
+  push @{$s->{cleanup_handlers}}, {
+    subref => $ref,
+    args   => \@args,
+  };
+}# end push_handlers()
+
+
+#==============================================================================
+sub pnotes
+{
+  my $s = shift;
+  my $key = shift;
+  
+  @_ ? $s->{pnotes}->{$key} = shift : $s->{pnotes}->{$key};
+}# end pnotes()
 
 
 #==============================================================================

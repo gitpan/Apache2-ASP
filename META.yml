@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Apache2-ASP
-version:             2.00_03
+version:             2.00_04
 abstract:            ASP for Perl, reloaded.
 license:             ~
 author:              
@@ -26,6 +26,7 @@ requires:
     Storable:                      0
     Test::Exception:               0
     Test::More:                    0
+    Time::HiRes:                   0
     XML::Parser:                   0
     XML::Simple:                   0
 meta-spec:

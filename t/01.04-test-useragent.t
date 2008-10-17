@@ -19,6 +19,6 @@ for( 1...10 )
 {
   my $res = $ua->get('/index.asp?somevar=someval');
   ok( $res->content );
-warn $res->content . "\n" if $_ == 1;
+#warn $res->content . "\n" if $_ == 1;
 }
 

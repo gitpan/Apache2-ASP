@@ -15,8 +15,8 @@ sub new
 {
   my ($class, %args) = @_;
   
-  my $s = bless {context => $args{context}}, $class;
-  my $conn = $s->{context}->config->data_connections->session;
+  my $s = bless {}, $class;
+  my $conn = $s->context->config->data_connections->session;
   
   local $^W = 0;
   __PACKAGE__->set_db('Sessions', $conn->dsn,

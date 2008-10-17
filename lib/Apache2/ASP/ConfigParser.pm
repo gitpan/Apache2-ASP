@@ -80,6 +80,9 @@ sub parse
   };
   
   my $config = Apache2::ASP::Config->new( $doc, $root );
+  
+  push @INC, $config->web->handler_root;
+  
   return $config;
 }# end parse()
 

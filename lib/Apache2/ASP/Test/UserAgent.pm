@@ -24,6 +24,10 @@ sub new
 
 
 #==============================================================================
+sub context { $_[0]->{context} }
+
+
+#==============================================================================
 sub post
 {
   my ($s, $uri, $args) = @_;
@@ -46,7 +50,57 @@ sub post
 
 
 #==============================================================================
-sub upload;
+sub upload
+{
+  my ($s, $uri, $args) = @_;
+  
+  %ENV = ( );
+  my $req = POST $uri, Content_Type => 'form-data', Content => $args;
+  $ENV{REQUEST_METHOD} = 'POST';
+  $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
+  $s->{context} = Apache2::ASP::HTTPContext->new( );
+  my $cgi = $s->_setup_cgi( $req );
+  $ENV{CONTENT_TYPE} = 'multipart/form-data';
+  
+  my $r = Apache2::ASP::Mock::RequestRec->new();
+  $r->uri( $uri );
+  $r->args( $cgi->{querystring} );
+  
+  $s->{context}->setup_request( $r, $cgi );
+  
+  require Apache2::ASP::UploadHook;
+  my $hook_obj = Apache2::ASP::UploadHook->new(
+    handler_class => $s->{context}->resolve_request_handler( $uri ),
+  );
+  my $hook_ref = sub { $hook_obj->hook( @_ ) };
+  
+  # Now call the upload hook...
+  require Apache2::ASP::Test::UploadObject;
+  foreach my $uploaded_file ( keys( %{ $cgi->{uploads} } ) )
+  {
+    my $tmpfile = $cgi->upload_info($uploaded_file, 'tempname' );
+    my $filename = $cgi->upload_info( $uploaded_file, 'filename' );
+    open my $ifh, '<', $tmpfile
+      or die "Cannot open temp file '$tmpfile' for reading: $!";
+    binmode($ifh);
+    while( my $line = <$ifh> )
+    {
+      $hook_ref->(
+        Apache2::ASP::Test::UploadObject->new(filename =>  $filename, upload_filename => $filename),
+        $line
+      );
+    }# end while()
+    
+    # One more *without* any data:
+    $hook_ref->(
+      Apache2::ASP::Test::UploadObject->new(filename =>  $filename, upload_filename => $filename),
+      undef
+    );
+  }# end foreach()
+  
+  # NOW we can execute...
+  return $s->_setup_response( $s->{context}->execute() );
+}# end upload()
 
 
 #==============================================================================

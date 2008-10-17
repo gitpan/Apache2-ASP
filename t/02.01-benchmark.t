@@ -15,15 +15,16 @@ my $ua = Apache2::ASP::Test::UserAgent->new(
 
 
 my $start = gettimeofday();
-for( 1...1000 )
+my $max = 100;
+for( 1...$max )
 {
-  warn $_ if $_ % 100 == 0;
+  warn $_ if $_ % 20 == 0;
   my $res = $ua->get('/index.asp');
-  warn $res->content if $_ == 1;
+#  warn $res->content if $_ == 1;
 }
 
 my $diff = gettimeofday() - $start;
-my $persec = 1000 / $diff;
-warn "$persec/second";
+my $persec = $max / $diff;
+warn "\n\t$persec requests/second";
 
 

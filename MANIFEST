@@ -6,6 +6,7 @@ lib/Apache2/ASP/ApplicationStateManager/MySQL.pm
 lib/Apache2/ASP/ApplicationStateManager/SQLite.pm
 lib/Apache2/ASP/ConfigFinder.pm
 lib/Apache2/ASP/Apache.pm
+lib/Apache2/ASP/ASPPage.pm
 lib/Apache2/ASP/Config.pm
 lib/Apache2/ASP/ConfigParser.pm
 lib/Apache2/ASP/ModPerl2CGI.pm
@@ -34,6 +35,11 @@ lib/Apache2/ASP/SessionStateManager.pm
 lib/Apache2/ASP/ASPDOM/Document.pm
 lib/Apache2/ASP/ASPDOM/Node.pm
 lib/Apache2/ASP.pm
+lib/Apache2/ASP/UploadHandler.pm
+lib/Apache2/ASP/UploadHook.pm
+lib/Apache2/ASP/UploadHookArgs.pm
+lib/Apache2/ASP/MediaManager.pm
+lib/Apache2/ASP/Test/UploadObject.pm
 t/01.02-findconfig.t
 t/01.03-configloader.t
 t/01.04-test-useragent.t
@@ -45,8 +51,13 @@ t/01.07-post.t
 t/02.01-benchmark.t
 t/01.05-memcycle.t
 t/conf/apache2-asp-config.xml
+t/conf/httpd.conf
 t/htdocs/inc.asp
 t/htdocs/masters/main.asp
 t/htdocs/index.asp
+t/handlers/upload01.pm
+t/PAGE_CACHE/DefaultApp/.ok
+t/MEDIA/.ok
+
 
 META.yml                                 Module meta-data (added by MakeMaker)

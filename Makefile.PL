@@ -6,7 +6,8 @@ WriteMakefile(
   NAME              => 'Apache2::ASP',
   VERSION_FROM      => 'lib/Apache2/ASP.pm', # finds $VERSION
   PREREQ_PM         => {
-    Test::More => 0,
+    Test::More              => 0,
+    Time::HiRes             => 0,
     Test::Exception         => 0,
     HTTP::Body              => 1.01,
     Data::Properties::YAML  => 0.02,

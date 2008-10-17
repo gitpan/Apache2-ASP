@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_04
+  - Added missing files to MANIFEST.
+  - Added UploadHandler and MediaManager back to the distribution.
+  - Added some upload tests.
+
 2.00_03   2008-10-16
   - Added missing files to MANIFEST.
 
