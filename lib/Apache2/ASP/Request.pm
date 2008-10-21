@@ -26,7 +26,7 @@ sub new
 #==============================================================================
 sub context
 {
-  Apache2::ASP::HTTPContext->current;
+  $Apache2::ASP::HTTPContext::ClassName->current;
 }# end context()
 
 

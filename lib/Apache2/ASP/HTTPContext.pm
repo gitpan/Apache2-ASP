@@ -12,13 +12,15 @@ use Scalar::Util 'weaken';
 use HTTP::Headers;
 
 our $instance;
+our $ClassName = __PACKAGE__;
 
 #==============================================================================
 sub current
 {
   my $class = shift;
-
-  return $instance;
+  
+  no strict 'refs';
+  return ${"$ClassName\::instance"};
 }# end current()
 
 
@@ -26,14 +28,43 @@ sub current
 sub new
 {
   my ($class, %args) = @_;
-  
+
   my $s = bless {
     %args,
     config  => $args{parent} ? $args{parent}->{config} : Apache2::ASP::ConfigLoader->load(),
   }, $class;
   
+  # Init the config unless we already have:
+  $s->_init_config unless $s->{parent};
+  
   $instance = $s;
 }# end new()
+
+
+#==============================================================================
+sub _init_config
+{
+  my ($s) = @_;
+  
+  push @INC, $s->config->web->handler_root;
+  foreach my $var ( $s->config->system->env_vars )
+  {
+    while( my ($key,$val) = each(%$var) )
+    {
+      $ENV{$key} = $val;
+    }# end while()
+  }# end foreach()
+  
+  foreach my $libdir ( $s->config->system->libs )
+  {
+    push @INC, $libdir unless grep { $_ eq $libdir } @INC;
+  }# end foreach()
+  
+  foreach my $module ( $s->config->system->load_modules )
+  {
+    $s->load_class( $module );
+  }# end foreach()
+}# end _init_config()
 
 
 #==============================================================================
@@ -44,14 +75,14 @@ sub setup_request
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
   my $headers = HTTP::Headers->new();
-  my $h = $s->{r}->headers_out;
+  my $h = $s->r->headers_out;
   while( my($k,$v) = each(%$h) )
   {
     $headers->push_header( $k => $v );
   }# end while()
   $s->{headers_out} = $headers;
   
-  $h = $s->{r}->headers_in;
+  $h = $s->r->headers_in;
   if( UNIVERSAL::isa($h, 'HTTP::Headers') )
   {
     $s->{headers_in} = $h;
@@ -128,10 +159,13 @@ sub execute
   eval {
     $s->load_class( $s->handler );
     $s->handler->init_asp_objects( $s );
-    $s->handler->new()->run( $s, $args );
+    $s->run_handler( $args );
   };
-  $s->server->{LastError} = $@ if $@;
-  return $s->handle_error if $@;
+  if( $@ )
+  {
+    $s->server->{LastError} = $@;
+    return $s->handle_error;
+  }# end if()
   
   $s->response->Flush;
   my $res = $s->{parent} ? $s->response->Status : $s->end_request();
@@ -143,8 +177,24 @@ sub execute
     }# end if()
   }# end if()
   
+  $res = 200 if $res eq '0';
   return $res;
 }# end execute()
+
+
+#==============================================================================
+sub run_handler
+{
+  my ($s, $args) = @_;
+  
+  my $handler = $s->handler->new();
+  $handler->before_run( $s, $args );
+  if( ! $s->{did_end} )
+  {
+    $handler->run( $s, $args );
+    $handler->after_run( $s, $args );
+  }# end if()
+}# end run_handler()
 
 
 #==============================================================================
@@ -154,10 +204,8 @@ sub setup_inc
 
   my $www_root = $s->config->web->www_root;
   push @INC, $www_root unless grep { $_ eq $www_root } @INC;
-  foreach my $lib ( $s->config->system->libs )
-  {
-    push @INC, $lib unless grep { $_ eq $lib } @INC;
-  }# end foreach()
+  my %libs = map { $_ => 1 } @INC;
+  push @INC, grep { ! $libs{$_} } $s->config->system->libs;
 }# end setup_inc()
 
 
@@ -238,8 +286,10 @@ sub handle_error
 {
   my $s = shift;
   warn $@;
-  eval { $s->global_asa->can('Script_OnError')->( $@ ) };
+  my $error = $@;
+  eval { $s->global_asa->can('Script_OnError')->( $error ) };
   $s->response->Status( 500 );
+  return $s->end_request;
 }# end handle_error()
 
 
@@ -248,7 +298,8 @@ sub end_request
 {
   my $s = shift;
   
-  $s->handle_phase( $s->global_asa->can('Script_OnEnd') );
+  $s->handle_phase( $s->global_asa->can('Script_OnEnd') )
+    unless $s->server->GetLastError;
   
   $s->response->End;
   $s->session->save;
@@ -336,7 +387,6 @@ sub resolve_request_handler
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
     $handler =~ s/[^a-z0-9_\.]/::/g;
-warn "HANDLER: '$handler'";
     $s->load_class( $handler );
     return $handler;
   }# end if()
@@ -353,8 +403,8 @@ sub resolve_global_asa_class
   if( -f $file )
   {
     $class = $s->config->web->application_name . '::GlobalASA';
-    require $file;
-#    $s->load_class( 'GlobalASA' );
+    eval { require $file unless $INC{$file} };
+    confess $@ if $@;
   }
   else
   {

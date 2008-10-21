@@ -20,7 +20,8 @@ sub run
   my $asp_filename = $Request->ServerVariables('SCRIPT_FILENAME')
     or return;
   my $cache_root = $Config->web->page_cache_root;
-  my ($pm_filename) = $asp_filename =~ m/([^\/]+)$/;
+  my $web_root = $Config->web->www_root;
+  (my $pm_filename = $asp_filename) =~ s/^\Q$web_root\E\///; # =~ m/([^\/]+)$/;
   $pm_filename =~ s/[^a-z0-9_]/_/ig;
   $pm_filename .= ".pm";
   my $pm_folder = $cache_root . '/' . $Config->web->application_name;
@@ -29,7 +30,6 @@ sub run
   my $pkg_path = $Config->web->application_name . '/' . $pm_filename;
   
   push @INC, $cache_root unless grep { $_ eq $cache_root } @INC;
-  
   if( -f $asp_filename )
   {
     (my $pkg_name = $pkg_path) =~ s/\//::/g;
@@ -42,18 +42,22 @@ sub run
     }# end if()
     
     # Now load and execute the compiled ASP:
-    eval {
+#    eval {
       delete($INC{$pkg_path});
       require $pkg_path;
       my $page = $pkg_name->new( virtual_path => $ENV{SCRIPT_NAME} );
       $page->run( $context );
       return $context->response->Status == 200 ? 0 : $context->response->Status;
-    };
-    confess $@ if $@;
+#    };
+    if( $@ )
+    {
+      $context->response->Status( 500 );
+      confess $@;
+    }# end if()
   }
   else
   {
-    return 404;
+    return $context->response->Status( 404 );
   }# end if()
 }# end run()
 

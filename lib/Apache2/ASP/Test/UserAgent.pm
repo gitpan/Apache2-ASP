@@ -10,6 +10,9 @@ use HTTP::Body;
 use Apache2::ASP::HTTPContext;
 use Apache2::ASP::SimpleCGI;
 use Apache2::ASP::Mock::RequestRec;
+use Carp 'confess';
+
+our $ContextClass = 'Apache2::ASP::HTTPContext';
 
 
 #==============================================================================
@@ -35,7 +38,7 @@ sub post
   $args ||= [ ];
   my $req = POST $uri, $args;
   %ENV = ( );
-  $s->{context} = Apache2::ASP::HTTPContext->new( );
+  $s->{context} = $ContextClass->new( );
   $ENV{REQUEST_METHOD} = 'POST';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -58,7 +61,7 @@ sub upload
   my $req = POST $uri, Content_Type => 'form-data', Content => $args;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
-  $s->{context} = Apache2::ASP::HTTPContext->new( );
+  $s->{context} = $ContextClass->new( );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'multipart/form-data';
   
@@ -86,14 +89,20 @@ sub upload
     while( my $line = <$ifh> )
     {
       $hook_ref->(
-        Apache2::ASP::Test::UploadObject->new(filename =>  $filename, upload_filename => $filename),
+        Apache2::ASP::Test::UploadObject->new(
+          filename        => $filename,
+          upload_filename => $filename
+        ),
         $line
       );
     }# end while()
     
-    # One more *without* any data:
+    # One more *without* any data (this will signify and EOF condition):
     $hook_ref->(
-      Apache2::ASP::Test::UploadObject->new(filename =>  $filename, upload_filename => $filename),
+      Apache2::ASP::Test::UploadObject->new(
+        filename        =>  $filename,
+        upload_filename => $filename
+      ),
       undef
     );
   }# end foreach()
@@ -104,7 +113,26 @@ sub upload
 
 
 #==============================================================================
-sub submit_form;
+sub submit_form
+{
+  my ($s, $form) = @_;
+  
+  my $req = $form->click;
+  
+  %ENV = ( );
+  $s->{context} = $ContextClass->new( );
+  $ENV{REQUEST_METHOD} = uc( $req->method );
+  my $cgi = $s->_setup_cgi( $req );
+  $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
+  
+  my $r = Apache2::ASP::Mock::RequestRec->new();
+  $r->uri( $req->uri );
+  $r->args( $cgi->{querystring} );
+  
+  $s->{context}->setup_request( $r, $cgi );
+  
+  return $s->_setup_response( $s->{context}->execute() );
+}# end submit_form()
 
 
 #==============================================================================
@@ -114,7 +142,7 @@ sub get
   
   my $req = GET $uri;
   %ENV = ( );
-  $s->{context} = Apache2::ASP::HTTPContext->new( );
+  $s->{context} = $ContextClass->new( );
   $ENV{REQUEST_METHOD} = 'GET';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';

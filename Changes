@@ -1,6 +1,17 @@
 Revision history for Perl extension Apache2::ASP.
 
-2.00_04
+2.00_05   2008-10-20
+  - Apache2::ASP::HTTPContext now handles final config initialization including
+    setting %ENV vars, @INC modifications and loading modules as specified
+    in the config xml file.
+  - Code Coverage: 70.50% (average:stmt+bran+cond+sub)
+  - Bugfix: Application->save was getting called at the beginning and end of 
+    *every* request.  This behavior has been fixed.
+  - Various minor tweaks, removing "vestigial" code chunks.
+  - Subclassing Apache2::ASP::HTTPContext is now possible.
+  - Syntax errors inside of includes are handled better.
+
+2.00_04   2008-10-16
   - Added missing files to MANIFEST.
   - Added UploadHandler and MediaManager back to the distribution.
   - Added some upload tests.

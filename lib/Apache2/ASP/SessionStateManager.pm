@@ -19,12 +19,9 @@ sub new
   my $conn = $s->context->config->data_connections->session;
   
   local $^W = 0;
-  __PACKAGE__->set_db('Sessions', $conn->dsn,
+  __PACKAGE__->set_db('Main', $conn->dsn,
     $conn->username,
-    $conn->password, {
-      RaiseError  => 1,
-      AutoCommit  => 1,
-    }
+    $conn->password
   );
   
   # Prepare our Session:
@@ -54,7 +51,7 @@ sub new
 #==============================================================================
 sub context
 {
-  Apache2::ASP::HTTPContext->current;
+  $Apache2::ASP::HTTPContext::ClassName->current;
 }# end context()
 
 
@@ -257,7 +254,7 @@ sub write_session_cookie
 sub dbh
 {
   my $s = shift;
-  return $s->db_Sessions;
+  return $s->db_Main;
 }# end dbh()
 
 

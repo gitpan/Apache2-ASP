@@ -36,6 +36,17 @@ sub push_handlers
 
 
 #==============================================================================
+sub filename
+{
+  my $s = shift;
+  
+  my $config = Apache2::ASP::HTTPContext->current->config;
+  
+  return $config->web->www_root . $s->uri;
+}# end filename()
+
+
+#==============================================================================
 sub pnotes
 {
   my $s = shift;
@@ -56,7 +67,15 @@ sub buffer
 sub uri
 {
   my $s = shift;
-  @_ ? $s->{uri} = shift : $s->{uri};
+  
+  if( @_ )
+  {
+    $s->{uri} = shift;
+  }
+  else
+  {
+    return $s->{uri};
+  }# end if()
 }# end uri()
 
 

@@ -20,7 +20,7 @@ sub new
   my ($class, %args) = @_;
   
   $class->init_asp_objects( $class->context );
-  
+    
   foreach(qw/ virtual_path /)
   {
     confess "Required param '$_' was not provided"
@@ -73,7 +73,7 @@ warn "(Re)loading $pkg";
 # Public read-only properties:
 sub physical_path { $_[0]->{physical_path} }
 sub virtual_path  { $_[0]->{virtual_path}  }
-sub context       { Apache2::ASP::HTTPContext->current }
+sub context       { $Apache2::ASP::HTTPContext::ClassName->current }
 sub package_name  { $_[0]->{package_name} }
 sub pm_path       { $_[0]->{pm_path}     }
 sub directives    { my $s = shift; @_ ? $s->{directives} = shift : $s->{directives} || { } }
@@ -166,7 +166,7 @@ sub _read_cache
     my $cache_id = $s->_cache_key;
     
     my $range_start = time2iso( time() - $cache_args->{Duration} );
-    my $sth = $s->context->application->db_Applications->prepare(<<"SQL");
+    my $sth = $s->context->application->db_Main->prepare(<<"SQL");
 SELECT pagecache_data
 FROM asp_pagecache
 WHERE pagecache_id = ?
@@ -215,13 +215,13 @@ sub _write_cache
 
   my $key = $s->_cache_key;
 warn "Storing cache...";  
-  my $sth = $s->context->application->db_Applications->prepare(<<"SQL");
+  my $sth = $s->context->application->db_Main->prepare(<<"SQL");
 DELETE FROM asp_pagecache WHERE pagecache_id = ?;
 SQL
   $sth->execute( $key );
   $sth->finish();
   
-  $sth = $s->context->application->db_Applications->prepare(<<"SQL");
+  $sth = $s->context->application->db_Main->prepare(<<"SQL");
 INSERT INTO asp_pagecache ( pagecache_id, created_on, pagecache_data )
 VALUES ( ?, ?, ? )
 SQL

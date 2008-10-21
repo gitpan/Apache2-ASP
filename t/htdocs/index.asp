@@ -9,15 +9,16 @@
 <%
   for( 1...100_000 )
   {
-    my $ok = $_;
+    my $ABC = 123;
+#    $Response->Write("I am a little teapot<br>\n");
   }
 %>
 
-  Include: <% $Response->Include( $Server->MapPath("/inc.asp"), { somevar => "val1", anothervar => "val2" } ); %>
 
 <%
   if( 1 ) {
 %>
+  Include: <% $Response->Include( $Server->MapPath("/inc.asp"), { somevar => "val1", anothervar => "val2" } ); %>
   VirtualInclude: <!-- #include virtual="/inc.asp" -->
   TrapInclude: <%= join ", ", reverse split /:/, $Response->TrapInclude( $Server->MapPath("/inc.asp"), { trap_arg => time() } ) %>
 <%

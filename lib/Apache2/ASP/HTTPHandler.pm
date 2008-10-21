@@ -17,7 +17,6 @@ BEGIN {
 use vars __PACKAGE__->VARS;
 
 
-
 #==============================================================================
 sub new
 {
@@ -30,32 +29,7 @@ sub new
 #==============================================================================
 sub before_run { }
 sub after_run  { }
-
-
-#==============================================================================
-sub run
-{
-  my ($s, $context, @args) = @_;
-  
-  # Call our extension hooks:
-  if( my $mode = $context->request->Form->{mode} )
-  {
-    if( defined( my $handler = $s->modes( $mode )) )
-    {
-      return $handler->( @_ );
-    }
-    else
-    {
-      $context->response->Write("Unknown mode '$mode'.");
-    }# end if()
-  }
-  else
-  {
-    $context->response->Write("This is the default handler response.");
-  }# end if()
-  
-  $context->response->Flush;
-}# end run()
+sub run;
 
 
 #==============================================================================
@@ -65,7 +39,11 @@ sub init_asp_objects
   
   no strict 'refs';
   my $selfclass = ref($s) || $s;
-  foreach my $class ( grep { $_->isa('Apache2::ASP::HTTPHandler') } ( $selfclass, @{"$selfclass\::ISA"} ) )
+  my @classes = (
+    grep { $_->isa('Apache2::ASP::HTTPHandler') } 
+    ( $selfclass, @{"$selfclass\::ISA"} )
+  );
+  foreach my $class ( @classes )
   {
     ${"$class\::Request"}     = $context->request;
     ${"$class\::Response"}    = $context->response;
@@ -74,7 +52,7 @@ sub init_asp_objects
     ${"$class\::Application"} = $context->application;
     ${"$class\::Config"}      = $context->config;
     ${"$class\::Form"}        = $context->request->Form;
-    ${"$class\::Stash"}        = $context->stash;
+    ${"$class\::Stash"}       = $context->stash;
   }# end foreach()
   
   1;

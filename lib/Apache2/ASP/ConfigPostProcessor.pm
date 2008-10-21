@@ -1,9 +1,8 @@
 
-package Apache2::ASP::Mock::ClientSocket;
+package Apache2::ASP::ConfigPostProcessor;
 
 use strict;
 use warnings 'all';
-use Scalar::Util 'weaken';
 
 
 #==============================================================================
@@ -11,20 +10,12 @@ sub new
 {
   my ($class, %args) = @_;
   
-  my $s = bless \%args, $class;
-  
-  weaken($s->{connection});
-  return $s;
+  return bless \%args, $class;
 }# end new()
 
 
 #==============================================================================
-sub close
-{
-  my $s = shift;
-  
-  $s->{connection}->aborted( 1 );
-}# end close()
+sub post_process($$);
 
 1;# return true:
 

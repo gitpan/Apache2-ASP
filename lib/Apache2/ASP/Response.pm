@@ -19,6 +19,7 @@ sub new
 {
   my ($class, %args) = @_;
   
+  delete($args{context});
   # Just guessing:
   my $s = bless {
     %args,
@@ -30,7 +31,6 @@ sub new
   }, $class;
   
   $s->Expires( $args{_expires} || 0 );
-  weaken($s->{context});
   return $s;
 }# end new()
 
@@ -38,8 +38,7 @@ sub new
 #==============================================================================
 sub context
 {
-  Apache2::ASP::HTTPContext->current;
-#  $_[0]->{context};
+  $Apache2::ASP::HTTPContext::ClassName->current;
 }# end context()
 
 
@@ -133,7 +132,7 @@ sub Redirect
   
   $s->Clear;
   $s->AddHeader( location => $url );
-  $s->Status( '301 Found' );
+  $s->Status( 301 );
   $s->End;
 }# end Redirect()
 
@@ -160,17 +159,23 @@ sub Flush
   {
     if( $IS_TRAPINCLUDE )
     {
-      # Do nothing?
+      # Do nothing:
+      # We are not flushing - we are doing a Response.TrapInclude(...)
     }
     else
     {
-      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
+    no strict 'refs';
+    my $parent = $s->context->{parent};
+#    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $parent );
+    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $s->context->{parent};
+#      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
       return $s->context->response->Flush;
     }# end if()
   }# end if()
   return unless $s->IsClientConnected;
   $s->_send_headers unless $s->context->did_send_headers;
   
+  no warnings 'uninitialized';
   $s->context->print( join '', @{delete($s->{_output_buffer})} );
   $s->context->rflush;
   $s->{_output_buffer} = [ ];
@@ -183,14 +188,20 @@ our $WRITES = 0;
 sub Write
 {
   my $s = shift;
+  return if $s->context->{did_end};
   
   if( $s->context->{parent} && ! $IS_TRAPINCLUDE )
   {
-    local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
+    no strict 'refs';
+    my $parent = $s->context->{parent};
+#    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $parent );
+    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $s->context->{parent};
+#    local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
     $s->context->response->Write( @_ );
   }
   else
   {
+    no warnings 'uninitialized';
     $s->{_buffer_length} += length($_[0]);
     push @{$s->{_output_buffer}}, shift;
     $s->Flush if (! $s->{_do_buffer}) || $s->{_buffer_length} >= $MAX_BUFFER_LENGTH;
@@ -202,9 +213,11 @@ sub Write
 sub Include
 {
   my ($s, $path, $args) = @_;
+  return if $s->context->{did_end};
   
   my $ctx = $s->context;
-  local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
+  no strict 'refs';
+  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
   
   my $root = $s->context->config->web->www_root;
   $path =~ s@^\Q$root\E@@;
@@ -216,7 +229,11 @@ sub Include
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
   $clone_r->uri( $path );
   $s->context->setup_request( $clone_r, $ctx->cgi );
-  $s->context->execute( $args );
+  my $res = $s->context->execute( $args );
+  if( $res > 200 )
+  {
+    $s->Status( $res );
+  }# end if()
 }# end Include()
 
 
@@ -224,9 +241,11 @@ sub Include
 sub TrapInclude
 {
   my ($s, $path, $args) = @_;
+  return if $s->context->{did_end};
   
   my $ctx = $s->context;
-  local $Apache2::ASP::HTTPContext::instance = Apache2::ASP::HTTPContext->new( parent => $ctx );
+  no strict 'refs';
+  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
   
   my $root = $s->context->config->web->www_root;
   $path =~ s@^\Q$root\E@@;
@@ -303,7 +322,6 @@ sub Clear
 
 
 #==============================================================================
-# XXX: Decouple
 sub IsClientConnected
 {
   return ! $_[0]->context->connection->aborted;
@@ -320,7 +338,6 @@ sub _send_headers
   $s->context->content_type('text/html') unless $s->context->content_type;
   $s->context->headers_out->push_header( Expires => $s->{_expires_absolute} );
   $s->context->send_headers;
-  
 }# end _send_headers()
 
 

@@ -18,6 +18,7 @@ sub load
   my $doc = XML::Simple::XMLin( $path,
     SuppressEmpty => '',
     Cache => 'storable',
+    ForceArray => [qw/ var /],
   );
   
   $path =~ s/\/conf\/[^\/]+$//;

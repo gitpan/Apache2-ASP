@@ -35,9 +35,10 @@ sub init_server_root
     $s->{web}->{settings}->{$_} =~ s/\@ServerRoot\@/$root/;
   }# end foreach()
   
-  foreach(qw/ application handler media_manager_upload www page_cache /)
+  foreach my $key (qw/ application handler media_manager_upload www page_cache /)
   {
-    $s->{web}->{"$_\_root"} =~ s/\@ServerRoot\@/$root/;
+    $s->{web}->{"$key\_root"} =~ s/\@ServerRoot\@/$root/
+      if $s->{web}->{"$key\_root"};
   }# end foreach()
 }# end init_server_root()
 

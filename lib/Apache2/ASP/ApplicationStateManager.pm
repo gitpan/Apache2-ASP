@@ -15,19 +15,13 @@ sub new
 {
   my ($class, %args) = @_;
   
-  my $context = delete($args{context});
-  my $s = bless {
-    context => $context,
-  }, $class;
+  my $s = bless { }, $class;
 
-  my $conn = $s->{context}->config->data_connections->application;
+  my $conn = $s->context->config->data_connections->application;
   local $^W = 0;
-  __PACKAGE__->set_db('Applications', $conn->dsn,
+  __PACKAGE__->set_db('Main', $conn->dsn,
     $conn->username,
-    $conn->password, {
-      RaiseError  => 1,
-      AutoCommit  => 1,
-    }
+    $conn->password
   );
   
   if( my $res = $s->retrieve )
@@ -44,7 +38,7 @@ sub new
 #==============================================================================
 sub context
 {
-  Apache2::ASP::HTTPContext->current;
+  $Apache2::ASP::HTTPContext::ClassName->current;
 }# end context()
 
 
@@ -89,8 +83,6 @@ sub retrieve
   return unless $data;
   
   $data = thaw($data);
-  $data->{$_} = delete($s->{$_}) foreach qw/ context dbh /;
-  weaken($data->{context});
   undef(%$s);
   $s = bless $data, ref($s);
   
@@ -128,11 +120,10 @@ sub save
     WHERE application_id = ?
 
   my $data = { %$s };
-  delete($data->{dbh});
-  delete($data->{context});
+  delete($data->{__signature} );
   $sth->execute(
     freeze( $data ),
-    $s->{application_name}
+    $s->context->config->web->application_name
   );
   $sth->finish();
   
@@ -144,7 +135,7 @@ sub save
 sub dbh
 {
   my $s = shift;
-  return $s->db_Applications;
+  return $s->db_Main;
 }# end dbh()
 
 
@@ -153,7 +144,6 @@ sub DESTROY
 {
   my $s = shift;
   
-  eval { $s->{dbh}->disconnect } if $s->{dbh};
   delete($s->{$_}) foreach keys(%$s);
 }# end DESTROY()
 

@@ -13,6 +13,9 @@
       <var>
         <myvar>value</myvar>
       </var>
+      <var>
+        <myvar2>value</myvar2>
+      </var>
     </env_vars>
     <settings>
       <a_setting>a_setting_value</a_setting>
@@ -29,7 +32,6 @@
     <www_root>@ServerRoot@/htdocs</www_root>
     <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
     <request_filters>
-<!--
       <filter>
         <uri_match>/.*</uri_match>
         <class>My::MemberFilter</class>
@@ -38,7 +40,6 @@
         <uri_equals>/index.asp</uri_equals>
         <class>My::MemberFilter2</class>
       </filter>
--->
     </request_filters>
   </web>
 
@@ -59,7 +60,7 @@
       <password></password>
     </application>
     <main>
-      <dsn>DBI:SQLite:dbname=cloud_t3n_test</dsn>
+      <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
       <username></username>
       <password></password>
     </main>

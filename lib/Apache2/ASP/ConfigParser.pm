@@ -43,6 +43,20 @@ sub parse
     {
       $doc->{system}->{load_modules}->{module} = [ ];
     }# end if()
+    
+    $doc->{system}->{env_vars} ||= [ ];
+    if( $doc->{system}->{env_vars}->{var} )
+    {
+      $doc->{system}->{env_vars} = [ $doc->{system}->{env_vars}->{var} ]
+        unless ref($doc->{system}->{env_vars}->{var}) eq 'ARRAY';
+    }
+    else
+    {
+      $doc->{system}->{env_vars}= [ ];
+    }# end if()
+    
+    # Post-processor:
+    $doc->{system}->{post_processor} ||= undef;
   };
   
   WEB: {
@@ -59,19 +73,6 @@ sub parse
     }# end if()
   };
   
-  ENV: {
-    $doc->{env_vars} ||= { };
-    if( $doc->{env_vars}->{var} )
-    {
-      $doc->{env_vars} = [ $doc->{env_vars}->{var} ]
-        unless ref($doc->{env_vars}->{var}) eq 'ARRAY';
-    }
-    else
-    {
-      $doc->{env_vars}= [ ];
-    }# end if()
-  };
-  
   DATA_CONNECTIONS: {
     $doc->{data_connections} ||= { };
     $doc->{data_connections}->{session} ||= { };
@@ -81,7 +82,13 @@ sub parse
   
   my $config = Apache2::ASP::Config->new( $doc, $root );
   
-  push @INC, $config->web->handler_root;
+  # Now do any post-processing:
+  if( my $class = $config->system->post_processor )
+  {
+    (my $file = "$class.pm") =~ s/::/\//;
+    require $file unless $INC{$file};
+    $config = $class->new()->post_process( $config );
+  }# end if()
   
   return $config;
 }# end parse()
