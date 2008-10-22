@@ -80,7 +80,8 @@ sub verify_session_id
   my ($s, $id) = @_;
 
   my $range_start = time() - ( $s->context->config->data_connections->session->session_timeout * 60 );
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare_cached(<<"");
     SELECT COUNT(*)
     FROM asp_sessions
     WHERE session_id = ?
@@ -99,7 +100,8 @@ sub create
 {
   my ($s, $id) = @_;
   
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare_cached(<<"");
     INSERT INTO asp_sessions (
       session_id,
       session_data,
@@ -138,7 +140,8 @@ sub retrieve
 {
   my ($s, $id) = @_;
   
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare_cached(<<"");
     SELECT session_data, modified_on
     FROM asp_sessions
     WHERE session_id = ?
@@ -151,7 +154,8 @@ sub retrieve
 
   if( time() - str2time($modified_on) >= ( $s->context->config->data_connections->session->session_timeout * 59 ) )
   {
-    my $sth = $s->dbh->prepare(<<"");
+    local $s->db_Main->{AutoCommit} = 1;
+    my $sth = $s->db_Main->prepare_cached(<<"");
     UPDATE asp_sessions SET
       modified_on = ?
     WHERE session_id = ?
@@ -191,7 +195,8 @@ sub save
         grep { $_ ne '__signature' } sort keys(%$s)
   );
   
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare_cached(<<"");
     UPDATE asp_sessions SET
       session_data = ?,
       modified_on = ?

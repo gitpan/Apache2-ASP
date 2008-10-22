@@ -34,37 +34,8 @@ sub new
     config  => $args{parent} ? $args{parent}->{config} : Apache2::ASP::ConfigLoader->load(),
   }, $class;
   
-  # Init the config unless we already have:
-  $s->_init_config unless $s->{parent};
-  
   $instance = $s;
 }# end new()
-
-
-#==============================================================================
-sub _init_config
-{
-  my ($s) = @_;
-  
-  push @INC, $s->config->web->handler_root;
-  foreach my $var ( $s->config->system->env_vars )
-  {
-    while( my ($key,$val) = each(%$var) )
-    {
-      $ENV{$key} = $val;
-    }# end while()
-  }# end foreach()
-  
-  foreach my $libdir ( $s->config->system->libs )
-  {
-    push @INC, $libdir unless grep { $_ eq $libdir } @INC;
-  }# end foreach()
-  
-  foreach my $module ( $s->config->system->load_modules )
-  {
-    $s->load_class( $module );
-  }# end foreach()
-}# end _init_config()
 
 
 #==============================================================================
@@ -177,7 +148,7 @@ sub execute
     }# end if()
   }# end if()
   
-  $res = 200 if $res eq '0';
+  $res = 0 if $res eq '200';
   return $res;
 }# end execute()
 

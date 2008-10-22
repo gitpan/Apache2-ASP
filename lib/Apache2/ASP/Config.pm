@@ -15,6 +15,20 @@ sub new
   my $s = $class->SUPER::new( $ref );
   
   $s->init_server_root( $root );
+  
+  my %saw = map { $_ => 1 } @INC;
+  push @INC, grep { ! $saw{$_}++ } ( $s->system->libs, $s->web->handler_root );
+  
+  foreach my $var ( $s->system->env_vars )
+  {
+    while( my ($key,$val) = each(%$var) )
+    {
+      $ENV{$key} = $val;
+    }# end while()
+  }# end foreach()
+  
+  map { $s->load_class( $_ ) } $s->system->load_modules;
+  
   return $s;
 }# end new()
 
@@ -41,6 +55,16 @@ sub init_server_root
       if $s->{web}->{"$key\_root"};
   }# end foreach()
 }# end init_server_root()
+
+
+#==============================================================================
+sub load_class
+{
+  my ($s, $class) = @_;
+  
+  (my $file = "$class.pm") =~ s/::/\//g;
+  eval { require $file unless $INC{$file}; 1 } or confess "Cannot load $class: $@";
+}# end load_class()
 
 
 1;# return true:

@@ -12,7 +12,7 @@ use Data::Dumper;
 #==============================================================================
 sub run
 {
-  my ($s, $context) = @_;
+  my ($s, $context, $args) = @_;
   
   $s->init_asp_objects( $context );
   
@@ -46,7 +46,7 @@ sub run
       delete($INC{$pkg_path});
       require $pkg_path;
       my $page = $pkg_name->new( virtual_path => $ENV{SCRIPT_NAME} );
-      $page->run( $context );
+      $page->run( $context, $args );
       return $context->response->Status == 200 ? 0 : $context->response->Status;
 #    };
     if( $@ )

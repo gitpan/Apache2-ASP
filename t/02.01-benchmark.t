@@ -19,7 +19,8 @@ my $max = 100;
 for( 1...$max )
 {
   warn $_ if $_ % 20 == 0;
-  my $res = $ua->get('/index.asp');
+  my $res = $ua->get('/counter.asp');
+  warn $res->content;
 #  warn $res->content if $_ == 1;
 }
 

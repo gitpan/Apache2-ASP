@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_06   2008-10-22
+  - Tweaks in ApplicationStateManager and SessionStateManager to avoid a transaction
+    race condition.
+  - Config initializes itself (rather than the HTTPContext doing it).
+  - Config is now cached in memory on a per-process, per-disk-path basis.
+
 2.00_05   2008-10-20
   - Apache2::ASP::HTTPContext now handles final config initialization including
     setting %ENV vars, @INC modifications and loading modules as specified

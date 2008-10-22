@@ -23,6 +23,7 @@ sub new
     $conn->username,
     $conn->password
   );
+  $s->db_Main->{AutoCommit} = 1;
   
   if( my $res = $s->retrieve )
   {
@@ -47,7 +48,8 @@ sub create
 {
   my $s = shift;
   
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare(<<"");
     INSERT INTO asp_applications (
       application_id,
       application_data
@@ -58,7 +60,7 @@ sub create
 
   $sth->execute(
     $s->context->config->web->application_name,
-    freeze( {__signature => md5_hex("")} )
+    freeze( {} )
   );
   $sth->finish();
   
@@ -71,7 +73,7 @@ sub retrieve
 {
   my $s = shift;
   
-  my $sth = $s->dbh->prepare(<<"");
+  my $sth = $s->dbh->prepare_cached(<<"");
     SELECT application_data
     FROM asp_applications
     WHERE application_id = ?
@@ -101,7 +103,7 @@ sub retrieve
 sub save
 {
   my $s = shift;
-  
+
   no warnings 'uninitialized';
   return if $s->{__signature} eq md5_hex(
     join ":",
@@ -114,7 +116,8 @@ sub save
         grep { $_ ne '__signature' } sort keys(%$s)
   );
   
-  my $sth = $s->dbh->prepare(<<"");
+  local $s->db_Main->{AutoCommit} = 1;
+  my $sth = $s->db_Main->prepare_cached(<<"");
     UPDATE asp_applications SET
       application_data = ?
     WHERE application_id = ?

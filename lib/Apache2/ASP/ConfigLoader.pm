@@ -8,6 +8,8 @@ use Apache2::ASP::ConfigParser;
 use XML::Simple ();
 $XML::Simple::PREFERRED_PARSER = 'XML::Parser';
 
+our $Configs = { };
+
 
 #==============================================================================
 sub load
@@ -15,14 +17,15 @@ sub load
   my ($s) = @_;
   
   my $path = Apache2::ASP::ConfigFinder->config_path;
+  return $Configs->{$path} if $Configs->{$path};
   my $doc = XML::Simple::XMLin( $path,
     SuppressEmpty => '',
-    Cache => 'storable',
+#    Cache => 'storable',
     ForceArray => [qw/ var /],
   );
   
   $path =~ s/\/conf\/[^\/]+$//;
-  return Apache2::ASP::ConfigParser->new->parse( $doc, $path );
+  return $Configs->{$path} = Apache2::ASP::ConfigParser->new->parse( $doc, $path );
 }# end parse()
 
 1;# return true:
