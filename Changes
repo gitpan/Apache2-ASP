@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_07   2008-10-22
+  - Adjustments to HTTPContext to better support massive stack-depths of "inner" HTTPContexts.
+
 2.00_06   2008-10-22
   - Tweaks in ApplicationStateManager and SessionStateManager to avoid a transaction
     race condition.

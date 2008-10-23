@@ -19,7 +19,8 @@ sub new
   my $conn = $s->context->config->data_connections->session;
   
   local $^W = 0;
-  __PACKAGE__->set_db('Main', $conn->dsn,
+  __PACKAGE__->set_db('Main',
+    $conn->dsn,
     $conn->username,
     $conn->password
   );

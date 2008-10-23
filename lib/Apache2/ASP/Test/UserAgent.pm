@@ -171,6 +171,7 @@ sub _setup_response
 {
   my ($s, $response_code) = @_;
   
+  $response_code = 200 if $response_code == 0;
   my $response = HTTP::Response->new( $response_code );
   $response->content( $s->{context}->r->buffer );
   

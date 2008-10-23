@@ -31,7 +31,7 @@ sub new
 
   my $s = bless {
     %args,
-    config  => $args{parent} ? $args{parent}->{config} : Apache2::ASP::ConfigLoader->load(),
+    config  => $args{parent} ? undef : Apache2::ASP::ConfigLoader->load(),
   }, $class;
   
   $instance = $s;
@@ -71,23 +71,26 @@ sub setup_request
   $s->{connection}  = $s->{r}->connection;
   
   $s->{response} = Apache2::ASP::Response->new( context => $s );
-  $s->{request}  = $s->{parent} ? $s->{parent}->{request} : Apache2::ASP::Request->new( context => $s );
-  $s->{server}   = $s->{parent} ? $s->{parent}->{server} : Apache2::ASP::Server->new( context => $s );
   
-  my $conns = $s->config->data_connections;
-  my $app_manager = $conns->application->manager;
-  $s->load_class( $app_manager );
-  $s->{application} = $s->{parent} ? $s->{parent}->{application} : $app_manager->new( context => $s );
-  my $session_manager = $conns->session->manager;
-  $s->load_class( $session_manager );
-  $s->{session} = $s->{parent} ? $s->{parent}->{session} : $session_manager->new( context => $s );
+  unless( $s->{parent} )
+  {
+    $s->{request}  = Apache2::ASP::Request->new( context => $s );
+    $s->{server}   ||= Apache2::ASP::Server->new( context => $s );
   
-  # Make the global Stash object:
-  $s->{stash} = $s->{parent} ? $s->{parent}->{stash} : { };
-  
-  # Fire up the GlobalASA:
-  $s->{global_asa} = $s->resolve_global_asa_class( );
-  $s->{global_asa}->init_asp_objects( $s );
+    my $conns = $s->config->data_connections;
+    my $app_manager = $conns->application->manager;
+    $s->load_class( $app_manager );
+    $s->{application} = $app_manager->new( context => $s );
+    my $session_manager = $conns->session->manager;
+    $s->load_class( $session_manager );
+    $s->{session} = $session_manager->new( context => $s );
+    
+    # Make the global Stash object:
+    $s->{stash} = { };
+    
+    $s->{global_asa} = $s->resolve_global_asa_class( );
+    $s->{global_asa}->init_asp_objects( $s );
+  }# end unless()
   
   $s->{handler} = $s->resolve_request_handler( $s->r->uri );
   $s->handler->init_asp_objects( $s );
@@ -291,14 +294,22 @@ sub clone
 
 
 #==============================================================================
-sub config       { $_[0]->{config}                }
-sub session      { $_[0]->{session}               }
-sub server       { $_[0]->{server}                }
-sub request      { $_[0]->{request}               }
-sub response     { $_[0]->{response}              }
-sub application  { $_[0]->{application}           }
-sub stash        { $_[0]->{stash}                 }
-sub global_asa   { $_[0]->{global_asa}            }
+sub get_prop
+{
+  my ($s, $prop) = @_;
+  
+  $s->{parent} ? $s->{parent}->get_prop($prop) : $s->{$prop};
+}# end get_prop()
+
+sub config       { $_[0]->get_prop('config') }
+sub session      { $_[0]->get_prop('session')               }
+sub server       { $_[0]->get_prop('server')                }
+sub request      { $_[0]->get_prop('request')               }
+sub response     { $_[0]->get_prop('response')              }
+sub application  { $_[0]->get_prop('application')           }
+sub stash        { $_[0]->get_prop('stash')                 }
+sub global_asa   { $_[0]->get_prop('global_asa')            }
+
 sub r            { $_[0]->{r}                     }
 sub cgi          { $_[0]->{cgi}                   }
 sub handler      { $_[0]->{handler}               }
