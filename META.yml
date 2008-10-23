@@ -1,8 +1,8 @@
 --- #YAML:1.0
 name:                Apache2-ASP
-version:             2.00_07
+version:             2.00_08
 abstract:            ASP for Perl, reloaded.
-license:             ~
+license:             artistic
 author:              
     - John Drago <jdrago_999@yahoo.com>
 generated_by:        ExtUtils::MakeMaker version 6.42

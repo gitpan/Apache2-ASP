@@ -17,7 +17,7 @@ sub handler : method
 {
   my ($class, $r) = @_;
   
-  my $context = Apache2::ASP::HTTPContext->new( );
+  my $context = $Apache2::ASP::HTTPContext::ClassName->new( );
   my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
   $context->setup_request( $r, $cgi );
   return $context->execute;

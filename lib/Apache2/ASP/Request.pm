@@ -43,10 +43,6 @@ sub Form
 {
   my $s = shift;
   
-  my $val = eval { $s->context->cgi->{params} };
-
-  return $val unless $@;
-  confess $@ if $@;
   local $SIG{__DIE__} = \&confess;
   my $cgi = $s->context->cgi;
   return {

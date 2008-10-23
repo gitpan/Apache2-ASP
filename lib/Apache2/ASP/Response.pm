@@ -132,7 +132,7 @@ sub Redirect
   
   $s->Clear;
   $s->AddHeader( location => $url );
-  $s->Status( 301 );
+  $s->Status( 302 );
   $s->End;
 }# end Redirect()
 
@@ -335,6 +335,7 @@ sub _send_headers
   
   my ($status) = $s->{_status} =~ m/^(\d+)/;
   
+  $s->context->r->status( $status );
   $s->context->content_type('text/html') unless $s->context->content_type;
   $s->context->headers_out->push_header( Expires => $s->{_expires_absolute} );
   $s->context->send_headers;

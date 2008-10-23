@@ -5,6 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
   NAME              => 'Apache2::ASP',
   VERSION_FROM      => 'lib/Apache2/ASP.pm', # finds $VERSION
+  LICENSE           => 'artistic',
   PREREQ_PM         => {
     Test::More              => 0,
     Time::HiRes             => 0,

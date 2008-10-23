@@ -9,6 +9,14 @@ use Scalar::Util 'weaken';
 use base 'Ima::DBI';
 use Digest::MD5 'md5_hex';
 
+our %DBI_OPTIONS = (
+  FetchHashKeyName    => 'NAME_lc',
+  ShowErrorStatement  => 1,
+  ChopBlanks          => 1,
+  AutoCommit          => 1,
+  RaiseError          => 1,
+  RootClass           => 'DBIx::ContextualFetch',
+);
 
 #==============================================================================
 sub new
@@ -21,7 +29,8 @@ sub new
   local $^W = 0;
   __PACKAGE__->set_db('Main', $conn->dsn,
     $conn->username,
-    $conn->password
+    $conn->password,
+#    \%DBI_OPTIONS
   );
   $s->db_Main->{AutoCommit} = 1;
   

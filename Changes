@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_08   2008-10-23
+  - Apache2::ASP::Apache creates a new HTTPContext from the correct class/subclass now.
+  - Source code is filtered with: s/(\$Response\->End)/return $1/sg;
+
 2.00_07   2008-10-22
   - Adjustments to HTTPContext to better support massive stack-depths of "inner" HTTPContexts.
 

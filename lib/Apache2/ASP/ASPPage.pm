@@ -357,6 +357,8 @@ sub _parse_scriptlet_tags
     my $txt = $1; $txt =~ s/\~/\~/g; '~);' . $txt . '$Response->Write(q~'
   }gxse;
   
+  $$ref =~ s/(\$Response\->End)/return $1/gs;
+  
   $$ref = '$Response->Write(q~' . $$ref . '~);';
 }# end _parse_scriptlet_tags()
 

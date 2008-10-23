@@ -18,6 +18,7 @@ sub new
     headers_out => { },
     headers_in  => { },
     pnotes => { },
+    status => 200,
     cleanup_handlers => [ ],
   }, $class;
 }# end new()
@@ -61,6 +62,15 @@ sub buffer
 {
   $_[0]->{buffer};
 }# end buffer()
+
+
+#==============================================================================
+sub status
+{
+  my $s = shift;
+  
+  @_ ? $s->{status} = shift : $s->{status};
+}# end status()
 
 
 #==============================================================================

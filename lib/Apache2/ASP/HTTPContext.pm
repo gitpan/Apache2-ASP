@@ -151,7 +151,7 @@ sub execute
     }# end if()
   }# end if()
   
-  $res = 0 if $res eq '200';
+  $res = 0 if $res =~ m/^200/;
   return $res;
 }# end execute()
 
@@ -251,7 +251,7 @@ sub handle_phase
   }# end if()
   
   # Undef on success:
-  return $s->response->Status == 200 ? undef : $s->response->Status;
+  return $s->response->Status =~ m/^200/ ? undef : $s->response->Status;
 }# end handle_phase()
 
 
@@ -278,7 +278,7 @@ sub end_request
   $s->response->End;
   $s->session->save;
   $s->application->save;
-  my $res = $s->response->Status == 200 ? 0 : $s->response->Status;
+  my $res = $s->response->Status =~ m/^200/ ? 0 : $s->response->Status;
   
   return $res;
 }# end end_request()
