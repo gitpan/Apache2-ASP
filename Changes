@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_09   2008-10-24
+  - Pages that use MasterPages are now executed with the correct @_.
+  - Added Apache2::ASP::FormHandler again.
+
 2.00_08   2008-10-23
   - Apache2::ASP::Apache creates a new HTTPContext from the correct class/subclass now.
   - Source code is filtered with: s/(\$Response\->End)/return $1/sg;

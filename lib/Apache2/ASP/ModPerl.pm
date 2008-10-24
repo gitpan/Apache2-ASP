@@ -1,5 +1,5 @@
 
-package Apache2::ASP::Apache;
+package Apache2::ASP::ModPerl;
 
 use strict;
 use warnings 'all';
@@ -13,6 +13,8 @@ use Apache2::RequestUtil ();
 use Apache2::ASP::HTTPContext ();
 use Apache2::ASP::ModPerl2CGI ();
 
+
+#==============================================================================
 sub handler : method
 {
   my ($class, $r) = @_;

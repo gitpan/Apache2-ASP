@@ -9,15 +9,6 @@ use Storable qw( freeze thaw );
 use HTTP::Date qw( time2iso str2time );
 use Scalar::Util 'weaken';
 
-our %DBI_OPTIONS = (
-  FetchHashKeyName    => 'NAME_lc',
-  ShowErrorStatement  => 1,
-  ChopBlanks          => 1,
-  AutoCommit          => 1,
-  RaiseError          => 1,
-  RootClass           => 'DBIx::ContextualFetch',
-);
-
 
 #==============================================================================
 sub new
@@ -31,8 +22,7 @@ sub new
   __PACKAGE__->set_db('Main',
     $conn->dsn,
     $conn->username,
-    $conn->password,
-#    \%DBI_OPTIONS
+    $conn->password
   );
   
   # Prepare our Session:

@@ -6,8 +6,9 @@ lib/Apache2/ASP/CacheManager.pm
 lib/Apache2/ASP/ApplicationStateManager/MySQL.pm
 lib/Apache2/ASP/ApplicationStateManager/SQLite.pm
 lib/Apache2/ASP/ConfigFinder.pm
-lib/Apache2/ASP/Apache.pm
+lib/Apache2/ASP/ModPerl.pm
 lib/Apache2/ASP/Config.pm
+lib/Apache2/ASP/FormHandler.pm
 lib/Apache2/ASP/ConfigParser.pm
 lib/Apache2/ASP/ModPerl2CGI.pm
 lib/Apache2/ASP/ApplicationStateManager.pm

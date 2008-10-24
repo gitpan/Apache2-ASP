@@ -286,7 +286,7 @@ sub _build_dom
       $s->{placeholders}->{ $attrs->{id} } = $contents;
     
       # Remove the chunk of code:
-      my $subname = "\$__self->" . $attrs->{id} . ";";
+      my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
       $$ref =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
     }
     elsif( m/^asp:PlaceHolderContent$/ )
@@ -306,7 +306,6 @@ sub _build_dom
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
-  my (\$s) = \@_;
 #line @{[ $line + 1 ]}
 $fixed_contents
 }
