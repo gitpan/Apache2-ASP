@@ -11,7 +11,6 @@ sub new
 {
   my ($class, $ref) = @_;
   
-  local $SIG{__DIE__} = \&Carp::confess;
   my $s = bless $ref, $class;
   $s->init_keys();
   $s;
@@ -61,7 +60,7 @@ sub AUTOLOAD
 sub DESTROY
 {
   my $s = shift;
-  delete($s->{$_}) foreach keys(%$s);
+  undef(%$s);
 }# end DESTROY()
 
 1;# return true:

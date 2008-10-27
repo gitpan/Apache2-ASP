@@ -4,7 +4,6 @@ package Apache2::ASP::Request;
 use strict;
 use warnings 'all';
 use Carp 'confess';
-use Scalar::Util 'weaken';
 
 
 #==============================================================================
@@ -12,13 +11,9 @@ sub new
 {
   my ($class, %args) = @_;
   
-  my $context = delete($args{context});
-  
   my $s = bless {
-    context => $context
   }, $class;
   
-  weaken($s->{context});
   return $s;
 }# end new()
 

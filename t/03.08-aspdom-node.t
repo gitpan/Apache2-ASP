@@ -4,6 +4,7 @@ use strict;
 use warnings 'all';
 use Test::More 'no_plan';
 use Data::Dumper;
+use Test::Memory::Cycle;
 
 use_ok('Apache2::ASP::ASPDOM::Node');
 
@@ -12,7 +13,7 @@ ok( $node );
 
 my $ref = sub {
   my ($s, $child) = @_;
-  warn "Adding $child to $s";
+#  warn "Adding $child to $s";
   ok(1, "Added a child");
 };
 
@@ -56,5 +57,7 @@ is( scalar($node->childNodes) => 2 );
 $node->removeChild( $child1 );
 
 is( scalar($node->childNodes) => 1 );
+
+memory_cycle_ok( $node );
 
 

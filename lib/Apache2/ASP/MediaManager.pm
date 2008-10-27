@@ -67,7 +67,6 @@ sub run
   while( my $line = <$ifh> )
   {
     $context->response->Write( $line );
-#    $context->response->Flush;
   }# end while()
   $context->response->Flush;
   

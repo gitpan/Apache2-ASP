@@ -22,6 +22,8 @@ my $res = $s->ua->upload("/handlers/upload01?mode=create", [
   uploaded_file => [ $upload_filename ]
 ]);
 
-use Data::Dumper;
-warn Dumper( $res );
+
+my ($file) = 'asp-upload-test.txt';
+$res = $s->ua->get("/handlers/upload01?file=$file");
+is( length($res->content) => -s $upload_filename, "Uploaded/Downloaded filesizes match" );
 

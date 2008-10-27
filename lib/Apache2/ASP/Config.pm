@@ -67,5 +67,12 @@ sub load_class
 }# end load_class()
 
 
+sub DESTROY
+{
+  my $s = shift;
+  undef(%$s);
+}
+
+
 1;# return true:
 

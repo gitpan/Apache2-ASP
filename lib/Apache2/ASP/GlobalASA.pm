@@ -35,7 +35,7 @@ sub init_asp_objects
     ${"$class\::Application"} = $context->application;
     ${"$class\::Config"}      = $context->config;
     ${"$class\::Form"}        = $context->request->Form;
-    ${"$class\::Stash"}        = $context->stash;
+    ${"$class\::Stash"}       = $context->stash;
   }# end foreach()
 }# end init_asp_objects()
 

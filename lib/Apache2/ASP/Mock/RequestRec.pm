@@ -5,6 +5,7 @@ use strict;
 use warnings 'all';
 use Carp 'confess';
 use Apache2::ASP::Mock::Connection;
+use Apache2::ASP::Mock::Pool;
 
 
 #==============================================================================
@@ -13,13 +14,15 @@ sub new
   my ($class) = shift;
   
   return bless {
-    buffer => '',
-    uri    => '',
-    headers_out => { },
-    headers_in  => { },
-    pnotes => { },
-    status => 200,
-    cleanup_handlers => [ ],
+    buffer            => '',
+    uri               => '',
+    headers_out       => { },
+    headers_in        => { },
+    pnotes            => { },
+    status            => 200,
+    cleanup_handlers  => [ ],
+    pool              => Apache2::ASP::Mock::Pool->new(),
+    connection        => Apache2::ASP::Mock::Connection->new(),
   }, $class;
 }# end new()
 
@@ -61,6 +64,13 @@ sub pnotes
 sub buffer
 {
   $_[0]->{buffer};
+}# end buffer()
+
+
+#==============================================================================
+sub pool
+{
+  $_[0]->{pool};
 }# end buffer()
 
 
@@ -158,7 +168,7 @@ sub rflush
 #==============================================================================
 sub connection
 {
-  return Apache2::ASP::Mock::Connection->new;
+  $_[0]->{connection};
 }# end connection()
 
 1;# return true:

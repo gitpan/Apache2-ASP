@@ -20,7 +20,6 @@ sub load
   return $Configs->{$path} if $Configs->{$path};
   my $doc = XML::Simple::XMLin( $path,
     SuppressEmpty => '',
-#    Cache => 'storable',
     ForceArray => [qw/ var /],
   );
   

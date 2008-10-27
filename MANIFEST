@@ -25,6 +25,7 @@ lib/Apache2/ASP/MediaManager.pm
 lib/Apache2/ASP/Mock/RequestRec.pm
 lib/Apache2/ASP/Mock/ClientSocket.pm
 lib/Apache2/ASP/Mock/Connection.pm
+lib/Apache2/ASP/Mock/Pool.pm
 lib/Apache2/ASP/HTTPHandler.pm
 lib/Apache2/ASP/ConfigNode.pm
 lib/Apache2/ASP/Test/UploadObject.pm
@@ -52,7 +53,7 @@ t/01.08-upload.t
 t/01.04-test-useragent.t
 t/01.01-load.t
 t/01.09-submit-form.t
-t/00.01-setup.t
+t/00.00-setup.t
 t/04.01-syntax-errors.t
 t/02.01-benchmark.t
 t/01.05-memcycle.t

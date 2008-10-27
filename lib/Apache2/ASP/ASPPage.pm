@@ -214,7 +214,7 @@ sub _write_cache
   my ($s, $data) = @_;
 
   my $key = $s->_cache_key;
-warn "Storing cache...";  
+#warn "Storing cache...";  
   my $sth = $s->context->application->db_Main->prepare(<<"SQL");
 DELETE FROM asp_pagecache WHERE pagecache_id = ?;
 SQL
@@ -315,8 +315,8 @@ CODE
     }
     else
     {
-      # Unhandled:
-      confess "Unhandled tag '$tagName'";
+      # Unhandled tag:
+#      confess "Unhandled tag '$tagName'";
     }# end if()
   }# end while()
 

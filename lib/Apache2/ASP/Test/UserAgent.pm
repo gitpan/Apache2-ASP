@@ -27,7 +27,7 @@ sub new
 
 
 #==============================================================================
-sub context { $_[0]->{context} }
+sub context { Apache2::ASP::HTTPContext->current || $Apache2::ASP::HTTPContext::ClassName->new }
 
 
 #==============================================================================
@@ -35,10 +35,11 @@ sub post
 {
   my ($s, $uri, $args) = @_;
   
+  no strict 'refs';
+  undef(${"$ContextClass\::instance"});
   $args ||= [ ];
   my $req = POST $uri, $args;
   %ENV = ( );
-  $s->{context} = $ContextClass->new( );
   $ENV{REQUEST_METHOD} = 'POST';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -47,8 +48,8 @@ sub post
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
   
-  $s->{context}->setup_request( $r, $cgi );
-  return $s->_setup_response( $s->{context}->execute() );
+  $s->context->setup_request( $r, $cgi );
+  return $s->_setup_response( $s->context->execute() );
 }# end post()
 
 
@@ -57,11 +58,12 @@ sub upload
 {
   my ($s, $uri, $args) = @_;
   
+  no strict 'refs';
+  undef(${"$ContextClass\::instance"});
   %ENV = ( );
   my $req = POST $uri, Content_Type => 'form-data', Content => $args;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
-  $s->{context} = $ContextClass->new( );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'multipart/form-data';
   
@@ -69,11 +71,11 @@ sub upload
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
   
-  $s->{context}->setup_request( $r, $cgi );
+  $s->context->setup_request( $r, $cgi );
   
   require Apache2::ASP::UploadHook;
   my $hook_obj = Apache2::ASP::UploadHook->new(
-    handler_class => $s->{context}->resolve_request_handler( $uri ),
+    handler_class => $s->context->resolve_request_handler( $uri ),
   );
   my $hook_ref = sub { $hook_obj->hook( @_ ) };
   
@@ -108,7 +110,7 @@ sub upload
   }# end foreach()
   
   # NOW we can execute...
-  return $s->_setup_response( $s->{context}->execute() );
+  return $s->_setup_response( $s->context->execute() );
 }# end upload()
 
 
@@ -117,10 +119,11 @@ sub submit_form
 {
   my ($s, $form) = @_;
   
+  no strict 'refs';
+  undef(${"$ContextClass\::instance"});
   my $req = $form->click;
   
   %ENV = ( );
-  $s->{context} = $ContextClass->new( );
   $ENV{REQUEST_METHOD} = uc( $req->method );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
@@ -129,9 +132,9 @@ sub submit_form
   $r->uri( $req->uri );
   $r->args( $cgi->{querystring} );
   
-  $s->{context}->setup_request( $r, $cgi );
+  $s->context->setup_request( $r, $cgi );
   
-  return $s->_setup_response( $s->{context}->execute() );
+  return $s->_setup_response( $s->context->execute() );
 }# end submit_form()
 
 
@@ -140,9 +143,11 @@ sub get
 {
   my ($s, $uri) = @_;
   
+  no strict 'refs';
+  undef(${"$ContextClass\::instance"});
+  
   my $req = GET $uri;
   %ENV = ( );
-  $s->{context} = $ContextClass->new( );
   $ENV{REQUEST_METHOD} = 'GET';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -151,9 +156,9 @@ sub get
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
   
-  $s->{context}->setup_request( $r, $cgi );
+  $s->context->setup_request( $r, $cgi );
   
-  return $s->_setup_response( $s->{context}->execute() );
+  return $s->_setup_response( $s->context->execute() );
 }# end get()
 
 
@@ -173,11 +178,11 @@ sub _setup_response
   
   $response_code = 200 if $response_code == 0;
   my $response = HTTP::Response->new( $response_code );
-  $response->content( $s->{context}->r->buffer );
+  $response->content( $s->context->r->buffer );
   
-  $response->header( 'Content-Type' => $s->{context}->response->{ContentType} );
+  $response->header( 'Content-Type' => $s->context->response->{ContentType} );
   
-  foreach my $header ( $s->{context}->response->Headers )
+  foreach my $header ( $s->context->response->Headers )
   {
     while( my ($k,$v) = each(%$header) )
     {
@@ -185,10 +190,10 @@ sub _setup_response
     }# end while()
   }# end foreach()
   
-  if( $s->{context}->session && $s->{context}->session->{SessionID} )
+  if( $s->context->session && $s->context->session->{SessionID} )
   {
     $s->add_cookie(
-      $s->{context}->config->data_connections->session->cookie_name => $s->{context}->session->{SessionID}
+      $s->context->config->data_connections->session->cookie_name => $s->context->session->{SessionID}
     );
   }# end if()
   
@@ -215,7 +220,7 @@ sub _setup_cgi
   unless( $req->uri =~ m@^/handlers@ )
   {
     my ($uri_no_args) = split /\?/, $req->uri;
-    $ENV{SCRIPT_FILENAME} = $s->{context}->config->web->www_root . $uri_no_args;
+    $ENV{SCRIPT_FILENAME} = $s->context->config->web->www_root . $uri_no_args;
     $ENV{SCRIPT_NAME} = $uri_no_args;
   }# end unless()
   

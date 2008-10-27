@@ -6,12 +6,12 @@ use warnings 'all';
 use HTTP::Date qw( time2iso str2time time2str );
 use Carp qw( croak confess );
 use HTTP::Headers;
-use Scalar::Util 'weaken';
+#use Scalar::Util 'weaken';
 use Apache2::ASP::Mock::RequestRec;
 
 our $MAX_BUFFER_LENGTH = 1024 ** 2;
 
-$SIG{__DIE__} = \&confess;
+#$SIG{__DIE__} = \&confess;
 our $IS_TRAPINCLUDE = 0;
 
 #==============================================================================
@@ -22,7 +22,7 @@ sub new
   delete($args{context});
   # Just guessing:
   my $s = bless {
-    %args,
+#    %args,
     _status           => 200,
     _output_buffer    => [ ],
     _do_buffer        => 1,
@@ -38,7 +38,7 @@ sub new
 #==============================================================================
 sub context
 {
-  $Apache2::ASP::HTTPContext::ClassName->current;
+  Apache2::ASP::HTTPContext->current;
 }# end context()
 
 

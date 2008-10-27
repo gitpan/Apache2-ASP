@@ -28,13 +28,15 @@ sub current
 sub new
 {
   my ($class, %args) = @_;
-
+  
   my $s = bless {
     %args,
     config  => $args{parent} ? undef : Apache2::ASP::ConfigLoader->load(),
   }, $class;
   
-  $instance = $s;
+  no strict 'refs';
+  ${"$ClassName\::instance"} = $s;
+#  $instance = $s;
 }# end new()
 
 
@@ -70,20 +72,20 @@ sub setup_request
   
   $s->{connection}  = $s->{r}->connection;
   
-  $s->{response} = Apache2::ASP::Response->new( context => $s );
+  $s->{response} = Apache2::ASP::Response->new();
   
   unless( $s->{parent} )
   {
-    $s->{request}  = Apache2::ASP::Request->new( context => $s );
-    $s->{server}   ||= Apache2::ASP::Server->new( context => $s );
+    $s->{request}  = Apache2::ASP::Request->new();
+    $s->{server}   ||= Apache2::ASP::Server->new();
   
     my $conns = $s->config->data_connections;
     my $app_manager = $conns->application->manager;
     $s->load_class( $app_manager );
-    $s->{application} = $app_manager->new( context => $s );
+    $s->{application} = $app_manager->new();
     my $session_manager = $conns->session->manager;
     $s->load_class( $session_manager );
-    $s->{session} = $session_manager->new( context => $s );
+    $s->{session} = $session_manager->new();
     
     # Make the global Stash object:
     $s->{stash} = { };
@@ -93,7 +95,7 @@ sub setup_request
   }# end unless()
   
   $s->{handler} = $s->resolve_request_handler( $s->r->uri );
-  $s->handler->init_asp_objects( $s );
+#  $s->handler->init_asp_objects( $s );
   
   return 1;
 }# end setup_request()
@@ -132,7 +134,7 @@ sub execute
   
   eval {
     $s->load_class( $s->handler );
-    $s->handler->init_asp_objects( $s );
+#    $s->handler->init_asp_objects( $s );
     $s->run_handler( $args );
   };
   if( $@ )
@@ -162,6 +164,7 @@ sub run_handler
   my ($s, $args) = @_;
   
   my $handler = $s->handler->new();
+  $handler->init_asp_objects( $s );
   $handler->before_run( $s, $args );
   if( ! $s->{did_end} )
   {
@@ -413,6 +416,7 @@ sub DESTROY
 {
   my $s = shift;
   undef(%$s);
+#  undef($instance);
 }# end DESTROY()
 
 

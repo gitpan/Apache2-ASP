@@ -39,10 +39,17 @@ sub init_asp_objects
   
   no strict 'refs';
   my $selfclass = ref($s) || $s;
-  my @classes = (
+  
+  # Get each of this classes' superclasses, and theirs as well, recursively:
+  my %c = map { $_ => 1 } (
     grep { $_->isa('Apache2::ASP::HTTPHandler') } 
     ( $selfclass, @{"$selfclass\::ISA"} )
   );
+  map { $c{$_}++ } map {
+    @{"$_\::ISA"}
+  } keys(%c);
+  my @classes = keys(%c);
+  
   foreach my $class ( @classes )
   {
     ${"$class\::Request"}     = $context->request;

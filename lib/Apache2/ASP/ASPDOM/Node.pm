@@ -12,23 +12,16 @@ sub new
 {
   my ($class, %args) = @_;
   
-  foreach(qw/ id tagName /)
-  {
-#    confess "Required param '$_' was not provided"
-#      unless $args{$_};
-  }# end foreach()
-  
-  return bless {
+  my $s = bless {
     %args,
-    parentNode          => $args{parentNode},
-    id                  => $args{id},
-    tagName             => $args{tagName},
     childNodes          => [ ],
     events => {
       before_appendChild  => [ ],
       after_appendChild   => [ ],
     },
   }, $class;
+  weaken($s->{parentNode}) if $s->{parentNode};
+  return $s;
 }# end new()
 
 
@@ -77,7 +70,7 @@ sub parentNode
 {
   my $s = shift;
   
-  @_ ? $s->{parentNode} = shift : $s->{parentNode};
+  @_ ? weaken($s->{parentNode} = shift) : $s->{parentNode};
 }# end parentNode()
 
 
@@ -96,7 +89,6 @@ sub appendChild
   # Add the child:
   $child->parentNode( $s );
   push @{$s->{childNodes}}, $child;
-  weaken($s);
   
   # Call "after" handlers?:
   foreach( @{$s->{events}->{after_appendChild}} )

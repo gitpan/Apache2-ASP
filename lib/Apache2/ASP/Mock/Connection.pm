@@ -34,5 +34,13 @@ sub client_socket
   $_[0]->{client_socket};
 }# end client_socket()
 
+
+#==============================================================================
+sub DESTROY
+{
+  my $s = shift;
+  undef(%$s);
+}# end DESTROY()
+
 1;# return true:
 

@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_10   2008-10-26
+  - Server.RegisterCleanup(\&subref, \@argref) now fires both from the command-line
+    and within an actual mod_perl environment.
+
 2.00_09   2008-10-24
   - Pages that use MasterPages are now executed with the correct @_.
   - Added Apache2::ASP::FormHandler again.
