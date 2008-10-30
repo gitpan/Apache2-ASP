@@ -29,6 +29,7 @@ sub new
     _buffer_length    => 0,
     _did_send_headers => 0,
   }, $class;
+  $s->ContentType('text/html');
   
   $s->Expires( $args{_expires} || 0 );
   return $s;

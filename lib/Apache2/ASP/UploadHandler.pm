@@ -3,15 +3,19 @@ package Apache2::ASP::UploadHandler;
 
 use strict;
 use base 'Apache2::ASP::HTTPHandler';
-our $LastUpdate;
+our $LastUpdate;
+our $LastPercent;
+
 
 #==============================================================================
 sub upload_start
 {
   my ($s, $context, $Upload) = @_;
   
+  return unless $Upload;
   # Store the upload information in the Session for external retrieval:
   $LastUpdate = time();
+  $LastPercent = $Upload->{percent_complete} || 0;
   $context->session->{$_} = $Upload->{$_}
     foreach keys(%$Upload);
   $context->session->save;
@@ -24,6 +28,7 @@ sub upload_end
   my ($s, $context, $Upload) = @_;
   
   # Clear out the upload data from the Session:
+  $Upload->{percent_complete} = 100;
   delete($context->session->{$_})
     foreach keys(%$Upload);
   $context->session->save;
@@ -38,14 +43,17 @@ sub upload_hook
   # Since this method may be called several times per second, we only
   # want to save the Session state once per second:
   my $Diff = time() - $LastUpdate;
-  if( $Diff >= 1 )
+  my $PercentDiff = $Upload->{percent_complete} - $LastPercent;
+  if( $Diff >= 2 || $PercentDiff >= 10 )
   {
+#warn "SAVING SESSION!: $Diff $Upload->{percent_complete}%";
     # Store everything in the session except for the data 
     # (since that could be too large to serialize quickly):
     $context->session->{$_} = $Upload->{$_}
       foreach grep { $_ ne 'data' } keys(%$Upload);
     $context->session->save;
     $LastUpdate = time();
+    $LastPercent = $Upload->{percent_complete};
   }# end if()
 }# end upload_hook()
 

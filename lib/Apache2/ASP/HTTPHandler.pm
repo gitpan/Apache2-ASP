@@ -21,13 +21,14 @@ use vars __PACKAGE__->VARS;
 sub new
 {
   my ($class) = shift;
-  
+
+#warn "$class: new: " . caller;  
   return bless { @_ }, $class;
 }# end new()
 
 
 #==============================================================================
-sub before_run { }
+sub before_run { 1; }
 sub after_run  { }
 sub run;
 
@@ -61,7 +62,8 @@ sub init_asp_objects
     ${"$class\::Form"}        = $context->request->Form;
     ${"$class\::Stash"}       = $context->stash;
   }# end foreach()
-  
+#warn "$s: INSIDE...//////////////////////////////////////////////////////////////////////";
+
   1;
 }# end init_asp_objects()
 

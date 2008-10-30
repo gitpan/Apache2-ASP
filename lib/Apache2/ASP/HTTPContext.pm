@@ -45,6 +45,14 @@ sub setup_request
 {
   my ($s, $requestrec, $cgi) = @_;
   
+  if( ! $s->{parent} )
+  {
+    return unless $cgi;
+    $cgi = $$cgi if ref($cgi) eq 'SCALAR';
+    return unless $cgi;
+    return if $s->{_is_setup}++;
+  }# end if()
+  
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
   my $headers = HTTP::Headers->new();
@@ -72,12 +80,17 @@ sub setup_request
   
   $s->{connection}  = $s->{r}->connection;
   
-  $s->{response} = Apache2::ASP::Response->new();
+# XXX Moving this into the "only if no parent" block might have caused problems...:
+# Keep this here just in case we need to revert back to previous behavior:
+#  $s->{response} = Apache2::ASP::Response->new();
+
+  $s->{handler} = $s->resolve_request_handler( $s->r->uri );
   
-  unless( $s->{parent} )
+  if( ! $s->{parent} )
   {
+    $s->{response} = Apache2::ASP::Response->new();
     $s->{request}  = Apache2::ASP::Request->new();
-    $s->{server}   ||= Apache2::ASP::Server->new();
+    $s->{server}   = Apache2::ASP::Server->new();
   
     my $conns = $s->config->data_connections;
     my $app_manager = $conns->application->manager;
@@ -91,11 +104,8 @@ sub setup_request
     $s->{stash} = { };
     
     $s->{global_asa} = $s->resolve_global_asa_class( );
-    $s->{global_asa}->init_asp_objects( $s );
-  }# end unless()
-  
-  $s->{handler} = $s->resolve_request_handler( $s->r->uri );
-#  $s->handler->init_asp_objects( $s );
+    $s->{global_asa}->init_asp_objects( $s ) unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
+  }# end if()
   
   return 1;
 }# end setup_request()
@@ -134,7 +144,6 @@ sub execute
   
   eval {
     $s->load_class( $s->handler );
-#    $s->handler->init_asp_objects( $s );
     $s->run_handler( $args );
   };
   if( $@ )
@@ -164,7 +173,10 @@ sub run_handler
   my ($s, $args) = @_;
   
   my $handler = $s->handler->new();
-  $handler->init_asp_objects( $s );
+
+#warn "BEFORE...//////////////////////////////////////////////////////////////////////";
+#  $handler->init_asp_objects( $s );
+#warn "AFTER...//////////////////////////////////////////////////////////////////////";
   $handler->before_run( $s, $args );
   if( ! $s->{did_end} )
   {
@@ -209,6 +221,12 @@ sub resolve_request_filters
 sub do_preinit
 {
   my $s = shift;
+  
+  
+  unless( $s->_is_setup )
+  {
+    $s->setup_request( $Apache2::ASP::ModPerl::R, $Apache2::ASP::ModPerl::CGI );
+  }# end unless()
   
   # Initialize the Server, Application and Session:
   unless( $s->application->{"__Server_Started$$"} )
@@ -312,6 +330,7 @@ sub response     { $_[0]->get_prop('response')              }
 sub application  { $_[0]->get_prop('application')           }
 sub stash        { $_[0]->get_prop('stash')                 }
 sub global_asa   { $_[0]->get_prop('global_asa')            }
+sub _is_setup    { $_[0]->get_prop('_is_setup')            }
 
 sub r            { $_[0]->{r}                     }
 sub cgi          { $_[0]->{cgi}                   }
@@ -371,7 +390,7 @@ sub resolve_request_handler
   elsif( $uri =~ m/^\/handlers\// )
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
-    $handler =~ s/[^a-z0-9_\.]/::/g;
+    $handler =~ s/[^a-z0-9_\.]/::/gi;
     $s->load_class( $handler );
     return $handler;
   }# end if()

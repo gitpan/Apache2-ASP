@@ -14,6 +14,7 @@
   }
 %>
 
+Files ~ /hello
 
 <%
   if( 1 ) {

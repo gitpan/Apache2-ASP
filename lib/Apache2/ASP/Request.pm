@@ -38,11 +38,12 @@ sub Form
 {
   my $s = shift;
   
-  local $SIG{__DIE__} = \&confess;
+  local $SIG{__DIE__} = \&Carp::confess;
   my $cgi = $s->context->cgi;
-  return {
+  $s->{_form} = {
     map { $_ => $cgi->param($_) } $cgi->param
   };
+  return $s->{_form};
 }# end Form()
 
 

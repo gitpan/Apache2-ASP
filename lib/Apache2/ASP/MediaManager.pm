@@ -110,11 +110,11 @@ sub open_file_for_writing
   my ($s, $context, $filename) = @_;
   
   # Try to open the file for writing:
-  open my $ifh, '>', $filename
+  open my $ofh, '>', $filename
     or die "Cannot open file '$filename' for writing: $!";
-  binmode($ifh);
+  binmode($ofh);
   
-  return $ifh;
+  return $ofh;
 }# end open_file_for_writing()
 
 
@@ -138,11 +138,11 @@ sub open_file_for_appending
   my ($s, $context, $filename) = @_;
   
   # Try to open the file for appending:
-  open my $ifh, '>>', $filename
+  open my $ofh, '>>', $filename
     or die "Cannot open file '$filename' for appending: $!";
-  binmode($ifh);
+  binmode($ofh);
   
-  return $ifh;
+  return $ofh;
 }# end open_file_for_appending()
 
 
@@ -206,12 +206,16 @@ sub upload_start
   my ($s, $context, $Upload) = @_;
   
   shift(@_);
-  $s->SUPER::upload_start( @_ );
-  
+  $s->SUPER::upload_start( $context, $Upload );
+
   my $filename = $s->compose_upload_file_name( @_ );
   
   # Depending on the 'mode' parameter, we do different things:
-  local $_ = $context->request->Form->{mode};
+  my %args = map {
+    my ($k,$v) = split /\=/, $_;
+    $k => $v
+  } split /&/, $ENV{QUERY_STRING};
+  local $_ = $args{mode};
   if( /^create$/ )
   {
     $s->before_create($context, $Upload)
@@ -250,8 +254,10 @@ sub upload_hook
   shift(@_);
   $s->SUPER::upload_hook( @_ );
   
-  my $filename = $context->r->pnotes( 'filename' )
-    or die "Couldn't get pnotes 'filename'";
+  my $filename = eval {
+    my $name = $context->r->pnotes( 'filename' );
+    $name;
+  } or return;
   
   my $ofh = $s->open_file_for_appending($context, $filename);
   no warnings 'uninitialized';
@@ -313,7 +319,7 @@ sub after_download
 sub before_create
 {
   my ($s, $context, $Upload) = @_;
-  
+  1;
 }# end before_create()
 
 
@@ -321,7 +327,7 @@ sub before_create
 sub before_update
 {
   my ($s, $context, $Upload) = @_;
-  
+  1;
 }# end before_update()
 
 

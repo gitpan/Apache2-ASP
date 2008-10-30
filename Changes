@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_11   2008-10-27
+  - ASPPage updated so that pages containing "~" in their text will not cause
+    syntax errors after being parsed.
+  - File uploads are handled correctly by ModPerl, UploadHandler and MediaManager.
+
 2.00_10   2008-10-26
   - Server.RegisterCleanup(\&subref, \@argref) now fires both from the command-line
     and within an actual mod_perl environment.

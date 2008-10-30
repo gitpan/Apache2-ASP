@@ -72,6 +72,8 @@ t/htdocs/upload.asp
 t/htdocs/inc.asp
 t/htdocs/masters/main.asp
 t/handlers/upload01.pm
+t/lib/My/MemberFilter.pm
+t/lib/My/MemberFilter2.pm
 t/PAGE_CACHE/DefaultApp/.ok
 t/MEDIA/.ok
 

@@ -139,11 +139,11 @@ sub parse
   # Do the <%# %> tags:
   $s->_eval_compile_tags;
   
-  # Do the <!-- #include --> tags:
-  $s->_parse_include_tags;
-  
   # Setup the scriptlet <% %> tags:
   $s->_parse_scriptlet_tags;
+  
+  # Do the <!-- #include --> tags:
+  $s->_parse_include_tags;
   
   # XXX: Make DOM
   $s->_build_dom;
@@ -303,6 +303,7 @@ sub _build_dom
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
       
       # Remove the chunk of code:
+#      $contents =~ s/~/\\~/g;
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
@@ -342,6 +343,7 @@ sub _parse_scriptlet_tags
   my ($s) = @_;
   
   my $ref = $s->source_code;
+#  $$ref =~ s/\~/\\~/g unless $s->masterpage || $s->is_masterpage || $$ref =~ m/<asp:PlaceHolderContent\s/s;
   
   # Parse <% %> items:
   $$ref =~ s{
@@ -353,12 +355,21 @@ sub _parse_scriptlet_tags
   $$ref =~ s{
     <%\s*([^\@\#\=]?.*?)%>
   }{
-    my $txt = $1; $txt =~ s/\~/\~/g; '~);' . $txt . '$Response->Write(q~'
+    my $txt = $1; '~);' . $txt . ';$Response->Write(q~'
   }gxse;
+    #$txt =~ s/~/\\~/g; '~);' . $txt . ';$Response->Write(q~'
   
   $$ref =~ s/(\$Response\->End)/return $1/gs;
   
-  $$ref = '$Response->Write(q~' . $$ref . '~);';
+  $$ref = ';$Response->Write(q~' . $$ref . '~);';
+  
+  # Now do the final ~ substitution:
+  $$ref =~ s{(\(q~)(.*?)(~\);)}{
+    my $pre = $1;
+    my $post = $3;
+    (my $txt = $2) =~ s/~/\\~/g;
+    "$pre$txt$post"
+  }xsge;
 }# end _parse_scriptlet_tags()
 
 
