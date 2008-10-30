@@ -211,11 +211,7 @@ sub upload_start
   my $filename = $s->compose_upload_file_name( @_ );
   
   # Depending on the 'mode' parameter, we do different things:
-  my %args = map {
-    my ($k,$v) = split /\=/, $_;
-    $k => $v
-  } split /&/, $ENV{QUERY_STRING};
-  local $_ = $args{mode};
+  local $_ = $s->_args('mode');
   if( /^create$/ )
   {
     $s->before_create($context, $Upload)

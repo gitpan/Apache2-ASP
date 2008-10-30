@@ -16,22 +16,21 @@ sub upload_start
   # Store the upload information in the Session for external retrieval:
   $LastUpdate = time();
   $LastPercent = $Upload->{percent_complete} || 0;
-  $context->session->{$_} = $Upload->{$_}
+  my $uploadID = $s->_args('uploadID');
+  $context->session->{"upload$uploadID$_"} = $Upload->{$_}
     foreach keys(%$Upload);
   $context->session->save;
 }# end upload_start()
 
 
 #==============================================================================
+# The logic *we* need is already taken care of by the UploadHook's RegisterCleanup,
+# so we can just leave this stub for subclassing:
 sub upload_end
 {
   my ($s, $context, $Upload) = @_;
   
-  # Clear out the upload data from the Session:
-  $Upload->{percent_complete} = 100;
-  delete($context->session->{$_})
-    foreach keys(%$Upload);
-  $context->session->save;
+  1;
 }# end upload_end()
 
 
@@ -44,18 +43,33 @@ sub upload_hook
   # want to save the Session state once per second:
   my $Diff = time() - $LastUpdate;
   my $PercentDiff = $Upload->{percent_complete} - $LastPercent;
-  if( $Diff >= 2 || $PercentDiff >= 10 )
+  if( $Diff >= 2 || $PercentDiff >= 5 )
   {
+    my $uploadID = $s->_args('uploadID');
+#warn "uploadID: '" . $uploadID . "'";
 #warn "SAVING SESSION!: $Diff $Upload->{percent_complete}%";
     # Store everything in the session except for the data 
     # (since that could be too large to serialize quickly):
-    $context->session->{$_} = $Upload->{$_}
+    $context->session->{"upload$uploadID$_"} = $Upload->{$_}
       foreach grep { $_ ne 'data' } keys(%$Upload);
     $context->session->save;
     $LastUpdate = time();
     $LastPercent = $Upload->{percent_complete};
   }# end if()
 }# end upload_hook()
+
+
+#==============================================================================
+sub _args
+{
+  my ($s, $key) = @_;
+  
+  my %args = map {
+    split /\=/, $_
+  } split /&/, $ENV{QUERY_STRING};
+  
+  return $args{$key};
+}# end _args()
 
 1;# return true:
 

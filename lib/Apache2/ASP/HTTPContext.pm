@@ -387,7 +387,7 @@ sub resolve_request_handler
   elsif( $uri =~ m/^\/handlers\// )
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
-    $handler =~ s/[^a-z0-9_\.]/::/gi;
+    $handler =~ s/[^a-z0-9_]/::/gi;
     $s->load_class( $handler );
     return $handler;
   }# end if()
@@ -432,7 +432,6 @@ sub DESTROY
 {
   my $s = shift;
   undef(%$s);
-#  undef($instance);
 }# end DESTROY()
 
 

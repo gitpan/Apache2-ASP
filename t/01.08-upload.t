@@ -18,7 +18,8 @@ for( 1...10_000 )
 }# end for()
 close($ofh);
 
-my $res = $s->ua->upload("/handlers/upload01?mode=create", [
+my $uploadID = int(rand() * 1000) . ':' . int(rand() * 1000);
+my $res = $s->ua->upload("/handlers/upload01?mode=create&uploadID=$uploadID", [
   uploaded_file => [ $upload_filename ]
 ]);
 

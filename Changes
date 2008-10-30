@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_13   2008-10-30
+  - Each upload form submission should now include a unique "uploadID=xxx" value.
+  - Multiple concurrent uploads from the same user under the same session are
+    now supported because of the uploadID=xxx logic.
+
 2.00_12   2008-10-29
   - (handler)->init_asp_objects( $context ) was not getting called correctly.
 

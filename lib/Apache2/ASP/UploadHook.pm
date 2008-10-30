@@ -41,7 +41,6 @@ sub hook
   my $total_loaded = ($context->r->pnotes('total_loaded') || 0) + $length_received;
   $context->r->pnotes( total_loaded => $total_loaded);
   my $percent_complete = sprintf("%.2f", $total_loaded / $CONTENT_LENGTH * 100 );
-#warn "___Total: '$CONTENT_LENGTH' | Loaded: '$total_loaded' | Complete: $percent_complete%\n";
   
   # Mark our start time, so we can make our calculations:
   my $start_time = $context->r->pnotes('upload_start_time');
@@ -50,8 +49,6 @@ sub hook
     $start_time = gettimeofday();
     $context->r->pnotes('upload_start_time' => $start_time);
   }# end if()
-  
-  
   
   # Calculate elapsed, total expected and remaining time, etc:
   my $elapsed_time        = gettimeofday() - $start_time;
@@ -82,8 +79,9 @@ sub hook
       or return;
     
     # End the upload if we are done:
+    my $uploadID = $s->_args('uploadID');
     $context->r->push_handlers(PerlCleanupHandler => sub {
-      delete($context->session->{$_})
+      delete($context->session->{"upload$uploadID$_"})
         foreach keys(%$Upload);
       $context->session->save;
     });
@@ -98,6 +96,19 @@ sub hook
   # Call the hook:
   $s->{handler_class}->upload_hook( $context, $Upload );
 }# end hook()
+
+
+#==============================================================================
+sub _args
+{
+  my ($s, $key) = @_;
+  
+  my %args = map {
+    split /\=/, $_
+  } split /&/, $ENV{QUERY_STRING};
+  
+  return $args{$key};
+}# end _args()
 
 1;# return true:
 
