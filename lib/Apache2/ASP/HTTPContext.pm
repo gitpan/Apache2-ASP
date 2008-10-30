@@ -173,10 +173,7 @@ sub run_handler
   my ($s, $args) = @_;
   
   my $handler = $s->handler->new();
-
-#warn "BEFORE...//////////////////////////////////////////////////////////////////////";
-#  $handler->init_asp_objects( $s );
-#warn "AFTER...//////////////////////////////////////////////////////////////////////";
+  $handler->init_asp_objects( $s );
   $handler->before_run( $s, $args );
   if( ! $s->{did_end} )
   {

@@ -1,6 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
-2.00_11   2008-10-27
+2.00_12   2008-10-29
+  - (handler)->init_asp_objects( $context ) was not getting called correctly.
+
+2.00_11   2008-10-29
   - ASPPage updated so that pages containing "~" in their text will not cause
     syntax errors after being parsed.
   - File uploads are handled correctly by ModPerl, UploadHandler and MediaManager.
