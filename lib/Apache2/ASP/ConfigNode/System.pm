@@ -30,5 +30,13 @@ sub env_vars
   @{ $s->{env_vars}->{var} };
 }# end libs()
 
+#==============================================================================
+sub post_processors
+{
+  my $s = shift;
+  
+  @{ $s->{post_processors}->{class} };
+}# end libs()
+
 1;# return true:
 

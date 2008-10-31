@@ -2,6 +2,12 @@
 <configuration>
 
   <system>
+    <post_processors>
+<!--
+      <class>My::PostProcessor</class>
+      <class>My::PostProcessor2</class>
+-->
+    </post_processors>
     <libs>
       <lib>@ServerRoot@/lib</lib>
     </libs>

@@ -40,10 +40,24 @@ sub Form
   
   local $SIG{__DIE__} = \&Carp::confess;
   my $cgi = $s->context->cgi;
-  $s->{_form} = {
-    map { $_ => $cgi->param($_) } $cgi->param
-  };
-  return $s->{_form};
+  my $form = { };
+  foreach my $param ( $cgi->param )
+  {
+    if( exists($form->{$param}) )
+    {
+      # We've already seen this param:
+      my $data = delete($form->{$param});
+      # Make it into an arrayref unless it already is:
+      $data = [ $data ] unless ref($data) eq 'ARRAY';
+      push @$data, $cgi->param($param);
+      $form->{$param} = $data;
+    }
+    else
+    {
+      $form->{$param} = $cgi->param($param);
+    }# end if()
+  }# end foreach()
+  return $s->{_form} = $form;
 }# end Form()
 
 

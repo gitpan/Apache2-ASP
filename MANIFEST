@@ -60,6 +60,7 @@ t/01.05-memcycle.t
 t/MEDIA/asp-upload-test.txt
 t/03.08-aspdom-node.t
 t/01.06-cookies.t
+t/04.00-nested-master.t
 t/conf/apache2-asp-config.xml
 t/conf/httpd.conf
 t/htdocs/simple-form.asp
@@ -69,8 +70,11 @@ t/htdocs/coverage/includes-syntax-error.asp
 t/htdocs/coverage/syntax-error.asp
 t/htdocs/coverage/syntax-error-master.asp
 t/htdocs/upload.asp
+t/htdocs/page-using-nested-masterpage.asp
 t/htdocs/inc.asp
 t/htdocs/masters/main.asp
+t/htdocs/masters/root.asp
+t/htdocs/masters/nested-master.asp
 t/handlers/upload01.pm
 t/lib/My/MemberFilter.pm
 t/lib/My/MemberFilter2.pm

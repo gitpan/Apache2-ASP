@@ -79,7 +79,7 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP::CGI - A wrapper for CGI utility functions.
+Apache2::ASP::ModPerl2CGI - A wrapper for CGI utility functions.
 
 =head1 DESCRIPTION
 
@@ -92,7 +92,7 @@ this module too much.
 
 =head2 new( $r [, \&upload_hook] )
 
-Returns a new C<Apache2::ASP::CGI> object - with or without an upload hook specified.
+Returns a new C<Apache2::ASP::ModPerl2CGI> object - with or without an upload hook specified.
 
 =head1 BUGS
 
@@ -102,7 +102,7 @@ Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug rep
 
 =head1 HOMEPAGE
 
-Please visit the Apache2::ASP homepage at L<http://apache2-asp.no-ip.org/> to see examples
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
 of Apache2::ASP in action.
 
 =head1 AUTHOR

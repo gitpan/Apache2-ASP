@@ -129,7 +129,7 @@ sub parse
       childpage    => $s,
     );
     $s->{masterpage} = $s->masterpage->_initialize_page;
-    $s->{is_masterpage} = 0;
+#    $s->{is_masterpage} = 0;
   }
   elsif( exists($s->directives->{MasterPage}) )
   {
@@ -297,6 +297,23 @@ sub _build_dom
       confess $s->masterpage->virtual_path . " does not define an asp:PlaceHolder '" . $attrs->{PlaceHolderID} . "'"
         unless $s->masterpage->{placeholders}->{ $attrs->{PlaceHolderID} };
       
+      if( my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents2 ) =
+        $contents =~ m{
+          (<(([a-z_]+)\:([a-z0-9_:]+))\s*(.*?)\>(.*?)\<\/\2\>)
+        }ixs
+      )
+      {
+        # We have a nested master page:
+        # Parse the attributes:
+        my $attrs = $s->_parse_tag_attrs( $attrs );
+        
+        $s->{placeholders}->{ $attrs->{id} } = $contents2;
+        
+        # Remove the chunk of code:
+        my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
+        $contents =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
+      }# end if()
+      
       # Find the line on which this tag occurs:
       my @lines = split /\r?\n/, ${ $s->file_contents };
       my $line = 0;
@@ -307,6 +324,7 @@ sub _build_dom
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
+my (\$__self, \$__context) = \@_;
 #line @{[ $line + 1 ]}
 $fixed_contents
 }
@@ -391,6 +409,120 @@ sub _eval_compile_tags
 
 #==============================================================================
 sub _assemble_code
+{
+  my ($s) = @_;
+  
+  local $s->{childpage} = undef;
+  
+  my $copy = bless {%$s}, ref($s);
+  unless( ref($copy) eq $copy->package_name )
+  {
+    $copy = bless { %$copy }, $copy->package_name;
+  }# end unless()
+  local $copy->{masterpage} = ref($copy->{masterpage});
+  local $copy->{source_code} = \'';
+  local $copy->{file_contents} = \'';
+  my $dump = Dumper( $copy );
+  $dump =~ s/^\$VAR1\s+\=//;
+  my $virtual_path = $s->masterpage ? $s->masterpage->virtual_path : '';
+  
+  my $code = <<"CODE";
+package @{[ $s->package_name ]};
+
+use strict;
+use warnings 'all';
+no warnings 'redefine';
+our \$TIMESTAMP = @{[ time() ]};
+
+sub _initialize_page {
+  \$_[0]->init_asp_objects( \$_[0]->context );
+  \$_[0] = $dump;
+  \$_[0]->{masterpage} = \$_[0]->{masterpage}->new( virtual_path => '$virtual_path' ) if \$_[0]->{masterpage};
+  \$_[0];
+}
+
+CODE
+  
+  if( $s->masterpage )
+  {
+    $code .= <<"CODE";
+BEGIN {
+  (my \$pkg = '@{[ ref($s->masterpage) ]}.pm') =~ s/::/\\\\/g;
+  use Apache2::ASP::ASPPage;
+  eval { require \$pkg; 1 } or Apache2::ASP::ASPPage->new(
+    virtual_path => '@{[ $s->masterpage->virtual_path ]}'
+  );
+}
+use base '@{[ ref($s->masterpage) ]}';
+use vars ( '\$Master', __PACKAGE__->VARS );
+@{[ join "\n\n", map { $s->placeholder_contents->{$_} } keys(%{ $s->placeholder_contents }) ]}
+
+CODE
+    if( $s->is_masterpage )
+    {
+      $code .= <<"CODE";
+sub run {
+  my (\$__self,\$__context) = \@_;
+  \$__self->_initialize_page;
+  if( my \$cached = \$__self->_read_cache )
+  {
+    \$__self->{directives}->{OutputCache} = undef;
+    \$Response->Write( \$cached );
+    return;
+  }# end if()
+  
+  \$__context->{page} = \$__self unless \$__self->is_masterpage;
+#line 1
+@{[ ${$s->source_code} ]}
+}
+
+@{[ join "\n\n", map { "sub $_ {\$Response->Write(q~$s->{placeholders}->{$_}~);}" } keys(%{$s->placeholders}) ]}
+CODE
+    }
+    else
+    {
+      $code .= <<"CODE";
+1;# return true:
+CODE
+    }# end if()
+  }
+  else
+  {
+    $code .= <<"CODE";
+use base 'Apache2::ASP::ASPPage';
+use vars __PACKAGE__->VARS;
+
+sub run {
+  my (\$__self,\$__context) = \@_;
+  \$__self->_initialize_page;
+  if( my \$cached = \$__self->_read_cache )
+  {
+    \$__self->{directives}->{OutputCache} = undef;
+    \$Response->Write( \$cached );
+    return;
+  }# end if()
+  
+  \$__context->{page} = \$__self unless \$__self->is_masterpage;
+#line 1
+@{[ ${$s->source_code} ]}
+}
+
+@{[ join "\n\n", map { "sub $_ {\$Response->Write(q~$s->{placeholders}->{$_}~);}" } keys(%{$s->placeholders}) ]}
+
+1;# return true:
+
+CODE
+  }# end if()
+  
+  open my $ofh, '>', $s->pm_path
+    or die "Cannot open '" . $s->pm_path . "' for writing: $!";
+  print $ofh $code;
+  close($ofh);
+}# end _assemble_code()
+
+
+#==============================================================================
+sub _assemble_code____OLD
 {
   my ($s) = @_;
   

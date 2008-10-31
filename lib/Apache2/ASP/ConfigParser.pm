@@ -56,7 +56,16 @@ sub parse
     }# end if()
     
     # Post-processor:
-    $doc->{system}->{post_processor} ||= undef;
+    $doc->{system}->{post_processors} ||= { };
+    if( $doc->{system}->{post_processors}->{class} )
+    {
+      $doc->{system}->{post_processors}->{class} = [ $doc->{system}->{post_processors}->{class} ]
+        unless ref($doc->{system}->{post_processors}->{class}) eq 'ARRAY';
+    }
+    else
+    {
+      $doc->{system}->{post_processors}->{class} = [ ];
+    }# end if()
   };
   
   WEB: {
@@ -83,12 +92,12 @@ sub parse
   my $config = Apache2::ASP::Config->new( $doc, $root );
   
   # Now do any post-processing:
-  if( my $class = $config->system->post_processor )
+  foreach my $class ( $config->system->post_processors )
   {
     (my $file = "$class.pm") =~ s/::/\//;
     require $file unless $INC{$file};
     $config = $class->new()->post_process( $config );
-  }# end if()
+  }# end foreach()
   
   return $config;
 }# end parse()

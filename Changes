@@ -1,5 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_14   2008-10-31
+  - If querystring or form data contains multiple values for the same parameter,
+    that parameter will become an arrayref of values.
+  - Multiple config post-processors can be defined in the config XML file.  They
+    will be executed in the order they are listed in the config XML file.
+  - Nested master pages are now supported.
+
 2.00_13   2008-10-30
   - Each upload form submission should now include a unique "uploadID=xxx" value.
   - Multiple concurrent uploads from the same user under the same session are
