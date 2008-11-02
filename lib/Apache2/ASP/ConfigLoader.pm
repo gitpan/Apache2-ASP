@@ -3,6 +3,7 @@ package Apache2::ASP::ConfigLoader;
 
 use strict;
 use warnings 'all';
+use Carp 'confess';
 use Apache2::ASP::ConfigFinder;
 use Apache2::ASP::ConfigParser;
 use XML::Simple ();
@@ -18,9 +19,11 @@ sub load
   
   my $path = Apache2::ASP::ConfigFinder->config_path;
   return $Configs->{$path} if $Configs->{$path};
+  
   my $doc = XML::Simple::XMLin( $path,
     SuppressEmpty => '',
-    ForceArray => [qw/ var /],
+    ForceArray => [qw/ var setting /],
+    KeyAttr => { },
   );
   
   $path =~ s/\/conf\/[^\/]+$//;

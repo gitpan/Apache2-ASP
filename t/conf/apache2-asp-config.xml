@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<!DOCTYPE configuration SYSTEM "http://www.devstack.com/schemae/configuration.dtd">
 <configuration>
 
   <system>
@@ -17,20 +18,24 @@
     </load_modules>
     <env_vars>
       <var>
-        <myvar>value</myvar>
+        <name>myvar</name>
+        <value>value</value>
       </var>
       <var>
-        <myvar2>value</myvar2>
+        <name>myvar2</name>
+        <value>value2</value>
       </var>
     </env_vars>
     <settings>
-      <a_setting>a_setting_value</a_setting>
+      <setting>
+        <name>mysetting</name>
+        <value>value</value>
+      </setting>
     </settings>
   </system>
 
   <web>
     <domain_re>.*</domain_re>
-    <do_reload_on_script_change>1</do_reload_on_script_change>
     <application_name>DefaultApp</application_name>
     <application_root>@ServerRoot@</application_root>
     <handler_root>@ServerRoot@/handlers</handler_root>
