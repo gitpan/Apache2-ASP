@@ -43,6 +43,7 @@
     <www_root>@ServerRoot@/htdocs</www_root>
     <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
     <request_filters>
+<!--
       <filter>
         <uri_match>/.*</uri_match>
         <class>My::MemberFilter</class>
@@ -51,6 +52,7 @@
         <uri_equals>/index.asp</uri_equals>
         <class>My::MemberFilter2</class>
       </filter>
+-->
     </request_filters>
   </web>
 

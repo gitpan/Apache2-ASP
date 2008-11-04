@@ -2,6 +2,7 @@ Changes
 Makefile.PL
 MANIFEST
 README
+lib/Apache2/ASP/TransHandler.pm
 lib/Apache2/ASP/CacheManager.pm
 lib/Apache2/ASP/ApplicationStateManager/MySQL.pm
 lib/Apache2/ASP/ApplicationStateManager/SQLite.pm

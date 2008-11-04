@@ -37,6 +37,16 @@ sub new
     unless -f $s->physical_path;
   
   my $pm_folder = $s->context->config->web->page_cache_root . '/' . $s->context->config->web->application_name;
+  
+  # Build out the folder structure to the Page Cache:
+  my @parts = grep { length($_) } split /\//, $pm_folder;
+  my $dir = '';
+  foreach( @parts )
+  {
+    $dir .= "/$_";
+    mkdir($dir) unless -d $dir;
+  }# end foreach()
+  
   my $pkg = $s->virtual_path;
   $pkg =~ s/^\///;
   $pkg =~ s/[^a-z0-9_]/_/ig;

@@ -91,6 +91,17 @@ sub parse
     {
       $doc->{web}->{settings}->{setting} = [ ];
     }# end if()
+    
+    $doc->{web}->{request_filters} ||= { };
+    if( $doc->{web}->{request_filters}->{filter} )
+    {
+      $doc->{web}->{request_filters}->{filter} = [ delete($doc->{web}->{request_filters}->{filter}) ]
+        unless ref($doc->{web}->{request_filters}->{filter}) eq 'ARRAY';
+    }
+    else
+    {
+      $doc->{web}->{request_filters}->{filter} = [ ];
+    }# end if()
   };
   
   DATA_CONNECTIONS: {
