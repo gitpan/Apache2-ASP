@@ -178,7 +178,7 @@ sub _setup_response
   
   $response_code = 200 if $response_code == 0;
   my $response = HTTP::Response->new( $response_code );
-  $response->content( $s->context->r->buffer );
+  $response->content( $s->context->get_prop('r')->buffer );
   
   $response->header( 'Content-Type' => $s->context->response->{ContentType} );
   

@@ -62,7 +62,7 @@ sub new
 
   if( ( ! $pm_age ) || ( $asp_age > $pm_age ) )
   {
-warn "(Re)compiling $pkg";
+#warn "(Re)compiling $pkg";
     delete( $INC{$pm_inc} );
     $s->_init_source_code();
     $s->parse;
@@ -70,7 +70,7 @@ warn "(Re)compiling $pkg";
   }
   elsif( $asp_age > $timestamp )
   {
-warn "(Re)loading $pkg";
+#warn "(Re)loading $pkg";
     delete( $INC{$pm_inc} );
     require $pm_inc;
   }# end if()
@@ -528,95 +528,7 @@ CODE
     or die "Cannot open '" . $s->pm_path . "' for writing: $!";
   print $ofh $code;
   close($ofh);
-}# end _assemble_code()
-
-
-#==============================================================================
-sub _assemble_code____OLD
-{
-  my ($s) = @_;
-  
-  local $s->{childpage} = undef;
-  
-  my $copy = bless {%$s}, ref($s);
-  unless( ref($copy) eq $copy->package_name )
-  {
-    $copy = bless { %$copy }, $copy->package_name;
-  }# end unless()
-  local $copy->{masterpage} = ref($copy->{masterpage});
-  local $copy->{source_code} = \'';
-  local $copy->{file_contents} = \'';
-  my $dump = Dumper( $copy );
-  $dump =~ s/^\$VAR1\s+\=//;
-  my $virtual_path = $s->masterpage ? $s->masterpage->virtual_path : '';
-  
-  my $code = <<"CODE";
-package @{[ $s->package_name ]};
-
-use strict;
-use warnings 'all';
-no warnings 'redefine';
-our \$TIMESTAMP = @{[ time() ]};
-
-sub _initialize_page {
-  \$_[0]->init_asp_objects( \$_[0]->context );
-  \$_[0] = $dump;
-  \$_[0]->{masterpage} = \$_[0]->{masterpage}->new( virtual_path => '$virtual_path' ) if \$_[0]->{masterpage};
-  \$_[0];
-}
-
-CODE
-  
-  if( $s->masterpage )
-  {
-    $code .= <<"CODE";
-BEGIN {
-  (my \$pkg = '@{[ ref($s->masterpage) ]}.pm') =~ s/::/\\\\/g;
-  use Apache2::ASP::ASPPage;
-  eval { require \$pkg; 1 } or Apache2::ASP::ASPPage->new(
-    virtual_path => '@{[ $s->masterpage->virtual_path ]}'
-  );
-}
-use base '@{[ ref($s->masterpage) ]}';
-use vars ( '\$Master', __PACKAGE__->VARS );
-@{[ join "\n\n", map { $s->placeholder_contents->{$_} } keys(%{ $s->placeholder_contents }) ]}
-
-1;# return true:
-
-CODE
-  }
-  else
-  {
-    $code .= <<"CODE";
-use base 'Apache2::ASP::ASPPage';
-use vars __PACKAGE__->VARS;
-
-sub run {
-  my (\$__self,\$__context) = \@_;
-  \$__self->_initialize_page;
-  if( my \$cached = \$__self->_read_cache )
-  {
-    \$__self->{directives}->{OutputCache} = undef;
-    \$Response->Write( \$cached );
-    return;
-  }# end if()
-  
-  \$__context->{page} = \$__self unless \$__self->is_masterpage;
-#line 1
-@{[ ${$s->source_code} ]}
-}
-
-@{[ join "\n\n", map { "sub $_ {\$Response->Write(q~$s->{placeholders}->{$_}~);}" } keys(%{$s->placeholders}) ]}
-
-1;# return true:
-
-CODE
-  }# end if()
-  
-  open my $ofh, '>', $s->pm_path
-    or die "Cannot open '" . $s->pm_path . "' for writing: $!";
-  print $ofh $code;
-  close($ofh);
+  chmod( 0666, $s->pm_path );
 }# end _assemble_code()
 
 

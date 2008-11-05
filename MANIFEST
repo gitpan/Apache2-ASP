@@ -62,6 +62,7 @@ t/MEDIA/asp-upload-test.txt
 t/03.08-aspdom-node.t
 t/01.06-cookies.t
 t/04.00-nested-master.t
+t/04.02-include-at-end.t
 t/conf/apache2-asp-config.xml
 t/conf/httpd.conf
 t/htdocs/simple-form.asp

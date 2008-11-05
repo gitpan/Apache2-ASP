@@ -336,13 +336,13 @@ sub connection   { $_[0]->{connection}            }
 sub page         { $_[0]->{page}                  }
 
 # Need to get this figured out:
-sub headers_in   { shift->{headers_in}       }
+sub headers_in   { shift->get_prop('headers_in') }
 sub send_headers
 {
   my $s = shift;
   
-  my $headers = $s->{headers_out};
-  my $out = $s->{r}->headers_out;
+  my $headers = $s->get_prop('headers_out');
+  my $out = $s->get_prop('r')->headers_out;
   while( my ($k,$v) = each(%$headers) )
   {
     $out->{$k} = $v;
@@ -350,8 +350,8 @@ sub send_headers
   
   if( $s->{r}->can('send_headers') )
   {
-    $s->{r}->headers_out->{$_} = $out->{$_} foreach keys(%$out);
-    $s->{r}->send_headers;
+    $s->get_prop('r')->headers_out->{$_} = $out->{$_} foreach keys(%$out);
+    $s->get_prop('r')->send_headers;
   }
   else
   {
@@ -360,8 +360,8 @@ sub send_headers
   $s->{_did_send_headers}++;
 }# end send_headers()
 
-sub headers_out  { shift->{headers_out} }
-sub content_type { shift->{r}->content_type( @_ ) }
+sub headers_out  { shift->get_prop('headers_out') }
+sub content_type { shift->get_prop('r')->content_type( @_ ) }
 sub print
 {
   my ($s, $str) = @_;
@@ -369,7 +369,7 @@ sub print
   $s->{r}->print( $str );
 }# end print()
 sub rflush       { shift->{r}->rflush( @_ )       }
-sub did_send_headers { shift->{_did_send_headers} }
+sub did_send_headers { shift->get_prop('_did_send_headers') }
 
 
 #==============================================================================
