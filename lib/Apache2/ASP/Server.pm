@@ -112,7 +112,7 @@ sub RegisterCleanup
   my ($s, $sub, @args) = @_;
   
   # This works both in "testing" mode and within a live mod_perl environment.
-  $s->context->r->pool->cleanup_register( $sub, \@args );
+  $s->context->get_prop('r')->pool->cleanup_register( $sub, \@args );
 }# end RegisterCleanup()
 
 

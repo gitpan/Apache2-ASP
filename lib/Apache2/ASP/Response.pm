@@ -146,7 +146,8 @@ sub End
   $s->Flush;
   # Cancel execution and force the server to stop processing this request.
   my $sock = $s->context->connection->client_socket;
-  eval { $sock->close() };
+  $sock->close();
+#  eval { $sock->close() };
   $s->context->{did_end} = 1;
 }# end End()
 

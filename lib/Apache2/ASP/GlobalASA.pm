@@ -26,7 +26,18 @@ sub init_asp_objects
   
   no strict 'refs';
   my $selfclass = ref($s) || $s;
-  foreach my $class ( grep { $_->isa('Apache2::ASP::GlobalASA') } ( $selfclass, @{"$selfclass\::ISA"} ) )
+  
+  # Get each of this classes' superclasses, and theirs as well, recursively:
+  my %c = map { $_ => 1 } (
+    grep { $_->isa('Apache2::ASP::HTTPHandler') } 
+    ( $selfclass, @{"$selfclass\::ISA"} )
+  );
+  map { $c{$_}++ } map {
+    @{"$_\::ISA"}
+  } keys(%c);
+  my @classes = keys(%c);
+  
+  foreach my $class ( @classes )
   {
     ${"$class\::Request"}     = $context->request;
     ${"$class\::Response"}    = $context->response;
@@ -97,10 +108,7 @@ sub Script_OnEnd()
 
 
 #==============================================================================
-sub Script_OnError()
-{
-  # Deal with $@ to learn more about the error:
-}# end Script_OnError()
+sub Script_OnError($);
 
 1;# return true:
 

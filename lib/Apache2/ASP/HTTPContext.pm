@@ -36,7 +36,6 @@ sub new
   
   no strict 'refs';
   ${"$ClassName\::instance"} = $s;
-#  $instance = $s;
 }# end new()
 
 
@@ -78,11 +77,7 @@ sub setup_request
     $s->{headers_in} = $headers_in;
   }# end if()
   
-  $s->{connection}  = $s->{r}->connection;
-  
-# XXX Moving this into the "only if no parent" block might have caused problems...:
-# Keep this here just in case we need to revert back to previous behavior:
-#  $s->{response} = Apache2::ASP::Response->new();
+  $s->{connection}  = $s->r->connection;
 
   $s->{handler} = $s->resolve_request_handler( $s->r->uri );
   
@@ -115,6 +110,7 @@ sub setup_request
 sub execute
 {
   my ($s, $args) = @_;
+  local $SIG{__DIE__} = \&Carp::confess;
   
   unless( $s->{parent} )
   {
@@ -277,10 +273,31 @@ sub handle_phase
 sub handle_error
 {
   my $s = shift;
-  warn $@;
   my $error = $@;
-  eval { $s->global_asa->can('Script_OnError')->( $error ) };
   $s->response->Status( 500 );
+  no strict 'refs';
+  if( defined(&{$s->global_asa . "::Script_OnError"}) )
+  {
+    eval { $s->global_asa->can('Script_OnError')->( $error ) };
+  }
+  else
+  {
+    $s->response->Clear;
+    my ($main, $title, $file, $line) = $error =~ m/^((.*?)\sat\s(.*?)\sline\s(\d+))/;
+    $s->stash->{error} = {
+      title       => $title,
+      file        => $file,
+      line        => $line,
+      stacktrace  => $error,
+    };
+    warn "[Error: @{[ HTTP::Date::time2iso() ]}] $main\n";
+    
+    $s->load_class( $s->config->errors->error_handler );
+    my $error_handler = $s->config->errors->error_handler->new();
+    $error_handler->init_asp_objects( $s );
+    eval { $error_handler->run( $s ) };
+    confess $@ if $@;
+  }# end if()
   return $s->end_request;
 }# end handle_error()
 
@@ -348,14 +365,14 @@ sub send_headers
     $out->{$k} = $v;
   }# end while()
   
-  if( $s->{r}->can('send_headers') )
+  if( $s->get_prop('r')->can('send_headers') )
   {
     $s->get_prop('r')->headers_out->{$_} = $out->{$_} foreach keys(%$out);
     $s->get_prop('r')->send_headers;
   }
   else
   {
-    $s->{r}->headers_out( $out );
+    $s->get_prop('r')->headers_out( $out );
   }# end if()
   $s->{_did_send_headers}++;
 }# end send_headers()
@@ -366,7 +383,7 @@ sub print
 {
   my ($s, $str) = @_;
   $s->{_cache_buffer} .= $str;
-  $s->{r}->print( $str );
+  $s->r->print( $str );
 }# end print()
 sub rflush       { shift->{r}->rflush( @_ )       }
 sub did_send_headers { shift->get_prop('_did_send_headers') }

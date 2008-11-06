@@ -4,6 +4,7 @@ package Apache2::ASP::ModPerl;
 use strict;
 use warnings 'all';
 use APR::Table ();
+use APR::Socket ();
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::Connection ();
@@ -39,13 +40,15 @@ sub handler : method
       $context->setup_request( $r, \$CGI) unless $context->_is_setup;
       $hook_obj->hook( @_ );
     });
-    return $context->execute;
+    $context->execute;
+    return 0;
   }
   else
   {
     my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
     $context->setup_request( $r, $cgi );
-    return $context->execute;
+    $context->execute;
+    return 0;
   }# end if()
 }# end handler()
 

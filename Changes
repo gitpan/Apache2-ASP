@@ -1,5 +1,15 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_18   2008-11-05
+  - New *.pm files in the PAGE_CACHE are chmod 0666.
+  - Added ErrorHandler.  By default, it prints a stacktrace to the browser and
+    sends a copy to the email address specified in the <errors> config.
+  - Added <errors> section to config.
+  - Updated configuration DTD for <errors> section.
+  - Apache2::ASP::ModPerl now correctly returns a 0 value and sets $r->status.
+  - $Server->RegisterCleanup references the correct Apache2::RequestRec object.
+  - Added "runasp," the command-line interface to run ASP scripts.
+
 2.00_17   2008-11-04
   - Fixed a bug which caused Apache2::ASP::Test::UserAgent to not get the
     output buffer content from the correct Mock request object (meaning that

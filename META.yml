@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Apache2-ASP
-version:             2.00_17
+version:             2.00_18
 abstract:            ASP for Perl, reloaded.
 license:             artistic
 author:              
@@ -8,27 +8,25 @@ author:
 generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
-    CGI::Apache2::Wrapper:         0
-    CGI::Simple:                   0
-    Cwd:                           0
+    CGI::Apache2::Wrapper:         0.215
+    CGI::Simple:                   1.106
+    Cwd:                           3.2701
     Data::Properties::YAML:        0.02
-    DBD::SQLite:                   0
-    DBI:                           0
-    Devel::StackTrace:             0
-    Digest::MD5:                   0
-    HTML::Form:                    0
-    HTTP::Body:                    1.01
-    HTTP::Date:                    0
-    HTTP::Request::AsCGI:          0
+    DBD::SQLite:                   1.14
+    DBI:                           1.607
+    Digest::MD5:                   2.36
+    HTML::Form:                    5.817
+    HTTP::Body:                    1.04
+    HTTP::Date:                    5.81
+    HTTP::Request::AsCGI:          0.5
     Ima::DBI:                      0.35
-    Mail::Sendmail:                0
-    MIME::Types:                   0
-    Storable:                      0
-    Test::Exception:               0
-    Test::More:                    0
-    Time::HiRes:                   0
-    XML::Parser:                   0
-    XML::Simple:                   0
+    Mail::Sendmail:                0.79
+    MIME::Types:                   1.24
+    Storable:                      2.18
+    Test::More:                    0.84
+    Time::HiRes:                   1.9715
+    XML::Parser:                   2.36
+    XML::Simple:                   2.18
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
     version: 1.3

@@ -33,9 +33,14 @@
       </setting>
     </settings>
   </system>
+  
+  <errors>
+    <error_handler>Apache2::ASP::ErrorHandler</error_handler>
+    <mail_errors_to>jdrago_999@yahoo.com</mail_errors_to>
+    <mail_errors_from>root@localhost</mail_errors_from>
+  </errors>
 
   <web>
-    <domain_re>.*</domain_re>
     <application_name>DefaultApp</application_name>
     <application_root>@ServerRoot@</application_root>
     <handler_root>@ServerRoot@/handlers</handler_root>
