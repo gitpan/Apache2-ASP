@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_20   2008-11-07
+  - Added missing file t/lib/My/ErrorHandler.pm to MANIFEST.
+
 2.00_19   2008-11-07
   - Added some /Manual/* documentation.
   - HTTPContext now correctly traps "unhandled tag" errors.

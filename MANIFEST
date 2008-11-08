@@ -82,7 +82,9 @@ t/htdocs/inc.asp
 t/htdocs/masters/main.asp
 t/htdocs/masters/root.asp
 t/htdocs/masters/nested-master.asp
+t/htdocs/include-at-end.asp
 t/handlers/upload01.pm
+t/lib/My/ErrorHandler.pm
 t/lib/My/MemberFilter.pm
 t/lib/My/MemberFilter2.pm
 t/PAGE_CACHE/DefaultApp/.ok
