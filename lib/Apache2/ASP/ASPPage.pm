@@ -270,7 +270,12 @@ sub _build_dom
     }
     else
     {
-      # Unhandled tag?:
+      # Unhandled tag:
+      # Find the line on which this tag occurs:
+      my @lines = split /\r?\n/, ${ $s->file_contents };
+      my $line = 0;
+      $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
+      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
     }# end if()
     
     # Remove the chunk of code
@@ -289,7 +294,7 @@ sub _build_dom
     my $attrs = $s->_parse_tag_attrs( $attrs );
     
     local $_ = $tagName;
-    if( m/^asp:PlaceHolder$/ )
+    if( m/^asp:ContentPlaceHolder$/i )
     {
       confess "Only MasterPages can contain $tagName elements"
         unless $s->is_masterpage;
@@ -299,24 +304,23 @@ sub _build_dom
       my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
       $$ref =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
     }
-    elsif( m/^asp:PlaceHolderContent$/ )
+    elsif( m/^asp:Content$/i )
     {
-      confess "$tagName found but no MasterPageVirtualPath defined"
+      confess "$tagName found but no UseMasterPage defined"
         unless $s->masterpage;
       
-      confess $s->masterpage->virtual_path . " does not define an asp:PlaceHolder '" . $attrs->{PlaceHolderID} . "'"
+      confess $s->masterpage->virtual_path . " does not define an asp:ContentPlaceHolder '" . $attrs->{PlaceHolderID} . "'"
         unless $s->masterpage->{placeholders}->{ $attrs->{PlaceHolderID} };
       
       if( my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents2 ) =
         $contents =~ m{
-          (<(([a-z_]+)\:([a-z0-9_:]+))\s*(.*?)\>(.*?)\<\/\2\>)
+          (<((asp)\:(ContentPlaceHolder))\s*(.*?)\>(.*?)\<\/\2\>)
         }ixs
       )
       {
         # We have a nested master page:
         # Parse the attributes:
         my $attrs = $s->_parse_tag_attrs( $attrs );
-        
         $s->{placeholders}->{ $attrs->{id} } = $contents2;
         
         # Remove the chunk of code:
@@ -330,7 +334,6 @@ sub _build_dom
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
       
       # Remove the chunk of code:
-#      $contents =~ s/~/\\~/g;
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
@@ -345,7 +348,11 @@ CODE
     else
     {
       # Unhandled tag:
-#      confess "Unhandled tag '$tagName'";
+      # Find the line on which this tag occurs:
+      my @lines = split /\r?\n/, ${ $s->file_contents };
+      my $line = 0;
+      $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
+      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
     }# end if()
   }# end while()
 
@@ -371,7 +378,6 @@ sub _parse_scriptlet_tags
   my ($s) = @_;
   
   my $ref = $s->source_code;
-#  $$ref =~ s/\~/\\~/g unless $s->masterpage || $s->is_masterpage || $$ref =~ m/<asp:PlaceHolderContent\s/s;
   
   # Parse <% %> items:
   $$ref =~ s{
@@ -385,7 +391,6 @@ sub _parse_scriptlet_tags
   }{
     my $txt = $1; '~);' . $txt . ';$Response->Write(q~'
   }gxse;
-    #$txt =~ s/~/\\~/g; '~);' . $txt . ';$Response->Write(q~'
   
   $$ref =~ s/(\$Response\->End)/return $1/gs;
   

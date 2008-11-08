@@ -273,7 +273,7 @@ sub handle_phase
 sub handle_error
 {
   my $s = shift;
-  my $error = $@;
+  my $error = "$@";
   $s->response->Status( 500 );
   no strict 'refs';
   if( defined(&{$s->global_asa . "::Script_OnError"}) )
@@ -283,7 +283,7 @@ sub handle_error
   else
   {
     $s->response->Clear;
-    my ($main, $title, $file, $line) = $error =~ m/^((.*?)\sat\s(.*?)\sline\s(\d+))/;
+    my ($main, $title, $file, $line) = $error =~ m/^((.*?)\s(?:at|in)\s(.*?)\sline\s(\d+))/;
     $s->stash->{error} = {
       title       => $title,
       file        => $file,

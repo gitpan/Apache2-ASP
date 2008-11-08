@@ -11,14 +11,14 @@ SYNOPSIS
       3: Profit!!
 
 DESCRIPTION
-    Apache2::ASP scales well and brought the ASP programming model to Perl
-    in a more modern way.
+    Apache2::ASP scales out well and has brought the ASP programming model
+    to Perl in a new way.
 
     This rewrite had a few major goals:
 
-    *   Master pages
+    *   Master Pages
 
-        Like ASP.Net has.
+        Like ASP.Net has, including nested Master Pages.
 
     *   Partial-page caching
 

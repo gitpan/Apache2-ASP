@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.00_18';
+$VERSION = '2.00_19';
 
 1;# return true:
 
@@ -30,16 +30,16 @@ used for anything except for testing.
 
 =head1 DESCRIPTION
 
-Apache2::ASP scales well and brought the ASP programming model to Perl in a more
-modern way.
+Apache2::ASP scales out well and has brought the ASP programming model to Perl 
+in a new way.
 
 This rewrite had a few major goals:
 
 =over 4
 
-=item * Master pages
+=item * Master Pages
 
-Like ASP.Net has.
+Like ASP.Net has, including nested Master Pages.
 
 =item * Partial-page caching
 
@@ -59,7 +59,6 @@ Server resources were being wasted on unnecessary activities like storing
 session state even when it had not changed, etc.
 
 =back
-
 
 =head1 BUGS
 

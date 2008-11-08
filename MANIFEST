@@ -3,6 +3,8 @@ Makefile.PL
 MANIFEST
 README
 runasp
+lib/Apache2/ASP/Manual/CrashCourse.pod
+lib/Apache2/ASP/Manual/GettingStarted.pod
 lib/Apache2/ASP/TransHandler.pm
 lib/Apache2/ASP/CacheManager.pm
 lib/Apache2/ASP/ApplicationStateManager/MySQL.pm

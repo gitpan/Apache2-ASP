@@ -35,9 +35,10 @@
   </system>
   
   <errors>
-    <error_handler>Apache2::ASP::ErrorHandler</error_handler>
+    <error_handler>My::ErrorHandler</error_handler>
     <mail_errors_to>jdrago_999@yahoo.com</mail_errors_to>
     <mail_errors_from>root@localhost</mail_errors_from>
+    <smtp_server>localhost</smtp_server>
   </errors>
 
   <web>

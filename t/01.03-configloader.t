@@ -11,7 +11,7 @@ for( 1...1 )
   my $config = Apache2::ASP::ConfigLoader->load;
 
   is(
-    $config->errors->error_handler => 'Apache2::ASP::ErrorHandler'
+    $config->errors->error_handler => 'My::ErrorHandler'
   );
 }
 

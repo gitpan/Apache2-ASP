@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_19   2008-11-07
+  - Added some /Manual/* documentation.
+  - HTTPContext now correctly traps "unhandled tag" errors.
+
 2.00_18   2008-11-05
   - New *.pm files in the PAGE_CACHE are chmod 0666.
   - Added ErrorHandler.  By default, it prints a stacktrace to the browser and
