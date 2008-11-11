@@ -80,6 +80,7 @@ sub setup_request
   $s->{connection}  = $s->r->connection;
 
   $s->{handler} = $s->resolve_request_handler( $s->r->uri );
+  $s->load_class( $s->{handler} );
   
   if( ! $s->{parent} )
   {

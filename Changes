@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_22   2008-10-10
+  - Fixed a bug which caused GlobalASA to not initialize properly.
+
 2.00_21   2008-11-10
   - Minor adjustments.
   - Added some documentation.
