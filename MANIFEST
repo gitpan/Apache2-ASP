@@ -2,7 +2,8 @@ Changes
 Makefile.PL
 MANIFEST
 README
-runasp
+sbin/runasp
+sbin/asphelper
 lib/Apache2/ASP/Manual/CrashCourse.pod
 lib/Apache2/ASP/Manual/GettingStarted.pod
 lib/Apache2/ASP/TransHandler.pm
@@ -24,6 +25,7 @@ lib/Apache2/ASP/SessionStateManager/MySQL.pm
 lib/Apache2/ASP/SessionStateManager/SQLite.pm
 lib/Apache2/ASP/ConfigNode/Web.pm
 lib/Apache2/ASP/ConfigNode/System.pm
+lib/Apache2/ASP/ConfigNode/System/Settings.pm
 lib/Apache2/ASP/ConfigPostProcessor.pm
 lib/Apache2/ASP/ErrorHandler.pm
 lib/Apache2/ASP/MediaManager.pm

@@ -150,7 +150,7 @@ sub retrieve
   my $now = time2iso();
   $sth->execute( $id );
   my ($data, $modified_on) = $sth->fetchrow;
-  $data = thaw($data);
+  $data = thaw($data) || { SessionID => $id };
   $sth->finish();
 
   if( time() - str2time($modified_on) >= ( $s->context->config->data_connections->session->session_timeout * 59 ) )

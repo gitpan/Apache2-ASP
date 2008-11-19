@@ -4,6 +4,19 @@ package Apache2::ASP::ConfigNode::System;
 use strict;
 use warnings 'all';
 use base 'Apache2::ASP::ConfigNode';
+use Apache2::ASP::ConfigNode::System::Settings;
+
+
+#==============================================================================
+sub new
+{
+  my $class = shift;
+  
+  my $s = $class->SUPER::new( @_ );
+  $s->{settings} = Apache2::ASP::ConfigNode::System::Settings->new( $s->{settings} );
+  
+  return $s;
+}# end new()
 
 
 #==============================================================================
@@ -37,6 +50,15 @@ sub post_processors
   
   @{ $s->{post_processors}->{class} };
 }# end libs()
+
+
+#==============================================================================
+sub settings
+{
+  my $s = shift;
+  
+  return wantarray ? @{ $s->{settings}->{setting} } : $s->{settings};
+}# end settings()
 
 1;# return true:
 

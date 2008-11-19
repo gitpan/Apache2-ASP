@@ -6,10 +6,11 @@ WriteMakefile(
   NAME              => 'Apache2::ASP',
   VERSION_FROM      => 'lib/Apache2/ASP.pm', # finds $VERSION
   LICENSE           => 'artistic',
-  EXE_FILES         => [qw/ runasp /],
+  EXE_FILES         => [qw( sbin/runasp sbin/asphelper )],
   PREREQ_PM         => {
     # Module                                    # Why is it needed?
     #==========================================================================
+    Test::Memory::Cycle     => 1.04,            # For testing.
     Test::More              => 0.84,            # For testing.
     Time::HiRes             => 1.9715,          # For UploadHook frequency checks.
     HTTP::Body              => 1.04,            # HTTP POST parsing in test mode.

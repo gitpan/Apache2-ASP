@@ -82,7 +82,7 @@ sub retrieve
   
   return unless $data;
   
-  $data = thaw($data);
+  $data = thaw($data) || {};
   undef(%$s);
   $s = bless $data, ref($s);
   

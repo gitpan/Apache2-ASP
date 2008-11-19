@@ -310,7 +310,7 @@ sub _build_dom
         unless $s->masterpage;
       
       confess $s->masterpage->virtual_path . " does not define an asp:ContentPlaceHolder '" . $attrs->{PlaceHolderID} . "'"
-        unless $s->masterpage->{placeholders}->{ $attrs->{PlaceHolderID} };
+        unless exists( $s->masterpage->{placeholders}->{ $attrs->{PlaceHolderID} } );
       
       if( my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents2 ) =
         $contents =~ m{

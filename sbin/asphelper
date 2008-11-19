@@ -1,0 +1,286 @@
+#!/usr/local/bin/perl -w
+
+use strict;
+use warnings 'all';
+use Cwd 'cwd';
+use DBI;
+
+
+my $args = { };
+
+$args->{domain}           = prompt("What is the web application domain?", "www.example.com");
+$args->{application_name} = prompt("Application name?", "MyApp");
+
+$args->{mail_errors_to}   = prompt("Email errors to?", 'you@domain.com');
+$args->{mail_errors_from} = prompt("Email errors from?", 'root@localhost.com');
+$args->{smtp_server}      = prompt("SMTP Server?", 'localhost');
+
+$args->{session_dsn}            = prompt("Session DSN?", "DBI:mysql:dbname:localhost");
+$args->{session_user}           = prompt("Session db username?");
+$args->{session_pass}           = prompt("Session db password?");
+$args->{session_cookie_domain}  = prompt("Session cookie domain?", $args->{domain});
+$args->{session_timeout}        = prompt("Session timeout? (in minutes)", 30);
+$args->{session_cookie_name}    = prompt("Session cookie name?", 'session-id');
+
+$args->{app_dsn}  = prompt("Application DSN?", $args->{session_dsn});
+$args->{app_user} = prompt("Application db username?", $args->{session_user});
+$args->{app_pass} = prompt("Application db password?", $args->{session_pass});
+
+$args->{main_dsn}   = prompt("Main DSN?", $args->{session_dsn});
+$args->{main_user}  = prompt("Main db username?", $args->{session_user});
+$args->{main_pass}  = prompt("Main db password?", $args->{session_pass});
+
+
+warn "="x79, "\n";
+warn "Creating database tables...\n";
+eval {
+  my $dbh = DBI->connect( $args->{session_dsn}, $args->{session_user}, $args->{session_pass} );
+  $dbh->do(q~
+  CREATE TABLE `asp_sessions` (
+    `session_id` char(32) NOT NULL,
+    `session_data` blob,
+    `created_on` datetime default NULL,
+    `modified_on` datetime default NULL,
+    PRIMARY KEY  (`session_id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1
+  ~);
+  $dbh->disconnect();
+  1;
+} or die $@;
+eval {
+  my $dbh = DBI->connect( $args->{app_dsn}, $args->{app_user}, $args->{app_pass} );
+  $dbh->do(q~
+  CREATE TABLE `asp_applications` (
+    `application_id` varchar(100) NOT NULL,
+    `application_data` blob,
+    PRIMARY KEY  (`application_id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1
+  ~);
+  $dbh->disconnect();
+  1;
+} or die $@;
+
+
+warn "="x79, "\n";
+warn "Creating directory structure...\n";
+
+mkdir($args->{domain}) or die "Cannot mkdir('$args->{domain}'): $!";
+foreach my $dir (qw( lib etc conf htdocs handlers PAGE_CACHE MEDIA ))
+{
+  mkdir("$args->{domain}/$dir") or die "Cannot mkdir('$args->{domain}'): $!";
+}# end foreach()
+
+open my $ofh, '>', "$args->{domain}/conf/apache2-asp-config.xml";
+print $ofh <<"CONFIG_XML";
+<?xml version="1.0" ?>
+<configuration>
+
+  <system>
+    <post_processors>
+<!--
+      <class>My::PostProcessor</class>
+      <class>My::PostProcessor2</class>
+-->
+    </post_processors>
+    <libs>
+      <lib>\@ServerRoot\@/lib</lib>
+    </libs>
+    <load_modules>
+      <module>DBI</module>
+    </load_modules>
+    <env_vars>
+      <var>
+        <name>environment-var1</name>
+        <value>value-1</value>
+      </var>
+      <var>
+        <name>environment-var2</name>
+        <value>value-2</value>
+      </var>
+    </env_vars>
+    <settings>
+      <setting>
+        <name>mysetting</name>
+        <value>some-value</value>
+      </setting>
+      <setting>
+        <name>anothersetting</name>
+        <value>anothervalue</value>
+      </setting>
+    </settings>
+  </system>
+  
+  <errors>
+    <error_handler>Apache2::ASP::ErrorHandler</error_handler>
+    <mail_errors_to>@{[ $args->{mail_errors_to} ]}</mail_errors_to>
+    <mail_errors_from>@{[ $args->{mail_errors_from} ]}</mail_errors_from>
+    <smtp_server>@{[ $args->{smtp_server} ]}</smtp_server>
+  </errors>
+
+  <web>
+    <application_name>@{[ $args->{application_name} ]}</application_name>
+    <application_root>\@ServerRoot\@</application_root>
+    <handler_root>\@ServerRoot\@/handlers</handler_root>
+    <media_manager_upload_root>\@ServerRoot\@/MEDIA</media_manager_upload_root>
+    <www_root>\@ServerRoot\@/htdocs</www_root>
+    <page_cache_root>\@ServerRoot\@/PAGE_CACHE</page_cache_root>
+    <request_filters>
+<!--
+      <filter>
+        <uri_match>/.*</uri_match>
+        <class>My::MemberFilter</class>
+      </filter>
+      <filter>
+        <uri_equals>/index.asp</uri_equals>
+        <class>My::MemberFilter2</class>
+      </filter>
+-->
+    </request_filters>
+  </web>
+
+  <data_connections>
+    <session>
+      <manager>Apache2::ASP::SessionStateManager::MySQL</manager>
+      <cookie_domain>@{[ $args->{session_cookie_domain} ]}</cookie_domain>
+      <cookie_name>@{[ $args->{session_cookie_name} ]}</cookie_name>
+      <dsn>@{[ $args->{session_dsn} ]}</dsn>
+      <username>@{[ $args->{session_user} ]}</username>
+      <password>@{[ $args->{session_pass} ]}</password>
+      <session_timeout>@{[ $args->{session_timeout} ]}</session_timeout>
+    </session>
+    <application>
+      <manager>Apache2::ASP::ApplicationStateManager::MySQL</manager>
+      <dsn>@{[ $args->{app_dsn} ]}</dsn>
+      <username>@{[ $args->{app_user} ]}</username>
+      <password>@{[ $args->{app_pass} ]}</password>
+    </application>
+    <main>
+      <dsn>@{[ $args->{main_dsn} ]}</dsn>
+      <username>@{[ $args->{main_user} ]}</username>
+      <password>@{[ $args->{main_pass} ]}</password>
+    </main>
+  </data_connections>
+
+</configuration>
+CONFIG_XML
+close($ofh);
+
+
+open my $conf_ofh, '>', "$args->{domain}/conf/httpd.conf";
+print $conf_ofh <<"CONF";
+
+# Needed for CGI::Apache2::Wrapper to work properly:
+LoadModule apreq_module    modules/mod_apreq2.so
+
+# Load up some important modules:
+PerlModule DBI
+PerlModule Apache2::ASP::ModPerl
+
+# Admin website:
+<VirtualHost *:80>
+
+  ServerName    @{[ $args->{domain} ]}
+  DocumentRoot  @{[ cwd() . '/' . $args->{domain} . '/htdocs' ]}
+  
+  # Set the directory index:
+  DirectoryIndex index.asp
+  
+  # All *.asp files are handled by Apache2::ASP::ModPerl
+  <Files ~ (\.asp\$)>
+    SetHandler  perl-script
+    PerlResponseHandler Apache2::ASP::ModPerl
+  </Files>
+  
+  # !IMPORTANT! Prevent anyone from viewing your GlobalASA.pm
+  <Files ~ (\.pm\$)>
+    Order allow,deny
+    Deny from all
+  </Files>
+  
+  # All requests to /handlers/* will be handled by their respective handler:
+  <Location /handlers>
+    SetHandler  perl-script
+    PerlResponseHandler Apache2::ASP::ModPerl
+  </Location>
+  
+</VirtualHost>
+
+CONF
+close($conf_ofh);
+
+open my $asa_ofh, '>', "$args->{domain}/htdocs/GlobalASA.pm";
+print $asa_ofh <<"ASA";
+
+package @{[ $args->{application_name} ]}::GlobalASA;
+
+use strict;
+use warnings 'all';
+use base 'Apache2::ASP::GlobalASA';
+use vars __PACKAGE__->VARS;
+args->{
+sub Server_OnStart;
+sub Application_OnStart;
+sub Session_OnStart;
+sub Script_OnStart;
+sub Script_OnEnd;
+sub Script_OnError($);
+
+1;# return true:
+
+ASA
+close($asa_ofh);
+
+warn "\nSetup is almost complete.
+Make sure to add the following lines to your main httpd.conf:
+
+  # Unless you've already done this:
+  NameVirtualHost *:80
+  
+  # And *Don't* forget about this line:
+  Include @{[ cwd() ]}/@{[ $args->{domain} ]}/conf/httpd.conf
+";
+
+open my $asp_ofh, '>', "$args->{domain}/htdocs/index.asp";
+print $asp_ofh <<'ASP';
+<html>
+<head>
+<title>Apache2::ASP Test Page</title>
+</head>
+<body>
+<h1>Congratulations</h1>
+<p>You have successfully installed Apache2::ASP.</p>
+</body>
+</html>
+ASP
+close($asp_ofh);
+
+
+#==============================================================================
+sub prompt
+{
+  my ($q, $default) = @_;
+  
+  local $| = 1;
+  my $answer;
+  
+  if( defined($default) )
+  {
+    print "\n$q: [$default] ";
+  }
+  else
+  {
+    print "\n$q: ";
+  }# end if()
+  chomp($answer = <STDIN>);
+
+  return $default if defined($default) && ! length($answer);
+  
+  until( length($answer) )
+  {
+    print "$q: ";
+    chomp($answer = <STDIN>);
+  }# end until()
+  
+  return $answer;
+}# end prompt()
+

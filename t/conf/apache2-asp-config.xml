@@ -31,6 +31,10 @@
         <name>mysetting</name>
         <value>value</value>
       </setting>
+      <setting>
+        <name>mysetting2</name>
+        <value>value2</value>
+      </setting>
     </settings>
   </system>
   

@@ -1,5 +1,19 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_23   ????-??-??
+  - Added asphelper.
+  - Moved asphelper and runasp into the sbin/* directory in the distribution.
+  - Added Test::Memory::Cycle to the PREREQ_RPM list in Makefile.PL
+  - Fixed a (hopefully) rare corner-case in which thaw($Application) would return
+    undef - the solution was to default to an empty hashref { }.
+  - Fixed a but in ASPPage in which empty asp:ContentPlaceHolder tags in MasterPages
+    caused the "%s does not define an asp:ContentPlaceHolder with an id of %s" error
+    even for legitimate child pages.
+  - Added Apache2::ASP::ConfigNode::System::Settings.
+  - $Config->system->settings->someSettingName works as expected.
+  - foreach $hashref ( $Config->system->settings ) { } now works as expected.
+  - Added more tests to t/01.03-configloader.t for config testing (by no means complete).
+
 2.00_22   2008-10-10
   - Fixed a bug which caused GlobalASA to not initialize properly.
 

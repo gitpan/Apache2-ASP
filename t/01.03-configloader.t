@@ -13,5 +13,25 @@ for( 1...1 )
   is(
     $config->errors->error_handler => 'My::ErrorHandler'
   );
+  
+  is(
+    $config->system->settings->mysetting => 'value'
+  );
+  is(
+    $config->system->settings->mysetting2 => 'value2'
+  );
+  
+  foreach my $setting ( $config->system->settings )
+  {
+    like $setting->{name}, qr/^mysetting2?$/;
+    like $setting->{value}, qr/^value2?$/;
+  }# end foreach()
+  
+  is(
+    $ENV{myvar} => 'value'
+  );
+  is(
+    $ENV{myvar2} => 'value2'
+  );
 }
 
