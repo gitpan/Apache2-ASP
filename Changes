@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_26   2008-11-20
+  - Fixed a bug that caused problems when a page inheriting from a sub-masterpage
+    overrode a placeholder from a super-masterpage.
+
 2.00_25   2008-11-20
   - Fixed a bug with nested MasterPages which caused some fatal errors.
   - Fixed another issue with nested MasterPages which caused the parser to
