@@ -3,7 +3,7 @@
 
 =head1 NAME
 
-Apache2::ASP::Manual::BestPractices
+Apache2::ASP::Manual::BestPractices - How to use Apache2::ASP properly
 
 =head1 DESCRIPTION
 

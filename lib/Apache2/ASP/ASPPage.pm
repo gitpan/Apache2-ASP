@@ -140,8 +140,9 @@ sub parse
     );
     $s->{masterpage} = $s->masterpage->_initialize_page;
 #    $s->{is_masterpage} = 0;
-  }
-  elsif( exists($s->directives->{MasterPage}) )
+  }# end if()
+  
+  if( exists($s->directives->{MasterPage}) )
   {
     $s->{is_masterpage} = 1;
   }# end if()
@@ -312,7 +313,7 @@ sub _build_dom
       confess $s->masterpage->virtual_path . " does not define an asp:ContentPlaceHolder '" . $attrs->{PlaceHolderID} . "'"
         unless exists( $s->masterpage->{placeholders}->{ $attrs->{PlaceHolderID} } );
       
-      if( my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents2 ) =
+      while( my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents2 ) =
         $contents =~ m{
           (<((asp)\:(ContentPlaceHolder))\s*(.*?)\>(.*?)\<\/\2\>)
         }ixs
@@ -326,7 +327,7 @@ sub _build_dom
         # Remove the chunk of code:
         my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
         $contents =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
-      }# end if()
+      }# end while()
       
       # Find the line on which this tag occurs:
       my @lines = split /\r?\n/, ${ $s->file_contents };
@@ -441,6 +442,7 @@ sub _assemble_code
   $dump =~ s/^\$VAR1\s+\=//;
   my $virtual_path = $s->masterpage ? $s->masterpage->virtual_path : '';
   
+  # Preamble:
   my $code = <<"CODE";
 package @{[ $s->package_name ]};
 
@@ -458,8 +460,10 @@ sub _initialize_page {
 
 CODE
   
+  # Things work differently if we have/don't have a master page:
   if( $s->masterpage )
   {
+    # Sub-class the master page:
     $code .= <<"CODE";
 BEGIN {
   (my \$pkg = '@{[ ref($s->masterpage) ]}.pm') =~ s/::/\\\\/g;
@@ -471,38 +475,13 @@ BEGIN {
 use base '@{[ ref($s->masterpage) ]}';
 use vars ( '\$Master', __PACKAGE__->VARS );
 @{[ join "\n\n", map { $s->placeholder_contents->{$_} } keys(%{ $s->placeholder_contents }) ]}
-
-CODE
-    if( $s->is_masterpage )
-    {
-      $code .= <<"CODE";
-sub run {
-  my (\$__self,\$__context) = \@_;
-  \$__self->_initialize_page;
-  if( my \$cached = \$__self->_read_cache )
-  {
-    \$__self->{directives}->{OutputCache} = undef;
-    \$Response->Write( \$cached );
-    return;
-  }# end if()
-  
-  \$__context->{page} = \$__self unless \$__self->is_masterpage;
-#line 1
-@{[ ${$s->source_code} ]}
-}
-
 @{[ join "\n\n", map { "sub $_ {\$Response->Write(q~$s->{placeholders}->{$_}~);}" } keys(%{$s->placeholders}) ]}
+
 CODE
-    }
-    else
-    {
-      $code .= <<"CODE";
-1;# return true:
-CODE
-    }# end if()
   }
   else
   {
+    # Just sub-class this class:
     $code .= <<"CODE";
 use base 'Apache2::ASP::ASPPage';
 use vars __PACKAGE__->VARS;
@@ -520,14 +499,16 @@ sub run {
   \$__context->{page} = \$__self unless \$__self->is_masterpage;
 #line 1
 @{[ ${$s->source_code} ]}
-}
-
 @{[ join "\n\n", map { "sub $_ {\$Response->Write(q~$s->{placeholders}->{$_}~);}" } keys(%{$s->placeholders}) ]}
-
-1;# return true:
-
+}
 CODE
   }# end if()
+  
+  
+  # Finally:
+  $code .= <<"CODE";
+1;# return true:
+CODE
   
   open my $ofh, '>', $s->pm_path
     or die "Cannot open '" . $s->pm_path . "' for writing: $!";

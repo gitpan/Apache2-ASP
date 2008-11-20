@@ -1,5 +1,13 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.00_25   2008-11-20
+  - Fixed a bug with nested MasterPages which caused some fatal errors.
+  - Fixed another issue with nested MasterPages which caused the parser to
+    not interpret all <asp:ConentPlaceHolder /> tags (when there were more than one)
+    inside of an <asp:Content /> in a nested MasterPage.  I suppose you really
+    had to be there.
+  - Added tests to check for these problems with nested MasterPages.
+
 2.00_24   2008-11-19
   - Added Apache2::ASP::Manual::BestPractices.
 

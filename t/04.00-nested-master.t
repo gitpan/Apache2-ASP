@@ -12,4 +12,5 @@ ok( $res->is_success );
 
 unlike $res->content, qr/<asp:(PlaceHolder|PlaceHolderContent)/;
 
+like $res->content, qr/\<h1\>\s+This is inside the nested placeholder\!\s+\<\/h1\>/s;
 
