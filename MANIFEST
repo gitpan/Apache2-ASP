@@ -6,6 +6,7 @@ sbin/runasp
 sbin/asphelper
 lib/Apache2/ASP/Manual/CrashCourse.pod
 lib/Apache2/ASP/Manual/GettingStarted.pod
+lib/Apache2/ASP/Manual/BestPractices.pod
 lib/Apache2/ASP/TransHandler.pm
 lib/Apache2/ASP/CacheManager.pm
 lib/Apache2/ASP/ApplicationStateManager/MySQL.pm

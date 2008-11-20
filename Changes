@@ -1,6 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
-2.00_23   ????-??-??
+2.00_24   2008-11-19
+  - Added Apache2::ASP::Manual::BestPractices.
+
+2.00_23   2008-11-19
   - Added asphelper.
   - Moved asphelper and runasp into the sbin/* directory in the distribution.
   - Added Test::Memory::Cycle to the PREREQ_RPM list in Makefile.PL
