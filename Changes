@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.02  2008-12-01
+  - Sometimes @INC would not contain all of the directories specified under <libs>
+    in the config.  This bug should now be fixed.
+
 2.01  2008-11-30
   - The codebase is solid and has been running several relatively high-traffic
     websites for several months.  Time for a production release of the 2.x code.

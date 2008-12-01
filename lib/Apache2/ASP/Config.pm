@@ -16,8 +16,7 @@ sub new
   
   $s->init_server_root( $root );
   
-  my %saw = map { $_ => 1 } @INC;
-  push @INC, grep { ! $saw{$_}++ } ( $s->system->libs, $s->web->handler_root );
+  $s->_init_inc();
   
   foreach my $var ( $s->system->env_vars )
   {
@@ -31,6 +30,16 @@ sub new
   
   return $s;
 }# end new()
+
+
+#==============================================================================
+sub _init_inc
+{
+  my $s = shift;
+  
+  my %saw = map { $_ => 1 } @INC;
+  push @INC, grep { ! $saw{$_}++ } ( $s->system->libs, $s->web->handler_root );
+}# end _init_inc()
 
 
 #==============================================================================

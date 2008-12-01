@@ -33,6 +33,7 @@ sub new
     %args,
     config  => $args{parent} ? undef : Apache2::ASP::ConfigLoader->load(),
   }, $class;
+  $s->config->_init_inc();
   
   no strict 'refs';
   ${"$ClassName\::instance"} = $s;
