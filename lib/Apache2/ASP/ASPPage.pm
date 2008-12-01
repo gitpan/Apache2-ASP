@@ -139,7 +139,6 @@ sub parse
       childpage    => $s,
     );
     $s->{masterpage} = $s->masterpage->_initialize_page;
-#    $s->{is_masterpage} = 0;
   }# end if()
   
   if( exists($s->directives->{MasterPage}) )
@@ -469,7 +468,8 @@ CODE
 BEGIN {
   (my \$pkg = '@{[ ref($s->masterpage) ]}.pm') =~ s/::/\\\\/g;
   use Apache2::ASP::ASPPage;
-  eval { require \$pkg; 1 } or Apache2::ASP::ASPPage->new(
+  #eval { require \$pkg; 1 } or 
+  Apache2::ASP::ASPPage->new(
     virtual_path => '@{[ $s->masterpage->virtual_path ]}'
   );
 }
@@ -511,6 +511,7 @@ CODE
 1;# return true:
 CODE
   
+  unlink( $s->pm_path ) if -f $s->pm_path;
   open my $ofh, '>', $s->pm_path
     or die "Cannot open '" . $s->pm_path . "' for writing: $!";
   print $ofh $code;

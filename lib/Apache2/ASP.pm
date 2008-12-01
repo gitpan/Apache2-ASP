@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.00_26';
+$VERSION = '2.01';
 
 1;# return true:
 
@@ -17,16 +17,9 @@ __END__
 
 Apache2::ASP - ASP for Perl, reloaded.
 
-=head1 WARNING - ALPHA SOFTWARE!
-
-This software is still considered Alpha (or Pre-Beta) and should *NOT* yet be
-used for anything except for testing.
-
 =head1 SYNOPSIS
 
-  1: use Apache2::ASP;
-  2: ???
-  3: Profit!!
+TBD
 
 =head1 DESCRIPTION
 

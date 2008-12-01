@@ -1,14 +1,8 @@
 NAME
     Apache2::ASP - ASP for Perl, reloaded.
 
-WARNING - ALPHA SOFTWARE!
-    This software is still considered Alpha (or Pre-Beta) and should *NOT*
-    yet be used for anything except for testing.
-
 SYNOPSIS
-      1: use Apache2::ASP;
-      2: ???
-      3: Profit!!
+    TBD
 
 DESCRIPTION
     Apache2::ASP scales out well and has brought the ASP programming model

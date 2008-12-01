@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.01  2008-11-30
+  - The codebase is solid and has been running several relatively high-traffic
+    websites for several months.  Time for a production release of the 2.x code.
+
 2.00_26   2008-11-20
   - Fixed a bug that caused problems when a page inheriting from a sub-masterpage
     overrode a placeholder from a super-masterpage.

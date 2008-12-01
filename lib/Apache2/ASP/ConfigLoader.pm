@@ -26,8 +26,8 @@ sub load
     KeyAttr => { },
   );
   
-  $path =~ s/\/conf\/[^\/]+$//;
-  return $Configs->{$path} = Apache2::ASP::ConfigParser->new->parse( $doc, $path );
+  (my $where = $path) =~ s/\/conf\/[^\/]+$//;
+  return $Configs->{$path} = Apache2::ASP::ConfigParser->new->parse( $doc, $where );
 }# end parse()
 
 1;# return true:
