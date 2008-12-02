@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+.204  2008-12-02
+  - Updated asphelper script.  It was writing a GlobalASA.pm with a syntax error.
+  - Added more tests.
+
 2.03  2008-12-01
   - Updated ASPPage to handle parsing MasterPages that include code similar to the following:
   <asp:ContentPlaceHolder id="meta_description"><meta name="description" content="" /></asp:ContentPlaceHolder>
