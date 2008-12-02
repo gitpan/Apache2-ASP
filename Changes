@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.03  2008-12-01
+  - Updated ASPPage to handle parsing MasterPages that include code similar to the following:
+  <asp:ContentPlaceHolder id="meta_description"><meta name="description" content="" /></asp:ContentPlaceHolder>
+  <asp:ContentPlaceHolder id="meta_keywords"><meta name="keywords" content="" /></asp:ContentPlaceHolder>
+
 2.02  2008-12-01
   - Sometimes @INC would not contain all of the directories specified under <libs>
     in the config.  This bug should now be fixed.

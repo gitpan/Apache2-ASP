@@ -251,36 +251,6 @@ sub _build_dom
   
   my %ids = ( );
   my $doc = Apache2::ASP::ASPDOM::Document->new();
-
-  # Do <asp:TagName /> tags:
-  while(
-    my ( $chunk, $tagName, $prefix, $tag, $attrs ) =
-      $$ref =~ m{
-        (<(([a-z_]+)\:([a-z0-9_:]+))\s*(.*?)\/>)
-      }ix
-  )
-  {
-    # Parse the attributes:
-    my $attrs = $s->_parse_tag_attrs( $attrs );
-    
-    local $_ = $tagName;
-    if( m/^some:tagName$/ )
-    {
-      # It's a some:tagName - handle it:
-    }
-    else
-    {
-      # Unhandled tag:
-      # Find the line on which this tag occurs:
-      my @lines = split /\r?\n/, ${ $s->file_contents };
-      my $line = 0;
-      $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
-      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
-    }# end if()
-    
-    # Remove the chunk of code
-    $$ref =~ s/\Q$chunk\E//;
-  }# end while()
   
   # Do <asp:TagName>...</asp:TagName> tags:
   while(
@@ -355,6 +325,36 @@ CODE
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
       confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
     }# end if()
+  }# end while()
+
+  # Do <asp:TagName /> tags:
+  while(
+    my ( $chunk, $tagName, $prefix, $tag, $attrs ) =
+      $$ref =~ m{
+        (<(([a-z_]+)\:([a-z0-9_:]+))\s*(.*?)\/>)
+      }ix
+  )
+  {
+    # Parse the attributes:
+    my $attrs = $s->_parse_tag_attrs( $attrs );
+    
+    local $_ = $tagName;
+    if( m/^some:tagName$/ )
+    {
+      # It's a some:tagName - handle it:
+    }
+    else
+    {
+      # Unhandled tag:
+      # Find the line on which this tag occurs:
+      my @lines = split /\r?\n/, ${ $s->file_contents };
+      my $line = 0;
+      $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
+      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
+    }# end if()
+    
+    # Remove the chunk of code
+    $$ref =~ s/\Q$chunk\E//;
   }# end while()
 
 }# end _build_dom()
