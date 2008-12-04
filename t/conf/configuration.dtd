@@ -6,21 +6,13 @@
 
 <!ELEMENT class ( #PCDATA ) >
 
-<!ELEMENT configuration ( system, web, data_connections ) >
+<!ELEMENT configuration ( system, errors, web, data_connections ) >
 
 <!ELEMENT cookie_domain ( #PCDATA ) >
 
 <!ELEMENT cookie_name ( #PCDATA ) >
 
 <!ELEMENT data_connections ( session, application, main ) >
-
-<!ELEMENT mail_errors_to ( #PCDATA ) >
-
-<!ELEMENT mail_errors_from ( #PCDATA ) >
-
-<!ELEMENT error_handler ( #PCDATA ) >
-
-<!ELEMENT errors ( error_handler, mail_errors_to, mail_errors_from, smtp_server ) >
 
 <!ELEMENT dsn ( #PCDATA ) >
 
@@ -74,8 +66,15 @@
 
 <!ELEMENT var ( name, value ) >
 
-<!ELEMENT web ( domain_re, application_name, application_root, handler_root, media_manager_upload_root, www_root, page_cache_root, request_filters ) >
+<!ELEMENT web ( application_name, application_root, handler_root, media_manager_upload_root, www_root, page_cache_root, request_filters ) >
 
 <!ELEMENT www_root ( #PCDATA ) >
+
+<!ELEMENT smtp_server ( #PCDATA ) >
+<!ELEMENT mail_errors_to ( #PCDATA ) >
+<!ELEMENT mail_errors_from ( #PCDATA ) >
+<!ELEMENT error_handler ( #PCDATA ) >
+
+<!ELEMENT errors ( error_handler, mail_errors_to, mail_errors_from, smtp_server ) >
 
 
