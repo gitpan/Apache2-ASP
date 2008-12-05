@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.06  2008-12-03
+  - Removed a failing test.
+
 2.05  2008-12-03
   - asphelper adds /etc/properties.yaml and /etc/test_fixtures.yaml, as well as
     an example "contact form" page, handler and unit test.
