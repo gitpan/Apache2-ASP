@@ -39,7 +39,7 @@ sub post
   undef(${"$ContextClass\::instance"});
   $args ||= [ ];
   my $req = POST $uri, $args;
-  %ENV = ( );
+  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
   $ENV{REQUEST_METHOD} = 'POST';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -60,7 +60,7 @@ sub upload
   
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
-  %ENV = ( );
+  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
   my $req = POST $uri, Content_Type => 'form-data', Content => $args;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
@@ -123,7 +123,7 @@ sub submit_form
   undef(${"$ContextClass\::instance"});
   my $req = $form->click;
   
-  %ENV = ( );
+  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
   $ENV{REQUEST_METHOD} = uc( $req->method );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
@@ -147,7 +147,7 @@ sub get
   undef(${"$ContextClass\::instance"});
   
   my $req = GET $uri;
-  %ENV = ( );
+  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
   $ENV{REQUEST_METHOD} = 'GET';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -206,6 +206,7 @@ sub _setup_cgi
 {
   my ($s, $req) = @_;
   
+  my $docroot = $ENV{DOCUMENT_ROOT};
   $s->{c}->DESTROY
     if $s->{c};
   $req->referer( $s->{referer} || '' );
@@ -237,6 +238,8 @@ sub _setup_cgi
   
   $req->header( 'Cookie' => join ';', @cookies ) if @cookies;
   $ENV{HTTP_COOKIE} = join ';', @cookies;
+  $ENV{DOCUMENT_ROOT} = $docroot
+    if $docroot;
   
   if( $ENV{REQUEST_METHOD} =~ m/^post$/i )
   {
