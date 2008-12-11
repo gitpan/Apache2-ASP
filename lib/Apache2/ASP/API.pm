@@ -29,7 +29,10 @@ Apache2::ASP::API - A public API for all Apache2::ASP web applications.
   
 =head1 DESCRIPTION
 
-Script-building goes smoother if you have a good set of tools to work with.
+Wouldn't it be great if your website had its own public coding API?  How about 
+one that you could subclass and add your own features to?
+
+That's what Apache2::ASP::API is all about.
 
 Apache2::ASP::API provides a programatic interface to your Apache2::ASP web 
 applications, allowing you to execute requests against ASP scripts and handlers
@@ -50,13 +53,13 @@ The following snippet of code would do the trick:
   
   my $api = Apache2::ASP::API->new();
   
-  my @files = @ARGV or die "Usage: $@ <filename(s)>\n";
+  my @files = @ARGV or die "Usage: $0 <filename(s)>\n";
   
   foreach my $file ( @files )
   {
     # Assuming /handlers/MM is a subclass of Apache2::ASP::MediaManager:
     my $id = rand();
-    my $res = $api->upload("/handlers/MM?mode=create&UploadID=$id", [
+    my $res = $api->upload("/handlers/MM?mode=create&uploadID=$id", [
       filename => [ $file ]
     ]);
     
@@ -82,6 +85,50 @@ If only logged-in users may upload files, simply log in before uploading anythin
   }# end unless()
   
   ... continue uploading files ...
+
+Or...you could even subclass the API with your own:
+
+  package MyApp::API;
+  
+  use strict;
+  use warnings 'all';
+  use base 'Apache2::ASP::API';
+  
+  sub login
+  {
+    my ($s, $email, $password) = @_;
+    
+    my $res = $s->ua->post("/handlers/user.login", {
+      user_email    => $email,
+      user_password => $password
+    });
+    
+    # Assuming $Session->{user} is set upon successful login:
+    unless( $api->session->{user} )
+    {
+      die "Invalid credentials";
+    }# end unless()
+    
+    return 1;
+  }# end login()
+  
+  1;# return true:
+
+Then your uploader script could just do this:
+
+  #!/usr/bin/perl -w
+  
+  use strict;
+  use warnings 'all';
+  use MyApp::API;
+  
+  my $api = MyApp::API->new();
+  $api->login( 'test@test.com', 's3cr3t!' );
+  
+  # Upload all the files:
+  $api->ua->upload("/handlers/MM?mode=create&uploadID=" . rand(), [
+    filename => [ $_ ]
+  ]) foreach @ARGV;
 
 =head1 PUBLIC METHODS
 

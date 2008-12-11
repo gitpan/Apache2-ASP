@@ -1,7 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.08  2008-12-10
+  - Updated the POD for Apache2::ASP::API.
+
 2.07  2008-12-10
   - $ENV{DOCUMENT_ROOT} is persisted between requests when using Apache2::ASP::Test::UserAgent.
+  - Added Apache2::ASP::API
 
 2.06  2008-12-03
   - Removed a failing test.
