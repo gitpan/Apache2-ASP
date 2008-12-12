@@ -73,6 +73,8 @@ t/04.00-nested-master.t
 t/04.01-syntax-errors.t
 t/04.02-include-at-end.t
 t/04.03-unhandled-tag.t
+t/05.00-folder-uri.t
+t/99.99-cleanup.t
 t/MEDIA/asp-upload-test.txt
 t/conf/apache2-asp-config.xml
 t/conf/configuration.dtd

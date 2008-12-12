@@ -397,16 +397,16 @@ sub resolve_request_handler
   my ($s, $uri) = @_;
   
   ($uri) = split /\?/, $uri;
-  if( $uri =~ m/\.asp$/ )
-  {
-    my $handler = 'Apache2::ASP::ASPHandler';
-    $s->load_class( $handler );
-    return $handler;
-  }
-  elsif( $uri =~ m/^\/handlers\// )
+  if( $uri =~ m/^\/handlers\// )
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
     $handler =~ s/[^a-z0-9_]/::/gi;
+    $s->load_class( $handler );
+    return $handler;
+  }
+  else #if( $uri =~ m/\.asp$/ )
+  {
+    my $handler = 'Apache2::ASP::ASPHandler';
     $s->load_class( $handler );
     return $handler;
   }# end if()

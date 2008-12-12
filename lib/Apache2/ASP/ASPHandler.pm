@@ -17,6 +17,10 @@ sub run
   $s->init_asp_objects( $context );
   
   # Find the page:
+  $ENV{SCRIPT_FILENAME} .= 'index.asp'
+    unless $ENV{SCRIPT_FILENAME} =~ m/\.asp$/;
+  $ENV{SCRIPT_NAME} .= 'index.asp'
+    unless $ENV{SCRIPT_NAME} =~ m/\.asp$/;
   my $asp_filename = $Request->ServerVariables('SCRIPT_FILENAME')
     or return;
   my $cache_root = $Config->web->page_cache_root;

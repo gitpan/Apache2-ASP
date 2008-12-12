@@ -1,5 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.09  2008-12-12
+  - Apache2::ASP::API->get("/") or get("/folder-name/") works as expected (without
+    forcing you to include "/index.asp" at the end.
+  - Added 05.00-folder-uri.t to make sure that "/folder-name/" URI's are supported
+    via the programmatic API.
+  - After testing, we remove /tmp/asp_*
+
 2.08  2008-12-10
   - Updated the POD for Apache2::ASP::API.
 
