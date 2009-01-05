@@ -239,7 +239,7 @@ sub write_session_cookie
   my $state = $s->context->config->data_connections->session;
   my $cookiename = $state->cookie_name;
   $s->context->response->AddHeader(
-    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/; domain=" . $state->cookie_domain
+    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/" #; domain=" . $state->cookie_domain
   );
   
   # If we weren't given an HTTP cookie value, set it here.

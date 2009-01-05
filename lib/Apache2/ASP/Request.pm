@@ -154,3 +154,74 @@ sub DESTROY
 
 1;# return true:
 
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Request - Incoming request object.
+
+=head1 SYNOPSIS
+
+  my $form_args = $Request->Form;
+  
+  my $querystring = $Request->QueryString;
+  
+  my $cookies = $Request->Cookies;
+  
+  my $cookie = $Request->Cookies('name');
+  
+  my $vars = $Request->ServerVariables;
+  
+  my $var = $Request->ServerVariables('HTTP_HOST');
+
+=head1 DESCRIPTION
+
+The request represents a wrapper around incoming form, querystring and cookie data.
+
+=head1 PUBLIC METHODS
+
+=head2 ServerVariables( [$name] )
+
+If called with no arguments, returns C<%ENV>.  If called with an argument, returns
+C<$ENV{$name}> where C<$name> is the value of the argument.
+
+=head2 Cookies( [$name] )
+
+If called with no arguments, returns a hash of all cookies.  Otherwise, returns
+the value of the cookie named C<$name>.
+
+=head1 PUBLIC PROPERTIES
+
+=head2 Form
+
+Returns a hashref of all querystring and form data.
+
+=head2 QueryString
+
+Returns the querystring portion of the current request.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT
+
+Copyright 2008 John Drago.  All rights reserved.
+
+=head1 LICENSE
+
+This software is Free software and is licensed under the same terms as perl itself.
+
+=cut
+

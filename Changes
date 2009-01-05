@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.10  2009-01-05
+  - The Set-Cookie header for session state no longer includes the domain parameter.
+
 2.09  2008-12-12
   - Apache2::ASP::API->get("/") or get("/folder-name/") works as expected (without
     forcing you to include "/index.asp" at the end.

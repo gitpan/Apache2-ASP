@@ -354,3 +354,149 @@ sub DESTROY
 
 1;# return true:
 
+=head1 NAME
+
+Apache2::ASP::Response - Outgoing response object.
+
+=head1 SYNOPSIS
+
+  return $Response->Redirect("/another.asp");
+  
+  return $Response->Declined;
+  
+  $Response->End;
+  
+  $Response->ContentType("text/xml");
+  
+  $Response->Status( 404 );
+  
+  # Make this response expire 30 minutes ago:
+  $Response->Expires( -30 );
+  
+  $Response->Include( $Server->MapPath("/inc/top.asp"), { foo => 'bar' } );
+  
+  my $html = $Response->TrapInclude( $Server->MapPath("/inc/top.asp"), { foo => 'bar' } );
+  
+  $Response->AddHeader("content-disposition: attachment;filename=report.csv");
+  
+  $Response->Write( "hello, world" );
+  
+  $Response->Clear;
+  
+  $Response->Flush;
+
+=head1 DESCRIPTION
+
+Apache2::ASP::Response offers a wrapper around the outgoing response to the client.
+
+=head1 PUBLIC PROPERTIES
+
+=head2 ContentType( [$type] )
+
+Sets/gets the content-type response header (i.e. text/html, image/gif, etc).
+
+Default: text/html
+
+=head2 Status( [$status] )
+
+Sets/gets the status response header (i.e. 200, 404, etc).
+
+Default: 200
+
+=head2 Expires( [$minutes] )
+
+Default 0
+
+=head2 ExpiresAbsolute( [$http_date] )
+
+=head2 Declined( )
+
+Returns C<-1>.
+
+=head2 Cookies( )
+
+Returns all outgoing cookies for this response.
+
+=head2 Headers( )
+
+Returns all outgoing headers for this response.
+
+=head2 IsClientConnected( )
+
+Returns true if the client is still connected, false otherwise.
+
+=head1 PUBLIC METHODS
+
+=head2 Write( $str )
+
+Adds C<$str> to the response buffer.
+
+=head2 Redirect( $path )
+
+Clears the response buffer and sends a 301 redirect to the client.
+
+Throws an exception if headers have already been sent.
+
+=head2 Include( $path, \%args )
+
+Executes the script located at C<$path>, passing along C<\%args>.  Output is
+included as part of the current script's output.
+
+=head2 TrapInclude( $path, \%args )
+
+Executes the script located at C<$path>, passing along C<\%args>, and returns
+the response as a string.
+
+=head2 AddCookie( $name => $value )
+
+Adds a cookie to the header.
+
+=head2 AddHeader( $name => $value )
+
+Adds a header to the response.
+
+=head2 DeleteHeader( $name )
+
+Removes an outgoing header.
+
+Throws an exception if headers have already been sent.
+
+=head2 Flush( )
+
+Sends any buffered output to the client.
+
+=head2 Clear( )
+
+Clears the outgoing buffer.
+
+=head2 End( )
+
+Closes the connection to the client and terminates the current request.
+
+Throws an exception if headers have already been sent.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT
+
+Copyright 2008 John Drago.  All rights reserved.
+
+=head1 LICENSE
+
+This software is Free software and is licensed under the same terms as perl itself.
+
+=cut
+

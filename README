@@ -2,7 +2,34 @@ NAME
     Apache2::ASP - ASP for Perl, reloaded.
 
 SYNOPSIS
-    TBD
+  Hello World
+      <html>
+      <body><%= "Hello, World!" %></body>
+      </html>
+
+  Favorite Color
+      <html>
+      <body>
+      <%
+        if( $Form->{favorite_color} )
+        {
+      %>
+        Your favorite color is <%= $Server->HTMLEncode( $Form->{favorite_color} ) %>.
+      <%
+        }
+        else
+        {
+      %>
+        What is your favorite color?
+        <form>
+          <input type="text" name="favorite_color">
+          <input type="submit" value="Submit">
+        </form>
+      <%
+        }# end if()
+      %>
+      </body>
+      </html>
 
 DESCRIPTION
     Apache2::ASP scales out well and has brought the ASP programming model
@@ -25,6 +52,13 @@ DESCRIPTION
     *   Handle multiple VirtualHosts better.
 
         Configuration was the root of this problem.
+
+        NOTE: If you use an ORM, make sure your ORM doesn't have any
+        "global" configuration object in memory, unless it is schema-aware.
+        DBIx::Class is good and Class::DBI::Lite also works well with
+        Apache2::ASP. Do not use Class::DBI with Apache2::ASP because of
+        configuration overlap problems which arise when you have 2 tables
+        with the same name in 2 different databases.
 
     *   Better performance
 

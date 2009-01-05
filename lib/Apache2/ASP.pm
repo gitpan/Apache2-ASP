@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.09';
+$VERSION = '2.10';
 
 1;# return true:
 
@@ -19,7 +19,36 @@ Apache2::ASP - ASP for Perl, reloaded.
 
 =head1 SYNOPSIS
 
-TBD
+=head2 Hello World
+
+  <html>
+  <body><%= "Hello, World!" %></body>
+  </html>
+
+=head2 Favorite Color
+
+  <html>
+  <body>
+  <%
+    if( $Form->{favorite_color} )
+    {
+  %>
+    Your favorite color is <%= $Server->HTMLEncode( $Form->{favorite_color} ) %>.
+  <%
+    }
+    else
+    {
+  %>
+    What is your favorite color?
+    <form>
+      <input type="text" name="favorite_color">
+      <input type="submit" value="Submit">
+    </form>
+  <%
+    }# end if()
+  %>
+  </body>
+  </html>
 
 =head1 DESCRIPTION
 
@@ -45,6 +74,12 @@ The original config format was unsatisfactory.
 =item * Handle multiple VirtualHosts better.
 
 Configuration was the root of this problem.
+
+B<NOTE>: If you use an ORM, make sure your ORM doesn't have any "global" configuration
+object in memory, unless it is schema-aware.  L<DBIx::Class> is good and L<Class::DBI::Lite>
+also works well with Apache2::ASP.  Do not use L<Class::DBI> with Apache2::ASP
+because of configuration overlap problems which arise when you have 2 tables with
+the same name in 2 different databases.
 
 =item * Better performance
 

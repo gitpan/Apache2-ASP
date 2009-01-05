@@ -147,7 +147,10 @@ sub get
   undef(${"$ContextClass\::instance"});
   
   my $req = GET $uri;
-  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  {
+    no warnings 'uninitialized';
+    %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  }
   $ENV{REQUEST_METHOD} = 'GET';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
