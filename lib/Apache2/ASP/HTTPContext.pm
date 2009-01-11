@@ -374,7 +374,8 @@ sub send_headers
   }
   else
   {
-    $s->get_prop('r')->headers_out( $out );
+    $s->get_prop('r')->err_headers_out->add( $_ => $out->{$_} ) foreach keys(%$out);
+    $s->get_prop('r')->headers_out->add( $_ => $out->{$_} ) foreach keys(%$out);
   }# end if()
   $s->{_did_send_headers}++;
 }# end send_headers()

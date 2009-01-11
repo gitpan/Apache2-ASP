@@ -78,9 +78,9 @@ sub Cookies
   return { } unless $s->context->headers_in->{cookie};
   
   my %out = ( );
-  foreach my $item ( split /;/, $s->context->headers_in->{cookie} )
+  foreach my $item ( split /;\s*/, $s->context->headers_in->{cookie} )
   {
-    my ( $name, $val ) = map { $s->context->r->unescape( $_ ) } split /\=/, $item;
+    my ( $name, $val ) = map { $s->context->cgi->unescape( $_ ) } split /\=/, $item;
     $out{$name} = $val;
   }# end foreach()
   

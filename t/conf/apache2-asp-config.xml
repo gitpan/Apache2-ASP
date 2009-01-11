@@ -14,7 +14,7 @@
     </libs>
     <load_modules>
       <module>DBI</module>
-      <module>Class::DBI::Lite</module>
+      <module>DBD::SQLite</module>
     </load_modules>
     <env_vars>
       <var>

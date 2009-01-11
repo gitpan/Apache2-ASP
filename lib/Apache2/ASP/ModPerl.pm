@@ -13,6 +13,7 @@ use Apache2::ASP::HTTPContext ();
 use Apache2::ASP::ModPerl2CGI ();
 use Apache2::ASP::UploadHook;
 
+local $Apache2::ASP::HTTPContext::ClassName = 'Apache2::ASP::HTTPContext';
 
 #==============================================================================
 sub handler : method

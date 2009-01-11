@@ -280,12 +280,15 @@ sub AddCookie
 {
   my $s = shift;
   
-  my ($name, $val) = @_;
-  die "Usage: Response.AddCookie(name, value)"
+  my ($name, $val, $path, $expires) = @_;
+  die "Usage: Response.AddCookie(name, value [, path [, expires ]])"
     unless defined($name) && defined($val);
+  $path ||= '/';
+  $expires ||= time() + ( 60 * 30 );
+  my $expire_date ||= time2str( $expires );
   
-  my $cookie = join '=', map { $s->context->r->cgi->escape( $_ ) } ( $name => $val );
-  $s->context->headers_out->push_header( 'set-cookie' => $cookie );
+  my $cookie = join '=', map { $s->context->cgi->escape( $_ ) } ( $name => $val );
+  $s->context->headers_out->push_header( 'set-cookie' => "$cookie; path=$path; expires=$expire_date" );
 }# end AddCookie()
 
 

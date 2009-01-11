@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.11  2009-01-10
+  - Several fixes to cookie behavior problems.
+  - Removed <module>Class::DBI::Lite</module> from apache2-asp-config.xml.
+
 2.10  2009-01-05
   - The Set-Cookie header for session state no longer includes the domain parameter.
 
