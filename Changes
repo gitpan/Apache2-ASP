@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.12  2009-01-20
+  - The "Cookies" HTTP header was not properly handled in the Test UserAgent.
+  - Incoming HTTP headers were comingled with outgoing HTTP headers in HTTPContext.
+
 2.11  2009-01-10
   - Several fixes to cookie behavior problems.
   - Removed <module>Class::DBI::Lite</module> from apache2-asp-config.xml.

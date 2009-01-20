@@ -55,15 +55,17 @@ sub setup_request
   
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
-  my $headers = HTTP::Headers->new();
-  my $h = $s->r->headers_out;
-  while( my($k,$v) = each(%$h) )
-  {
-    $headers->push_header( $k => $v );
-  }# end while()
-  $s->{headers_out} = $headers;
+#  my $headers = HTTP::Headers->new();
   
-  $h = $s->r->headers_in;
+#  my $h = $s->r->headers_out;
+#  while( my($k,$v) = each(%$h) )
+#  {
+#    $headers->push_header( $k => $v );
+#  }# end while()
+
+  $s->{headers_out} = HTTP::Headers->new();
+  
+  my $h = $s->r->headers_in;
   if( UNIVERSAL::isa($h, 'HTTP::Headers') )
   {
     $s->{headers_in} = $h;

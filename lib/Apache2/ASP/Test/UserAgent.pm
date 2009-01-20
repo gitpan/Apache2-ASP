@@ -47,6 +47,7 @@ sub post
   my $r = Apache2::ASP::Mock::RequestRec->new();
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
+  $r->{headers_in}->{Cookie} = $ENV{HTTP_COOKIE};
   
   $s->context->setup_request( $r, $cgi );
   return $s->_setup_response( $s->context->execute() );
@@ -70,6 +71,7 @@ sub upload
   my $r = Apache2::ASP::Mock::RequestRec->new();
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
+  $r->{headers_in}->{Cookie} = $ENV{HTTP_COOKIE};
   
   $s->context->setup_request( $r, $cgi );
   
@@ -131,6 +133,7 @@ sub submit_form
   my $r = Apache2::ASP::Mock::RequestRec->new();
   $r->uri( $req->uri );
   $r->args( $cgi->{querystring} );
+  $r->{headers_in}->{Cookie} = $ENV{HTTP_COOKIE};
   
   $s->context->setup_request( $r, $cgi );
   
@@ -158,6 +161,7 @@ sub get
   my $r = Apache2::ASP::Mock::RequestRec->new();
   $r->uri( $uri );
   $r->args( $cgi->{querystring} );
+  $r->{headers_in}->{Cookie} = $ENV{HTTP_COOKIE};
   
   $s->context->setup_request( $r, $cgi );
   
@@ -190,6 +194,13 @@ sub _setup_response
     while( my ($k,$v) = each(%$header) )
     {
       $response->header( $k => $v );
+      if( lc($k) eq 'set-cookie' )
+      {
+        my ($data) = split /;/, $v;
+        my ($name,$val) = map { Apache2::ASP::SimpleCGI->unescape( $_ ) } split /\=/, $data;
+        $s->add_cookie( $name => $val );
+#        $s->{cookies}->{$name} = $val;
+      }# end if()
     }# end while()
   }# end foreach()
   
@@ -236,6 +247,7 @@ sub _setup_cgi
   my @cookies = ();
   while( my ($name,$val) = each(%{ $s->{cookies} } ) )
   {
+    next unless $name && $val;
     push @cookies, "$name=" . Apache2::ASP::SimpleCGI->escape($val);
   }# end while()
   
@@ -246,11 +258,11 @@ sub _setup_cgi
   
   if( $ENV{REQUEST_METHOD} =~ m/^post$/i )
   {
-    my $body = HTTP::Body->new(
-      $req->headers->{'content-type'},
-      $req->headers->{'content-length'}
-    );
-    $body->add( $req->content );
+#    my $body = HTTP::Body->new(
+#      $req->headers->{'content-type'},
+#      $req->headers->{'content-length'}
+#    );
+#    $body->add( $req->content );
     
     # Set up the basic params:
     return Apache2::ASP::SimpleCGI->new(
