@@ -69,7 +69,6 @@
   <data_connections>
     <session>
       <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
-      <cookie_domain>localhost</cookie_domain>
       <cookie_name>session-id</cookie_name>
       <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_applications</dsn>
       <username></username>

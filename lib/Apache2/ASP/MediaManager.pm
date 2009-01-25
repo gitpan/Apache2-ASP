@@ -25,7 +25,7 @@ sub run
   # Find its MIME type and set our 'ContentType' value:
   my ($ext) = $file =~ m/.*?\.([^\.]+)$/;
   $ext ||= 'txt';
-  my $type = $mimetypes->mimeTypeOf( $ext );
+  my $type = $mimetypes->mimeTypeOf( $ext ) || 'application/octet-stream';
   $context->response->ContentType( $type );
   
   # Call our extension hooks:

@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.13  2009-01-25
+  - Apache2::ASP::MediaManager did not provide any content-type header for
+    file types not listed in MIME::Types (eg: *.ogv).  Now "application/octet-stream"
+    is returned when MIME::Types does not return anything.
+
 2.12  2009-01-20
   - The "Cookies" HTTP header was not properly handled in the Test UserAgent.
   - Incoming HTTP headers were comingled with outgoing HTTP headers in HTTPContext.

@@ -456,6 +456,94 @@ sub DESTROY
   undef(%$s);
 }# end DESTROY()
 
-
 1;# return true:
+
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::HTTPContext - Contextual execution harness for ASP scripts.
+
+=head1 SYNOPSIS
+
+  # Get the original mod_perl '$r' object:
+  my Apache2::RequestRec $r = $context->r;
+  
+  # Get the other traditional ASP objects:
+  my $Config      = $context->config;
+  my $Request     = $context->request;
+  my $Response    = $context->response;
+  my $Server      = $context->server;
+  my $Session     = $context->session;
+  my $Application = $context->application;
+  
+  # Get the current context object from anywhere within your application:
+  my $context = Apache2::ASP::HTTPContext->current;
+
+=head1 DESCRIPTION
+
+=head1 STATIC PROPERTIES
+
+=head2 current
+
+Returns the "current" HTTPContext instance.
+
+=head1 PUBLIC PROPERTIES
+
+=head2 r
+
+Returns the current Apache2::RequestRec object.
+
+B<NOTE>: while in "API" or "Testing" mode, C<r> returns the current 
+L<Apache2::ASP::Mock::RequestRec> object.
+
+=head2 config
+
+Returns the current L<Apache2::ASP::Config> object.
+
+=head2 request
+
+Returns the current L<Apache2::ASP::Request> object.
+
+=head2 response
+
+Returns the current L<Apache2::ASP::Response> object.
+
+=head2 server
+
+Returns the current L<Apache2::ASP::Server> object.
+
+=head2 session
+
+Returns the current L<Apache2::ASP::Session> object.
+
+=head2 application
+
+Returns the current L<Apache2::ASP::Application> object.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT
+
+Copyright 2008 John Drago.  All rights reserved.
+
+=head1 LICENSE
+
+This software is Free software and is licensed under the same terms as perl itself.
+
+=cut
 
