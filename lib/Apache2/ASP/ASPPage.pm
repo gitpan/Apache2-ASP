@@ -271,7 +271,7 @@ sub _build_dom
       $s->{placeholders}->{ $attrs->{id} } = $contents;
     
       # Remove the chunk of code:
-      my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
+      my $subname = "\$__self->" . $attrs->{id} . "(\$__context, \$__args);";
       $$ref =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
     }
     elsif( m/^asp:Content$/i )
@@ -295,7 +295,7 @@ sub _build_dom
         $s->{placeholders}->{ $attrs->{id} } = $contents2;
         
         # Remove the chunk of code:
-        my $subname = "\$__self->" . $attrs->{id} . "(\$__context);";
+        my $subname = "\$__self->" . $attrs->{id} . "(\$__context, \$__args);";
         $contents =~ s/\Q$chunk\E/~); $subname \$Response->Write(q~/;
       }# end while()
       
@@ -308,7 +308,7 @@ sub _build_dom
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
-my (\$__self, \$__context) = \@_;
+my (\$__self, \$__context, \$__args) = \@_;
 #line @{[ $line + 1 ]}
 $fixed_contents
 }
@@ -488,7 +488,7 @@ use base 'Apache2::ASP::ASPPage';
 use vars __PACKAGE__->VARS;
 
 sub run {
-  my (\$__self,\$__context) = \@_;
+  my (\$__self,\$__context, \$__args) = \@_;
   \$__self->_initialize_page;
   if( my \$cached = \$__self->_read_cache )
   {

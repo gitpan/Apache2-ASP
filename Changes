@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.14  2009-01-25
+  - <asp:Content/> tags inside of pages that use MasterPages were not being passed 
+    TrapInclude or Include arguments (i.e. $Response->Include("/page.asp", { arg1 => "foo" }) ).
+
 2.13  2009-01-25
   - Apache2::ASP::MediaManager did not provide any content-type header for
     file types not listed in MIME::Types (eg: *.ogv).  Now "application/octet-stream"
