@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.17  2009-01-28
+  - More tweaking.  Please upgrade to this version.
+
 2.16  2009-01-28
   - Apache2::ASP::Mock::RequestRec sometimes confess()ed if Response->Include was called.
 
