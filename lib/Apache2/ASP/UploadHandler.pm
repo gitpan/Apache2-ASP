@@ -43,9 +43,10 @@ sub upload_hook
   # want to save the Session state once per second:
   my $Diff = time() - $LastUpdate;
   my $PercentDiff = $Upload->{percent_complete} - $LastPercent;
-  if( $Diff >= 2 || $PercentDiff >= 5 )
+  
+  if( $Diff >= 1 || $PercentDiff >= 5 )
   {
-    my $uploadID = $s->_args('uploadID');
+    my $uploadID = $s->_args('uploadID') || '';
 #warn "uploadID: '" . $uploadID . "'";
 #warn "SAVING SESSION!: $Diff $Upload->{percent_complete}%";
     # Store everything in the session except for the data 

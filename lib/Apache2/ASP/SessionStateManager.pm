@@ -4,7 +4,7 @@ package Apache2::ASP::SessionStateManager;
 use strict;
 use warnings 'all';
 use base 'Ima::DBI';
-use Digest::MD5 'md5_hex';
+use Digest::Perl::MD5 'md5_hex';
 use Storable qw( freeze thaw );
 use HTTP::Date qw( time2iso str2time );
 use Scalar::Util 'weaken';
@@ -170,11 +170,16 @@ sub retrieve
   weaken($s);
   
   no warnings 'uninitialized';
-  $s->{__signature} = md5_hex(
+  
+  my @keys = sort keys(%$s);
+  
+  my $sig = md5_hex(
     join ":",
       map { "$_:$s->{$_}" } 
-        grep { $_ ne '__signature' } sort keys(%$s)
+        grep { $_ ne '__signature' } @keys
   );
+  
+  $s->{__signature} = $sig;
   
   return $s;
 }# end retrieve()

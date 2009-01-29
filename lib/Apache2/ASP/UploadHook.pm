@@ -91,10 +91,13 @@ sub hook
   {
     $s->{handler_class}->init_asp_objects( $context );
     $s->{handler_class}->upload_end( $context, $Upload );
+  }
+  else
+  {
+    # Call the hook:
+    $s->{handler_class}->upload_hook( $context, $Upload );
   }# end if()
   
-  # Call the hook:
-  $s->{handler_class}->upload_hook( $context, $Upload );
 }# end hook()
 
 

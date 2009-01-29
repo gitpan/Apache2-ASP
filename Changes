@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.15  2009-01-28
+  - Made some minor tweaks to the way uploads are handled internally.  No public changes.
+
 2.14  2009-01-25
   - <asp:Content/> tags inside of pages that use MasterPages were not being passed 
     TrapInclude or Include arguments (i.e. $Response->Include("/page.asp", { arg1 => "foo" }) ).
