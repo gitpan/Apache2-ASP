@@ -4,7 +4,7 @@ package Apache2::ASP::SessionStateManager;
 use strict;
 use warnings 'all';
 use base 'Ima::DBI';
-use Digest::Perl::MD5 'md5_hex';
+use Digest::MD5 'md5_hex';
 use Storable qw( freeze thaw );
 use HTTP::Date qw( time2iso str2time );
 use Scalar::Util 'weaken';

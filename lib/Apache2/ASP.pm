@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.15';
+$VERSION = '2.16';
 
 1;# return true:
 

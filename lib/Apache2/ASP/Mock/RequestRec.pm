@@ -134,11 +134,14 @@ sub send_headers
 {
   my $s = shift;
   
-  confess "Already sent headers" if $s->{_sent_headers};
+  # We partition the "_sent_headers" values by URI, because in testing,
+  # sometimes the same requestrec is re-used.  Response->Include was causing
+  # this to confess() when really there was no problem:
+  confess "Already sent headers"
+    if $s->{"_sent_headers:$ENV{REQUEST_URI}"}++;
   my $buffer = delete($s->{buffer});
   $s->print( join "\n", map { "$_: $s->{headers_out}->{$_}" } keys(%{$s->{headers_out}}) );
   $s->{buffer} = $buffer;
-  $s->{_sent_headers} = 1;
 }# end send_headers()
 
 
