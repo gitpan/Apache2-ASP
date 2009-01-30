@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.18  2009-01-29
+  - Added a lot more documentation.
+  - Under Apache2::ASP::Test::Base and Apache2::ASP::API, $Server->RegisterCleanup now
+    gets called at the end of each request - not when the pool object goes out
+    of scope (which caused some unwanted behavior).
+
 2.17  2009-01-28
   - More tweaking.  Please upgrade to this version.
 

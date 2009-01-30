@@ -211,6 +211,8 @@ sub _setup_response
     );
   }# end if()
   
+  $s->context->r->pool->call_cleanup_handlers();
+  
   return $response;
 }# end _setup_response()
 
@@ -280,4 +282,95 @@ sub _setup_cgi
 }# end _setup_cgi()
 
 1;# return true:
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Test::UserAgent - Execute ASP scripts without a webserver.
+
+=head1 SYNOPSIS
+
+Generally you will be accessing this class from wither L<Apache2::ASP::Test::Base>
+or L<Apache2::ASP::API>.
+
+  my $asp = Apache2::ASP::API->new()
+    -- or --
+  my $asp = Apache2::ASP::Test::Base->new();
+  
+  # Get:
+  my $res = $asp->ua->get("/index.asp");
+  if( $res->is_succes ) {
+    ...
+  }
+  
+  # Post:
+  my $res = $asp->ua->post("/handlers/contact.form", [
+    name  => "Fred",
+    email => 'fred@flintstone.org',
+    message => 'This is a test email message.'
+  ]);
+  
+  # Do the same thing, but with HTML::Form:
+  use HTML::Form;
+  my $form = HTML::Form->parse( $asp->ua->get("/contact.asp")->content, '/' );
+  $form->find_input('name')->value('Fred');
+  $form->find_input('email')->value('fred@flintstone.org');
+  $form->find_input('message')->value('This is a test email message');
+  my $res = $asp->ua->submit_form( $form );
+  
+  # Upload:
+  my $res = $asp->ua->upload("/handlers/MM?mode=create&uploadID=12334534", [
+    filename => ['/path/to/file.txt'],
+  ]);
+
+=head1 PUBLIC PROPERTIES
+
+=head2 context
+
+Returns the current L<Apache2::ASP::HTTPContext> object.
+
+=head1 PUBLIC METHODS
+
+=head2 get( $url )
+
+Makes a "GET" request to C<$url>
+
+=head2 post( $url [,\@args] )
+
+Makes a "POST" reqest to C<$url>, using C<@args> as the body.
+
+=head2 upload( $url, \@args )
+
+Makes a "POST" request with a C<multipart/form-data> type, using C<@args> as the body.
+
+=head2 submit_form( HTML::Form $form )
+
+Submits the form.
+
+B<NOTE:> - this will not work for "upload" forms (yet).
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
 

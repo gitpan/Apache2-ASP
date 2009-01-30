@@ -126,3 +126,54 @@ sub parse
 
 1;# return true:
 
+=pod
+
+=head1 NAME
+
+Apache2::ASP::ConfigParser - Initial Configuration parser
+
+=head1 SYNOPSIS
+
+  # You will never use this module.
+
+=head1 DESCRIPTION
+
+This package handles the transformation of the configuration data from a simple hashref
+into a nicely standardized, blessed hashref.
+
+=head1 PUBLIC METHODS
+
+=head2 parse( \%doc, $application_root )
+
+Returns an instance of L<Apache2::ASP::Config>.
+
+Converts a specially-constructed hashref into an instance of L<Apache2::ASP::Config>.
+
+Any L<Apache2::ASP::ConfigPostProcessor> classes listed in the C<system.post_processors>
+section of the configuration will be called be called at the last moment, just before
+returning the configuration object.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

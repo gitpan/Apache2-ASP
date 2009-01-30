@@ -11,26 +11,15 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP::ApplicationStateManager::MySQL - MySQL backend for Apache2::ASP Application state
-
-=head1 SYNOPSIS
-
-In your apache2-asp-config.xml file:
-
-  <config>
-    <web_application>
-    ...
-      <application_state>
-        <manager>Apache2::ASP::ApplicationStateManager::MySQL</manager>
-        <dsn>DBI:mysql:DatabaseName:HostName</dsn>
-        <username>Database-Username</username>
-        <password>Database-Password</password>
-      </application_state>
-    ...
+Apache2::ASP::ApplicationStateManager::MySQL - MySQL storage for the $Application object
 
 =head1 DESCRIPTION
 
-This package uses a MySQL database to persist Application state for Apache2::ASP web applications.
+This package provides a MySQL backend for persisting Application state.
+
+=head1 SEE ALSO
+
+L<Apache2::ASP::ApplicationStateManager>
 
 =head1 BUGS
 

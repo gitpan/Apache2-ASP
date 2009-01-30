@@ -62,7 +62,6 @@ sub init_asp_objects
     ${"$class\::Form"}        = $context->request->Form;
     ${"$class\::Stash"}       = $context->stash;
   }# end foreach()
-#warn "$s: INSIDE...//////////////////////////////////////////////////////////////////////";
 
   1;
 }# end init_asp_objects()
@@ -88,3 +87,60 @@ sub modes
 
 1;# return true:
 
+=pod
+
+=head1 NAME
+
+Apache2::ASP::HTTPHandler - base HTTP handler class
+
+=head1 SYNOPSIS
+
+Internal use only.
+
+=head1 DESCRIPTION
+
+All *Handlers (FormHandlers, ErrorHandlers, UploadHandlers, etc) are subclasses
+of this class.
+
+HTTPHandler provides the mechanism for inheriting and initializing the ASP
+objects ($Request, $Response, $Session, $Server, etc) in itself and all of its
+subclasses, recursively.
+
+=head1 PUBLIC METHODS
+
+=head2 VARS
+
+This shoud be called by every *Handler and MediaManager subclass.
+
+Returns a list of strings like this:
+
+  qw(
+    $Response   $Application
+    $Request    $Stash
+    $Config     $Form
+    $Server     $Session
+  );
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut

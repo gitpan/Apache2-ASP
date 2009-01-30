@@ -564,3 +564,48 @@ sub _parse_tag_attrs
 
 1;# return true:
 
+=pod
+
+=head1 NAME
+
+Apache2::ASP::ASPPage - base class for all *.asp scripts
+
+=head1 SYNOPSIS
+
+Internal use only.
+
+=head1 DESCRIPTION
+
+All C<*.asp> scripts are 'compiled' down to their respective C<*.pm> files.  The
+package definition within those C<*.pm> files all begin with this code:
+
+  use base 'Apache2::ASP::ASPPage';
+
+After that, you will find your code, just a little uglier than you wrote it.
+
+This package is only used internally.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

@@ -298,17 +298,56 @@ Within your ASP script:
 
 =head1 DESCRIPTION
 
-The global C<$Session> object is an instance of a subclass of C<Apache2::ASP::SessionStateManager>.
+The global C<$Session> object is an instance of a subclass of C<Apache2::ASP::SessionStateManager>
+or one of its subclasses.
 
 It is a blessed hash that is persisted within a database.  Use it to share information across all requests for
 all users.
 
-B<NOTE:> - do not store database connections within the C<$Session> object because they cannot be shared across
+B<NOTE:> - do not store database connections or filehandles within the C<$Session> object because they cannot be shared across
 different processes/threads at this time.
 
 =head1 METHODS
 
-TBD
+=head2 save( )
+
+Stores the Session object in the database.  Returns true.
+
+=head1 CONFIGURATION
+
+=head2 XML Config
+
+The file C<apache2-asp-config.xml> should contain a section like the following:
+
+  <?xml version="1.0"?>
+  <config>
+    ...
+    <data_connections>
+      ...
+      <session>
+        <manager>Apache2::ASP::SessionStateManager::MySQL</manager>
+        <cookie_name>session-id</cookie_name>
+        <dsn>DBI:mysql:dbname:localhost</dsn>
+        <username>sa</username>
+        <password>s3cr3t!</password>
+        <session_timeout>30</session_timeout>
+      </session>
+      ...
+    </data_connections>
+    ...
+  </config>
+
+=head2 Database Storage
+
+The database named in the XML config file should contain a table like the following:
+
+  CREATE TABLE  asp_sessions (
+    session_id    char(32) NOT NULL,
+    session_data  blob,
+    created_on    datetime default NULL,
+    modified_on   datetime default NULL,
+    PRIMARY KEY  (session_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 
 =head1 BUGS
 
@@ -323,7 +362,7 @@ of Apache2::ASP in action.
 
 =head1 AUTHOR
 
-John Drago L<mailto:jdrago_999@yahoo.com>
+John Drago <jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 

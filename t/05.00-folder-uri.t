@@ -12,4 +12,7 @@ my $res2 = $s->ua->get("/index.asp");
 
 is( $res1->content => $res2->content );
 
+my $res3 = $s->ua->get("/cleanup-register.asp");
+is( $ENV{CALLED_REGISTER_CLEANUP} => 1 );
+
 

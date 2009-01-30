@@ -115,3 +115,39 @@ sub _args
 
 1;# return true:
 
+=head1 NAME
+
+Apache2::ASP::UploadHook - An upload hook for Apache2::Request
+
+=head1 SYNOPSIS
+
+Internal use only.
+
+=head1 DESCRIPTION
+
+This class handles interaction with L<Apache2::Request> during file uploads.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

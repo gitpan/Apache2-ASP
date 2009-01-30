@@ -232,7 +232,7 @@ sub do_preinit
       $s->global_asa->can('Server_OnStart')
     );
     $s->application->{"__Server_Started$$"}++ unless $@;
-    return $s->end_request if defined( $res ) || $s->{did_end};
+    return $s->end_request if $s->{did_end};
   }# end unless()
   
   unless( $s->application->{__Application_Started} )
@@ -241,7 +241,7 @@ sub do_preinit
       $s->global_asa->can('Application_OnStart')
     );
     $s->application->{__Application_Started}++ unless $@;
-    return $s->end_request if defined( $res ) || $s->{did_end};
+    return $s->end_request if $s->{did_end};
   }# end unless()
   
   unless( $s->session->{__Started} )
@@ -250,7 +250,7 @@ sub do_preinit
       $s->global_asa->can('Session_OnStart')
     );
     $s->session->{__Started}++ unless $@;
-    return $s->end_request if defined( $res ) || $s->{did_end};
+    return $s->end_request if $s->{did_end};
   }# end unless()
   
   return;
@@ -280,12 +280,12 @@ sub handle_error
   my $error = "$@";
   $s->response->Status( 500 );
   no strict 'refs';
-  if( defined(&{$s->global_asa . "::Script_OnError"}) )
-  {
-    eval { $s->global_asa->can('Script_OnError')->( $error ) };
-  }
-  else
-  {
+#  if( defined(&{$s->global_asa . "::Script_OnError"}) )
+#  {
+#    eval { $s->global_asa->can('Script_OnError')->( $error ) };
+#  }
+#  else
+#  {
     $s->response->Clear;
     my ($main, $title, $file, $line) = $error =~ m/^((.*?)\s(?:at|in)\s(.*?)\sline\s(\d+))/;
     $s->stash->{error} = {
@@ -301,7 +301,7 @@ sub handle_error
     $error_handler->init_asp_objects( $s );
     eval { $error_handler->run( $s ) };
     confess $@ if $@;
-  }# end if()
+#  }# end if()
   return $s->end_request;
 }# end handle_error()
 

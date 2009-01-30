@@ -15,21 +15,6 @@ __END__
 
 Apache2::ASP::SessionStateManager::MySQL - MySQL backend for Apache2::ASP Session state
 
-=head1 SYNOPSIS
-
-In your apache2-asp-config.xml file:
-
-  <config>
-    <web_application>
-    ...
-      <session_state>
-        <manager>Apache2::ASP::SessionStateManager::MySQL</manager>
-        <dsn>DBI:mysql:DatabaseName:HostName</dsn>
-        <username>Database-Username</username>
-        <password>Database-Password</password>
-      </session_state>
-    ...
-
 =head1 DESCRIPTION
 
 This package uses a MySQL database to persist Session state for Apache2::ASP web applications.
@@ -47,7 +32,7 @@ of Apache2::ASP in action.
 
 =head1 AUTHOR
 
-John Drago L<mailto:jdrago_999@yahoo.com>
+John Drago <jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 

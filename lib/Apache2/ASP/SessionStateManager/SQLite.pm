@@ -15,21 +15,6 @@ __END__
 
 Apache2::ASP::SessionStateManager::SQLite - SQLite backend for Apache2::ASP Session state
 
-=head1 SYNOPSIS
-
-In your apache2-asp-config.xml file:
-
-  <config>
-    <web_application>
-    ...
-      <session_state>
-        <manager>Apache2::ASP::SessionStateManager::SQLite</manager>
-        <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
-        <username></username>
-        <password></password>
-      </session_state>
-    ...
-
 =head1 DESCRIPTION
 
 This package uses a SQLite database to persist Session state for Apache2::ASP web applications.
@@ -47,7 +32,7 @@ of Apache2::ASP in action.
 
 =head1 AUTHOR
 
-John Drago L<mailto:jdrago_999@yahoo.com>
+John Drago <jdrago_999@yahoo.com>
 
 =head1 COPYRIGHT AND LICENSE
 

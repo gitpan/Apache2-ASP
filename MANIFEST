@@ -92,6 +92,7 @@ t/htdocs/masters/main.asp
 t/htdocs/masters/root.asp
 t/htdocs/masters/nested-master.asp
 t/htdocs/include-at-end.asp
+t/htdocs/cleanup-register.asp
 t/handlers/upload01.pm
 t/lib/My/ErrorHandler.pm
 t/lib/My/MemberFilter.pm

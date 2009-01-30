@@ -91,6 +91,7 @@ sub uri
   if( @_ )
   {
     $s->{uri} = shift;
+    # Should we also set $ENV{REQUEST_URI} here?
   }
   else
   {
@@ -116,6 +117,7 @@ sub method
 
 
 #==============================================================================
+#XXX Not documented.
 sub headers_out
 {
   $_[0]->{headers_out};
@@ -123,6 +125,15 @@ sub headers_out
 
 
 #==============================================================================
+#XXX Not documented.
+sub err_headers_out
+{
+  $_[0]->{headers_out};
+}# end err_headers_out()
+
+
+#==============================================================================
+#XXX Not documented.
 sub headers_in
 {
   $_[0]->{headers_in};
@@ -130,6 +141,7 @@ sub headers_in
 
 
 #==============================================================================
+#XXX Not documented.
 sub send_headers
 {
   my $s = shift;
@@ -172,4 +184,126 @@ sub connection
 }# end connection()
 
 1;# return true:
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::Mock::RequestRec - Mimics the mod_perl2 Apache2::RequestRec object ($r)
+
+=head1 SYNOPSIS
+
+  my $r = Apache2::ASP::HTTPContext->current->r;
+  
+  $r->filename( '/index.asp' );   # '/usr/local/projects/mysite.com/htdocs/index.asp
+  
+  $r->pnotes( foo => 'bar' );     # set foo = 'bar'
+  my $foo = $r->pnotes( 'foo' );  # get foo
+  
+  my $output_buffer_contents = $r->buffer;
+  
+  my $mock_apr_pool = $r->pool;
+  
+  $r->status( '302 Found' );
+  my $status = $r->status;
+  
+  my $uri = $r->uri;
+  $r->uri('/new.asp');
+  
+  my $method = $r->method;  # get/post
+  
+  $r->content_type( 'text/html' );
+  my $type = $r->content_type;
+  
+  my $mock_connection = $r->connection;
+  
+  $r->print( 'some string' );
+  
+  $r->rflush;
+
+=head1 DESCRIPTION
+
+This package provides "mock" access to what would normally be an L<Apache2::RequestRec> object - 
+known by the name C<$r> in a normal mod_perl2 environment.
+
+This package exists only to provide a layer of abstraction for L<Apache2::ASP::API>
+and L<Apache2::ASP::Test::Base>.
+
+B<NOTE>: The purpose of this package is only to mimic I<enough> of the functionality
+of L<Apache2::RequestRec> to B<get by> without it - specifically during testing.
+
+If you require additional functionality, B<patches are welcome!>
+
+=head1 PUBLIC PROPERTIES
+
+=head2 filename
+
+Read-only.  Returns the absolute filename for the current request - i.e. C</usr/local/projects/mysite.com/htdocs/index.asp>
+
+=head2 pnotes( $name [, $value ] )
+
+Read/Write.  Set or get a variable for the duration of the current request.
+
+=head2 buffer
+
+Read-only.  Returns the contents of the current output buffer.
+
+=head2 pool
+
+Read-only.  Returns the current L<Apache2::ASP::Mock::Pool> object.
+
+=head2 status( [$new_status] )
+
+Read/Write.  Set or get the HTTP status code, I<a la> L<Apache2::Const>.
+
+=head2 uri( [$new_uri] )
+
+Read/Write.  Set or get the request URI.
+
+=head2 method
+
+Read-only.  Gets the request method - i.e. 'get' or 'post'.
+
+=head2 content_type( [$new_content_type] )
+
+Read/Write.  Set or get the B<outgoing> C<content-type> header.
+
+=head2 connection
+
+Read-only.  Returns the current L<Apache2::ASP::Mock::Connection> object.
+
+=head1 PUBLIC METHODS
+
+=head2 print( $string )
+
+Adds C<$string> to the output buffer.
+
+=head2 rflush( )
+
+Does nothing.  Here only to maintain compatibility with a normal mod_perl2 environment.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT
+
+Copyright 2008 John Drago.  All rights reserved.
+
+=head1 LICENSE
+
+This software is Free software and is licensed under the same terms as perl itself.
+
+=cut
 

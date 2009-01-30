@@ -84,7 +84,7 @@ Apache2::ASP::UploadHandler - Base class for Handlers that process file uploads
 
 =head1 SYNOPSIS
 
-Subclass L<Apache2::ASP::MediaManager> instead.
+Don't use this clas. Subclass L<Apache2::ASP::MediaManager> instead.
 
 =head1 DESCRIPTION
 

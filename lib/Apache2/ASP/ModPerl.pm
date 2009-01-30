@@ -55,3 +55,82 @@ sub handler : method
 
 1;# return true:
 
+=pod
+
+=head1 NAME
+
+Apache2::ASP::ModPerl - mod_perl2 PerlResponseHandler for Apache2::ASP
+
+=head1 SYNOPSIS
+
+In your httpd.conf
+  
+  # Needed for file uploads to work properly:
+  LoadModule apreq_module    modules/mod_apreq2.so
+
+  # Load up some important modules:
+  PerlModule DBI
+  PerlModule DBD::mysql
+  PerlModule Apache2::ASP::ModPerl
+
+  # Admin website:
+  <VirtualHost *:80>
+
+    ServerName    mysite.com
+    ServerAlias   www.mysite.com
+    DocumentRoot  /usr/local/projects/mysite.com/htdocs
+    
+    # Set the directory index:
+    DirectoryIndex index.asp
+    
+    # All *.asp files are handled by Apache2::ASP::ModPerl
+    <Files ~ (\.asp$)>
+      SetHandler  perl-script
+      PerlResponseHandler Apache2::ASP::ModPerl
+    </Files>
+    
+    # !IMPORTANT! Prevent anyone from viewing your GlobalASA.pm
+    <Files ~ (\.pm$)>
+      Order allow,deny
+      Deny from all
+    </Files>
+    
+    # All requests to /handlers/* will be handled by their respective handler:
+    <Location /handlers>
+      SetHandler  perl-script
+      PerlResponseHandler Apache2::ASP::ModPerl
+    </Location>
+    
+  </VirtualHost>
+
+=head1 DESCRIPTION
+
+C<Apache2::ASP::ModPerl> provides a mod_perl2 PerlResponseHandler interface to
+L<Apache2::ASP::HTTPContext>.
+
+Under normal circumstances, all you have to do is configure it and forget about it.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago L<mailto:jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+

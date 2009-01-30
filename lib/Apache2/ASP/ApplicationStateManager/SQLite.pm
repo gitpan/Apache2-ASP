@@ -12,26 +12,17 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP::ApplicationStateManager::SQLite - SQLite backend for Apache2::ASP Application state
-
-=head1 SYNOPSIS
-
-In your apache2-asp-config.xml file:
-
-  <config>
-    <web_application>
-    ...
-      <application_state>
-        <manager>Apache2::ASP::ApplicationStateManager::SQLite</manager>
-        <dsn>DBI:SQLite:dbname=/tmp/apache2_asp_state</dsn>
-        <username></username>
-        <password></password>
-      </application_state>
-    ...
+Apache2::ASP::ApplicationStateManager::SQLite - SQLite storage for the $Application object
 
 =head1 DESCRIPTION
 
-This package uses a SQLite database to persist Application state for Apache2::ASP web applications.
+This package provides an SQLite backend for persisting Application state.
+
+Mostly intended for testing, and used as part of the unit tests that ship with Apache2::ASP.
+
+=head1 SEE ALSO
+
+L<Apache2::ASP::ApplicationStateManager>
 
 =head1 BUGS
 

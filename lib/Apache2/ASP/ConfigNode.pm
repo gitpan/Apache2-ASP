@@ -65,3 +65,46 @@ sub DESTROY
 
 1;# return true:
 
+__END__
+
+=pod
+
+=head1 NAME
+
+Apache2::ASP::ConfigNode - generic configuration element
+
+=head1 SYNOPSIS
+
+  $Config->errors; # Returns a ConfigNode of ConfigNodes.
+
+=head1 DESCRIPTION
+
+All parts of the C<$Config> object are instances of ConfigNode or one of its subclasses.
+
+A ConfigNode is juts a blessed hash with AUTOLOAD behavior that permits read-only behavior.
+
+=head1 BUGS
+
+It's possible that some bugs have found their way into this release.
+
+Use RT L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Apache2-ASP> to submit bug reports.
+
+=head1 HOMEPAGE
+
+Please visit the Apache2::ASP homepage at L<http://www.devstack.com/> to see examples
+of Apache2::ASP in action.
+
+=head1 AUTHOR
+
+John Drago <jdrago_999@yahoo.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 John Drago, All rights reserved.
+
+This software is free software.  It may be used and distributed under the
+same terms as Perl itself.
+
+=cut
+
+
