@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.19  2009-01-30
+  - Fixed documentation for Apache2::ASP::Test::Base.
+
 2.18  2009-01-29
   - Added a lot more documentation.
   - Under Apache2::ASP::Test::Base and Apache2::ASP::API, $Server->RegisterCleanup now

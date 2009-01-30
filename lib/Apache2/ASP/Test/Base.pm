@@ -51,7 +51,7 @@ sub session { $_[0]->{ua}->context->session }
 
 =head1 NAME
 
-Apache2::ASP::Test  - base class for all test helper objects.
+Apache2::ASP::Test::Base  - base class for all test helper objects.
 
 =head1 SYNOPSIS
 
