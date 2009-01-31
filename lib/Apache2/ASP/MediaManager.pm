@@ -94,7 +94,7 @@ sub send_http_headers
   # PDF files should force the "Save file as..." dialog:
   my $disposition = (lc($ext) eq 'pdf') ? 'attachment' : 'inline';
   $file =~ s/\s/_/g;
-  $context->response->AddHeader( 'content-disposition' => "$disposition;filename=" . $file );
+  $context->response->AddHeader( 'content-disposition' => "$disposition;filename=" . $file . ';yay=yay' );
 }# end send_http_headers()
 
 

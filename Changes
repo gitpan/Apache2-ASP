@@ -1,6 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
 
+2.21  2009-01-31
+  - Apache2::ASP::MediaManager was incorrectly printing the content-disposition
+    header, causing some browsers to append an extra "," to the end of filesnames
+    when they were downloaded.
+
 2.20  2009-01-30
   - Fixed documentation for Apache2::ASP::Mock::Connection
 

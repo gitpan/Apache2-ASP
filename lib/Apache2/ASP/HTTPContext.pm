@@ -361,6 +361,7 @@ sub headers_in   { shift->get_prop('headers_in') }
 sub send_headers
 {
   my $s = shift;
+  return if $s->{_did_send_headers};
   
   my $headers = $s->get_prop('headers_out');
   my $out = $s->get_prop('r')->headers_out;
@@ -369,15 +370,24 @@ sub send_headers
     $out->{$k} = $v;
   }# end while()
   
+  my @sent = ();
   if( $s->get_prop('r')->can('send_headers') )
   {
-    $s->get_prop('r')->headers_out->{$_} = $out->{$_} foreach keys(%$out);
+    foreach( keys(%$out) )
+    {
+      push @sent, { $_ => $out->{$_} };
+      $s->get_prop('r')->headers_out->{$_} = $out->{$_};
+    }# end foreach()
     $s->get_prop('r')->send_headers;
   }
   else
   {
-    $s->get_prop('r')->err_headers_out->add( $_ => $out->{$_} ) foreach keys(%$out);
-    $s->get_prop('r')->headers_out->add( $_ => $out->{$_} ) foreach keys(%$out);
+    foreach( keys(%$out) )
+    {
+      push @sent, { $_ => $out->{$_} };
+      $s->get_prop('r')->err_headers_out->add( $_ => $out->{$_} );
+      $s->get_prop('r')->headers_out->add( $_ => $out->{$_} );
+    }# end foreach()
   }# end if()
   $s->{_did_send_headers}++;
 }# end send_headers()
