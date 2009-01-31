@@ -49,7 +49,7 @@ sub DESTROY
 
 =head1 NAME
 
-Apache2::ASP::Mock::ClientSocket - Mimics the Apache2::Connection object
+Apache2::ASP::Mock::Connection - Mimics the Apache2::Connection object
 
 =head1 SYNOPSIS
 
