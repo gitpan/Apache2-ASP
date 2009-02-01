@@ -38,12 +38,10 @@ sub run
   {
     if( $mode eq 'delete' )
     {
-      -f $filename or return 404;
       $s->before_delete( $context, $filename )
         or return;
       $s->delete_file( $context, $filename );
-      $s->after_delete( $context, $filename );
-      return;
+      return $s->after_delete( $context, $filename );
     }
     elsif( defined(my $handler = $s->modes( $mode )) )
     {
@@ -104,6 +102,7 @@ sub delete_file
   my ($s, $context, $filename) = @_;
   
   die "'$filename' is a directory, not a file" if -d $filename;
+  return unless -f $filename;
   unlink( $filename )
     or die "Cannot delete file '$filename' from disk: $!";
 }# end delete_file()
