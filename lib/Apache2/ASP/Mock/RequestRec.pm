@@ -183,6 +183,13 @@ sub connection
   $_[0]->{connection};
 }# end connection()
 
+
+#==============================================================================
+sub document_root
+{
+  $ENV{DOCUMENT_ROOT};
+}# end document_root()
+
 1;# return true:
 
 =pod

@@ -29,7 +29,7 @@ sub config_path
       or last;
   }# end for()
   
-  die "CANNOT FIND '$CONFIGFILE'";
+  die "CANNOT FIND '$CONFIGFILE' anywhere under '$root'";
 }# end config_path()
 
 1;# return true:

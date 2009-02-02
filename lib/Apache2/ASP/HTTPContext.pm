@@ -55,6 +55,12 @@ sub setup_request
   
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
+  unless( $s->{config} )
+  {
+    no warnings 'uninitialized';
+    $ENV{DOCUMENT_ROOT} ||= $requestrec->document_root;
+    $s->{config} = Apache2::ASP::ConfigLoader->load();
+  }# end unless()
 #  my $headers = HTTP::Headers->new();
   
 #  my $h = $s->r->headers_out;

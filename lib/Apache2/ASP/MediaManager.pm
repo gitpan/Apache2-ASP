@@ -4,6 +4,7 @@ package Apache2::ASP::MediaManager;
 use strict;
 use base 'Apache2::ASP::UploadHandler';
 use MIME::Types;
+use IO::File;
 
 my $mimetypes = MIME::Types->new();
 
@@ -74,7 +75,8 @@ sub run
   $context->response->Flush;
   
   # Done!
-  close($ifh);
+  $ifh->close;
+#  close($ifh);
   
   # Call our after- hook:
   $s->after_download( $context, $filename );
@@ -114,9 +116,11 @@ sub open_file_for_writing
   my ($s, $context, $filename) = @_;
   
   # Try to open the file for writing:
-  open my $ofh, '>', $filename
+  my $ofh = IO::File->new();
+  $ofh->open($filename, '>' )
     or die "Cannot open file '$filename' for writing: $!";
-  binmode($ofh);
+  $ofh->binmode;
+#  binmode($ofh);
   
   return $ofh;
 }# end open_file_for_writing()
@@ -128,9 +132,11 @@ sub open_file_for_reading
   my ($s, $context, $filename) = @_;
   
   # Try to open the file for reading:
-  open my $ifh, '<', $filename
+  my $ifh = IO::File->new();
+  $ifh->open($filename, '<' )
     or die "Cannot open file '$filename' for reading: $!";
-  binmode($ifh);
+  $ifh->binmode;
+#  binmode($ifh);
   
   return $ifh;
 }# end open_file_for_reading()
@@ -142,9 +148,11 @@ sub open_file_for_appending
   my ($s, $context, $filename) = @_;
   
   # Try to open the file for appending:
-  open my $ofh, '>>', $filename
+  my $ofh = IO::File->new();
+  $ofh->open($filename, '>>' )
     or die "Cannot open file '$filename' for appending: $!";
-  binmode($ofh);
+  $ofh->binmode;
+#  binmode($ofh);
   
   return $ofh;
 }# end open_file_for_appending()
@@ -238,7 +246,8 @@ sub upload_start
   my $ofh = $s->open_file_for_writing($context, $target_file);
   
   # Done with the filehandle:
-  close($ofh);
+  $ofh->close;
+#  close($ofh);
   
   # Store some information for later:
   $context->r->pnotes( filename => $target_file );
@@ -262,7 +271,8 @@ sub upload_hook
   my $ofh = $s->open_file_for_appending($context, $filename);
   no warnings 'uninitialized';
   print $ofh $Upload->{data};
-  close($ofh);
+  $ofh->close;
+#  close($ofh);
 }# end upload_hook()
 
 

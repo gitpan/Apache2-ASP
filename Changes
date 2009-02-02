@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.23  2009-02-01
+  - "Too many open filehandles" error was popping up.  Attempting to use IO::File
+    to solve this problem.
+  - Added IO::File as a prerequisite file.
 
 2.22  2009-01-31
   - Apache2::ASP::MediaManager was misbehaving when attempting to delete a file

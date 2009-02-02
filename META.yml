@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Apache2-ASP
-version:             2.22
+version:             2.23
 abstract:            ASP for Perl, reloaded.
 license:             artistic
 author:              
@@ -20,6 +20,7 @@ requires:
     HTTP::Date:                    5.81
     HTTP::Request::AsCGI:          0.5
     Ima::DBI:                      0.35
+    IO::File:                      1.14
     Mail::Sendmail:                0.79
     MIME::Types:                   1.24
     Storable:                      2.18

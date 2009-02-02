@@ -30,6 +30,7 @@ WriteMakefile(
     CGI::Simple             => 1.106,           # For Apache2::ASP::Test::*
     Ima::DBI                => 0.35,            # For sessions & applications.
     XML::Parser             => 2.36,            # For XML::Simple.
+    IO::File                => 1.14,            # For MediaManager
   }, # e.g., Module::Name => 1.1
   dist => {
     PREOP => 'pod2text lib/Apache2/ASP.pm > $(DISTVNAME)/README',

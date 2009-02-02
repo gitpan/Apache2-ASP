@@ -28,3 +28,16 @@ my ($file) = 'asp-upload-test.txt';
 $res = $s->ua->get("/handlers/upload01?file=$file");
 is( length($res->content) => -s $upload_filename, "Uploaded/Downloaded filesizes match" );
 
+
+#open $ofh, '>', $upload_filename
+#  or die "Cannot re-open '$upload_filename' for writing: $!";
+#print $ofh "Lots of uploads test\n"x50;
+#close($ofh);
+#for( 1...10_000 )
+#{
+#  my $res = $s->ua->upload("/handlers/upload01?mode=create&uploadID=" . rand(), [
+#    uploaded_file => [ $upload_filename ]
+#  ]);
+#  ok( 1, "Upload $_" );
+#}# end for()
+

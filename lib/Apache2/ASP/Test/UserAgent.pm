@@ -11,6 +11,7 @@ use Apache2::ASP::HTTPContext;
 use Apache2::ASP::SimpleCGI;
 use Apache2::ASP::Mock::RequestRec;
 use Carp 'confess';
+use IO::File;
 
 our $ContextClass = 'Apache2::ASP::HTTPContext';
 
@@ -39,7 +40,10 @@ sub post
   undef(${"$ContextClass\::instance"});
   $args ||= [ ];
   my $req = POST $uri, $args;
-  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  {
+    no warnings 'uninitialized';
+    %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  }
   $ENV{REQUEST_METHOD} = 'POST';
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = 'application/x-www-form-urlencoded';
@@ -61,7 +65,10 @@ sub upload
   
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
-  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  {
+    no warnings 'uninitialized';
+    %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  }
   my $req = POST $uri, Content_Type => 'form-data', Content => $args;
   $ENV{REQUEST_METHOD} = 'POST';
   $ENV{CONTENT_TYPE} = $req->headers->{'content-type'};
@@ -87,7 +94,9 @@ sub upload
   {
     my $tmpfile = $cgi->upload_info($uploaded_file, 'tempname' );
     my $filename = $cgi->upload_info( $uploaded_file, 'filename' );
-    open my $ifh, '<', $tmpfile
+#    open my $ifh, '<', $tmpfile
+    my $ifh = IO::File->new;
+    $ifh->open($tmpfile, '<')
       or die "Cannot open temp file '$tmpfile' for reading: $!";
     binmode($ifh);
     while( my $line = <$ifh> )
@@ -100,6 +109,7 @@ sub upload
         $line
       );
     }# end while()
+    close($ifh);
     
     # One more *without* any data (this will signify and EOF condition):
     $hook_ref->(
@@ -125,7 +135,10 @@ sub submit_form
   undef(${"$ContextClass\::instance"});
   my $req = $form->click;
   
-  %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  {
+    no warnings 'uninitialized';
+    %ENV = ( DOCUMENT_ROOT => $ENV{DOCUMENT_ROOT} );
+  }
   $ENV{REQUEST_METHOD} = uc( $req->method );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
