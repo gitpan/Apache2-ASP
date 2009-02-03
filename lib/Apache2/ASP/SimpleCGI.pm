@@ -154,6 +154,17 @@ sub unescape
   return $todecode;
 }# end unescape()
 
+
+#==============================================================================
+sub DESTROY
+{
+  my $s = shift;
+  
+  map { close($s->{uploads}->{$_}->{filehandle}) }
+    keys(%{$s->{uploads}});
+}# end DESTROY()
+
+
 1;# return true:
 
 =pod

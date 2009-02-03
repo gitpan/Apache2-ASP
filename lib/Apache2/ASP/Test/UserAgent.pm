@@ -12,6 +12,7 @@ use Apache2::ASP::SimpleCGI;
 use Apache2::ASP::Mock::RequestRec;
 use Carp 'confess';
 use IO::File;
+use Scalar::Util 'weaken';
 
 our $ContextClass = 'Apache2::ASP::HTTPContext';
 
@@ -94,7 +95,6 @@ sub upload
   {
     my $tmpfile = $cgi->upload_info($uploaded_file, 'tempname' );
     my $filename = $cgi->upload_info( $uploaded_file, 'filename' );
-#    open my $ifh, '<', $tmpfile
     my $ifh = IO::File->new;
     $ifh->open($tmpfile, '<')
       or die "Cannot open temp file '$tmpfile' for reading: $!";
@@ -212,7 +212,6 @@ sub _setup_response
         my ($data) = split /;/, $v;
         my ($name,$val) = map { Apache2::ASP::SimpleCGI->unescape( $_ ) } split /\=/, $data;
         $s->add_cookie( $name => $val );
-#        $s->{cookies}->{$name} = $val;
       }# end if()
     }# end while()
   }# end foreach()
@@ -225,6 +224,7 @@ sub _setup_response
   }# end if()
   
   $s->context->r->pool->call_cleanup_handlers();
+  weaken($s->context->{cgi});
   
   return $response;
 }# end _setup_response()
@@ -272,13 +272,7 @@ sub _setup_cgi
     if $docroot;
   
   if( $ENV{REQUEST_METHOD} =~ m/^post$/i )
-  {
-#    my $body = HTTP::Body->new(
-#      $req->headers->{'content-type'},
-#      $req->headers->{'content-length'}
-#    );
-#    $body->add( $req->content );
-    
+  { 
     # Set up the basic params:
     return Apache2::ASP::SimpleCGI->new(
       querystring     => $ENV{QUERY_STRING},

@@ -1,5 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.24  2009-02-03
+  - Narrowed the search for leaked open filehandles to Apache2::ASP::SimpleCGI
+    when handling a file upload in test/API mode.  Added DESTROY handler to close
+    any remaining filehandles when the object goes out of scope.
+
 2.23  2009-02-01
   - "Too many open filehandles" error was popping up.  Attempting to use IO::File
     to solve this problem.
