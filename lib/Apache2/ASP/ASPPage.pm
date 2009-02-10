@@ -168,6 +168,8 @@ sub _read_cache
 {
   my ($s) = @_;
   
+  return unless $s->context->application->can('db_Main');
+  
   if( my $cache_args = $s->{directives}->{OutputCache} )
   {
     use Digest::MD5 'md5_hex';
@@ -222,6 +224,8 @@ sub _cache_key
 sub _write_cache
 {
   my ($s, $data) = @_;
+
+  return unless $s->context->application->can('db_Main');
 
   my $key = $s->_cache_key;
 #warn "Storing cache...";  

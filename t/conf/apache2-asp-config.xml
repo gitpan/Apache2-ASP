@@ -64,6 +64,21 @@
       </filter>
 -->
     </request_filters>
+    <disable_persistence>
+      <location>
+        <uri_match>/nostate/.*</uri_match>
+        <disable_session>1</disable_session>
+        <disable_application>1</disable_application>
+      </location>
+<!--
+      <location>
+        <uri_match>/other\-links/.*</uri_match>
+        <disable_session>1</disable_session>
+        <disable_application>1</disable_application>
+      </location>
+-->
+    </disable_persistence>
+    
   </web>
 
   <data_connections>

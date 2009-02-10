@@ -18,6 +18,13 @@ sub new
     $_->{uri_equals} = undef unless defined($_->{uri_equals});
     $_ = $class->SUPER::new( $_ );
   } $s->request_filters;
+  map {
+    $_->{uri_match} = undef unless defined($_->{uri_match});
+    $_->{uri_equals} = undef unless defined($_->{uri_equals});
+    $_->{disable_session} ||= 0;
+    $_->{disable_application} ||= 0;
+    $_ = $class->SUPER::new( $_ );
+  } $s->disable_persistence;
   return $s;
 }# end new()
 
@@ -29,6 +36,15 @@ sub request_filters
   
   @{ $s->{request_filters}->{filter} };
 }# end request_filters()
+
+
+#==============================================================================
+sub disable_persistence
+{
+  my $s = shift;
+  
+  @{ $s->{disable_persistence}->{location} };
+}# end disable_persistence()
 
 1;# return true:
 

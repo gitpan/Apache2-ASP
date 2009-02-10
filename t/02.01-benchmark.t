@@ -27,3 +27,16 @@ my $persec = $max / $diff;
 warn "\n\t$persec requests/second";
 
 
+$start = gettimeofday();
+$max = 500;
+for( 1...$max )
+{
+  warn $_ if $_ % 20 == 0;
+  my $res = $ua->get('/nostate/index.asp');
+}# end for()
+
+$diff = gettimeofday() - $start;
+$persec = $max / $diff;
+warn "\n\t$persec requests/second";
+
+

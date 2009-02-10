@@ -61,13 +61,6 @@ sub setup_request
     $ENV{DOCUMENT_ROOT} ||= $requestrec->document_root;
     $s->{config} = Apache2::ASP::ConfigLoader->load();
   }# end unless()
-#  my $headers = HTTP::Headers->new();
-  
-#  my $h = $s->r->headers_out;
-#  while( my($k,$v) = each(%$h) )
-#  {
-#    $headers->push_header( $k => $v );
-#  }# end while()
 
   $s->{headers_out} = HTTP::Headers->new();
   
@@ -98,12 +91,29 @@ sub setup_request
     $s->{server}   = Apache2::ASP::Server->new();
   
     my $conns = $s->config->data_connections;
-    my $app_manager = $conns->application->manager;
-    $s->load_class( $app_manager );
-    $s->{application} = $app_manager->new();
-    my $session_manager = $conns->session->manager;
-    $s->load_class( $session_manager );
-    $s->{session} = $session_manager->new();
+    if( $s->do_disable_application_state )
+    {
+      require Apache2::ASP::ApplicationStateManager::NonPersisted;
+      $s->{application} = Apache2::ASP::ApplicationStateManager::NonPersisted->new();
+    }
+    else
+    {
+      my $app_manager = $conns->application->manager;
+      $s->load_class( $app_manager );
+      $s->{application} = $app_manager->new();
+    }# end if()
+    
+    if( $s->do_disable_session_state )
+    {
+      require Apache2::ASP::SessionStateManager::NonPersisted;
+      $s->{session}     = Apache2::ASP::SessionStateManager::NonPersisted->new();
+    }
+    else
+    {
+      my $session_manager = $conns->session->manager;
+      $s->load_class( $session_manager );
+      $s->{session} = $session_manager->new();
+    }# end if()
     
     # Make the global Stash object:
     $s->{stash} = { };
@@ -114,6 +124,44 @@ sub setup_request
   
   return 1;
 }# end setup_request()
+
+
+#==============================================================================
+sub do_disable_session_state
+{
+  my ($s) = @_;
+  
+  my ($uri) = split /\?/, $s->r->uri;
+  return grep { $_->disable_session } grep {
+    if( my $pattern = $_->uri_match )
+    {
+      $uri =~ m/$pattern/
+    }
+    else
+    {
+      $uri eq $_->uri_equals;
+    }# end if()
+  } $s->config->web->disable_persistence;  
+}# end do_disable_session_state()
+
+
+#==============================================================================
+sub do_disable_application_state
+{
+  my ($s) = @_;
+  
+  my ($uri) = split /\?/, $s->r->uri;
+  return grep { $_->disable_application } grep {
+    if( my $pattern = $_->uri_match )
+    {
+      $uri =~ m/$pattern/
+    }
+    else
+    {
+      $uri eq $_->uri_equals;
+    }# end if()
+  } $s->config->web->disable_persistence;  
+}# end do_disable_application_state()
 
 
 #==============================================================================
@@ -283,31 +331,27 @@ sub handle_phase
 sub handle_error
 {
   my $s = shift;
+  
   my $error = "$@";
   $s->response->Status( 500 );
   no strict 'refs';
-#  if( defined(&{$s->global_asa . "::Script_OnError"}) )
-#  {
-#    eval { $s->global_asa->can('Script_OnError')->( $error ) };
-#  }
-#  else
-#  {
-    $s->response->Clear;
-    my ($main, $title, $file, $line) = $error =~ m/^((.*?)\s(?:at|in)\s(.*?)\sline\s(\d+))/;
-    $s->stash->{error} = {
-      title       => $title,
-      file        => $file,
-      line        => $line,
-      stacktrace  => $error,
-    };
-    warn "[Error: @{[ HTTP::Date::time2iso() ]}] $main\n";
-    
-    $s->load_class( $s->config->errors->error_handler );
-    my $error_handler = $s->config->errors->error_handler->new();
-    $error_handler->init_asp_objects( $s );
-    eval { $error_handler->run( $s ) };
-    confess $@ if $@;
-#  }# end if()
+
+  $s->response->Clear;
+  my ($main, $title, $file, $line) = $error =~ m/^((.*?)\s(?:at|in)\s(.*?)\sline\s(\d+))/;
+  $s->stash->{error} = {
+    title       => $title,
+    file        => $file,
+    line        => $line,
+    stacktrace  => $error,
+  };
+  warn "[Error: @{[ HTTP::Date::time2iso() ]}] $main\n";
+  
+  $s->load_class( $s->config->errors->error_handler );
+  my $error_handler = $s->config->errors->error_handler->new();
+  $error_handler->init_asp_objects( $s );
+  eval { $error_handler->run( $s ) };
+  confess $@ if $@;
+  
   return $s->end_request;
 }# end handle_error()
 

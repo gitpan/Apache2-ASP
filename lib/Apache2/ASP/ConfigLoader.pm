@@ -22,7 +22,7 @@ sub load
   
   my $doc = XML::Simple::XMLin( $path,
     SuppressEmpty => '',
-    ForceArray => [qw/ var setting /],
+    ForceArray => [qw/ var setting location /],
     KeyAttr => { },
   );
   

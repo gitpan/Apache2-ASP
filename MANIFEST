@@ -86,6 +86,7 @@ t/htdocs/coverage/includes-syntax-error.asp
 t/htdocs/coverage/syntax-error.asp
 t/htdocs/coverage/syntax-error-master.asp
 t/htdocs/upload.asp
+t/htdocs/nostate/index.asp
 t/htdocs/page-using-nested-masterpage.asp
 t/htdocs/inc.asp
 t/htdocs/masters/main.asp
