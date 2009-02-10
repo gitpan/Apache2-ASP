@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.27  2009-02-09
+  - Typo in ConfigParser.pm
+
 2.26  2009-02-09
   - Forgot the *::NonPersisted state managers in the MANIFEST
 

@@ -102,16 +102,16 @@ sub parse
     {
       $doc->{web}->{request_filters}->{filter} = [ ];
     }# end if()
-    
-    $doc->{web}->{disable_peristence} ||= { };
-    if( $doc->{web}->{disable_peristence}->{location} )
+
+    $doc->{web}->{disable_persistence} ||= { };
+    if( $doc->{web}->{disable_persistence}->{location} )
     {
-      $doc->{web}->{disable_peristence}->{location} = [ delete($doc->{web}->{disable_peristence}->{location}) ]
-        unless ref($doc->{web}->{disable_peristence}->{location}) eq 'ARRAY';
+      $doc->{web}->{disable_persistence}->{location} = [ delete($doc->{web}->{disable_persistence}->{location}) ]
+        unless ref($doc->{web}->{disable_persistence}->{location}) eq 'ARRAY';
     }
     else
     {
-      $doc->{web}->{disable_peristence}->{location} = [ ];
+      $doc->{web}->{disable_persistence}->{location} = [ ];
     }# end if()
   };
   

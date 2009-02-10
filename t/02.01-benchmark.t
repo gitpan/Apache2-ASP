@@ -28,7 +28,7 @@ warn "\n\t$persec requests/second";
 
 
 $start = gettimeofday();
-$max = 500;
+$max = 100;
 for( 1...$max )
 {
   warn $_ if $_ % 20 == 0;
