@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.26  2009-02-09
+  - Forgot the *::NonPersisted state managers in the MANIFEST
+
 2.25  2009-02-09
   - Added <disable_persistence> element to the XML config. Disabling persistence
     for high-traffic pages is sometimes necessary and/or desirable.

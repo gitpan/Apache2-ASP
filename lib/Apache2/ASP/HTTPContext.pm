@@ -132,7 +132,7 @@ sub do_disable_session_state
   my ($s) = @_;
   
   my ($uri) = split /\?/, $s->r->uri;
-  return grep { $_->disable_session } grep {
+  my ($yes) = grep { $_->disable_session } grep {
     if( my $pattern = $_->uri_match )
     {
       $uri =~ m/$pattern/
@@ -141,7 +141,9 @@ sub do_disable_session_state
     {
       $uri eq $_->uri_equals;
     }# end if()
-  } $s->config->web->disable_persistence;  
+  } $s->config->web->disable_persistence;
+  
+  return $yes;
 }# end do_disable_session_state()
 
 
@@ -151,7 +153,7 @@ sub do_disable_application_state
   my ($s) = @_;
   
   my ($uri) = split /\?/, $s->r->uri;
-  return grep { $_->disable_application } grep {
+  my ($yes) = grep { $_->disable_application } grep {
     if( my $pattern = $_->uri_match )
     {
       $uri =~ m/$pattern/
@@ -160,7 +162,9 @@ sub do_disable_application_state
     {
       $uri eq $_->uri_equals;
     }# end if()
-  } $s->config->web->disable_persistence;  
+  } $s->config->web->disable_persistence;
+  
+  return $yes;
 }# end do_disable_application_state()
 
 

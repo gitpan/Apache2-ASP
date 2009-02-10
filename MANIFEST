@@ -11,6 +11,7 @@ lib/Apache2/ASP/TransHandler.pm
 lib/Apache2/ASP/CacheManager.pm
 lib/Apache2/ASP/ApplicationStateManager/MySQL.pm
 lib/Apache2/ASP/ApplicationStateManager/SQLite.pm
+lib/Apache2/ASP/ApplicationStateManager/NonPersisted.pm
 lib/Apache2/ASP/ConfigFinder.pm
 lib/Apache2/ASP/ModPerl.pm
 lib/Apache2/ASP/Config.pm
@@ -25,6 +26,7 @@ lib/Apache2/ASP/ASPHandler.pm
 lib/Apache2/ASP/HTTPContext.pm
 lib/Apache2/ASP/SessionStateManager/MySQL.pm
 lib/Apache2/ASP/SessionStateManager/SQLite.pm
+lib/Apache2/ASP/SessionStateManager/NonPersisted.pm
 lib/Apache2/ASP/ConfigNode/Web.pm
 lib/Apache2/ASP/ConfigNode/System.pm
 lib/Apache2/ASP/ConfigNode/System/Settings.pm
