@@ -232,7 +232,8 @@ sub reset
 #==============================================================================
 sub new_session_id
 {
-  md5_hex( rand() );
+  my $s = shift;
+  md5_hex( $s->context->config->web->application_name . rand() );
 }# end new_session_id()
 
 

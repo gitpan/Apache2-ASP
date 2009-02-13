@@ -13,6 +13,7 @@ use HTTP::Headers;
 
 our $instance;
 our $ClassName = __PACKAGE__;
+our %StartedServers = ( );
 
 #==============================================================================
 sub current
@@ -284,12 +285,14 @@ sub do_preinit
   }# end unless()
   
   # Initialize the Server, Application and Session:
-  unless( $s->application->{"__Server_Started$$"} )
+#  unless( $s->application->{"__Server_Started$$"} )
+  unless( $StartedServers{ $s->config->web->application_name } )
   {
     my $res = $s->handle_phase(
       $s->global_asa->can('Server_OnStart')
     );
-    $s->application->{"__Server_Started$$"}++ unless $@;
+    $StartedServers{ $s->config->web->application_name }++
+      unless $@;
     return $s->end_request if $s->{did_end};
   }# end unless()
   

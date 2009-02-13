@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.28  2009-02-12
+  - Refactored a few things causing big slowdowns.  Devel::NYTProf++!
+
 2.27  2009-02-09
   - Typo in ConfigParser.pm
 

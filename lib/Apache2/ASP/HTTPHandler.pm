@@ -51,16 +51,32 @@ sub init_asp_objects
   } keys(%c);
   my @classes = keys(%c);
   
+  my (
+    $request,      $response,
+    $server,       $session,
+    $application,  $config,
+    $form,         $stash
+  ) = (
+    $context->request,
+    $context->response,
+    $context->server,
+    $context->session,
+    $context->application,
+    $context->config,
+    $context->request->Form,
+    $context->stash
+  );
+  
   foreach my $class ( @classes )
   {
-    ${"$class\::Request"}     = $context->request;
-    ${"$class\::Response"}    = $context->response;
-    ${"$class\::Server"}      = $context->server;
-    ${"$class\::Session"}     = $context->session;
-    ${"$class\::Application"} = $context->application;
-    ${"$class\::Config"}      = $context->config;
-    ${"$class\::Form"}        = $context->request->Form;
-    ${"$class\::Stash"}       = $context->stash;
+    ${"$class\::Request"}     = $request;
+    ${"$class\::Response"}    = $response;
+    ${"$class\::Server"}      = $server;
+    ${"$class\::Session"}     = $session;
+    ${"$class\::Application"} = $application;
+    ${"$class\::Config"}      = $config;
+    ${"$class\::Form"}        = $form;
+    ${"$class\::Stash"}       = $stash;
   }# end foreach()
 
   1;

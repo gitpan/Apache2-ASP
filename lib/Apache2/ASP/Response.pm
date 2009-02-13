@@ -168,9 +168,7 @@ sub Flush
     {
     no strict 'refs';
     my $parent = $s->context->{parent};
-#    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $parent );
     local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $s->context->{parent};
-#      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
       return $s->context->response->Flush;
     }# end if()
   }# end if()
@@ -190,16 +188,15 @@ our $WRITES = 0;
 sub Write
 {
   my $s = shift;
-  return if $s->context->{did_end};
+  my $ctx = $s->context;
+  return if $ctx->{did_end};
   
-  if( $s->context->{parent} && ! $IS_TRAPINCLUDE )
+  if( $ctx->{parent} && ! $IS_TRAPINCLUDE )
   {
     no strict 'refs';
-    my $parent = $s->context->{parent};
-#    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $parent );
-    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $s->context->{parent};
-#    local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
-    $s->context->response->Write( @_ );
+    my $parent = $ctx->{parent};
+    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx->{parent};
+    $ctx->response->Write( @_ );
   }
   else
   {
