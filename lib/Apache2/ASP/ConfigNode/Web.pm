@@ -12,6 +12,9 @@ sub new
   my $class = shift;
   
   my $s = $class->SUPER::new( @_ );
+  $s->{handler_resolver}  ||= 'Apache2::ASP::HTTPContext::HandlerResolver';
+  $s->{handler_runner}    ||= 'Apache2::ASP::HTTPContext::HandlerRunner';
+  $s->{filter_resolver}   ||= 'Apache2::ASP::HTTPContext::FilterResolver';
   
   map {
     $_->{uri_match} = undef unless defined($_->{uri_match});

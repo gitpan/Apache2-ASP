@@ -145,8 +145,8 @@ sub End
   
   $s->Flush;
   # Cancel execution and force the server to stop processing this request.
-  my $sock = $s->context->connection->client_socket;
-  $sock->close();
+#  my $sock = $s->context->connection->client_socket;
+#  $sock->close();
 #  eval { $sock->close() };
   $s->context->{did_end} = 1;
 }# end End()
@@ -326,7 +326,8 @@ sub Clear
 #==============================================================================
 sub IsClientConnected
 {
-  return ! $_[0]->context->connection->aborted;
+  return ! shift->context->get_prop('did_end');
+#  return ! $_[0]->context->connection->aborted;
 }# end IsClientConnected()
 
 

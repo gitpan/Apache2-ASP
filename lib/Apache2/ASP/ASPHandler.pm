@@ -15,7 +15,7 @@ sub run
   my ($s, $context, $args) = @_;
   
   $s->init_asp_objects( $context );
-  
+
   # Find the page:
   $ENV{SCRIPT_FILENAME} .= 'index.asp'
     unless $ENV{SCRIPT_FILENAME} =~ m/\.asp$/;

@@ -11,6 +11,9 @@ use Carp qw( cluck confess );
 use Scalar::Util 'weaken';
 use HTTP::Headers;
 
+use Apache2::ASP::SessionStateManager::NonPersisted;
+use Apache2::ASP::ApplicationStateManager::NonPersisted;
+
 our $instance;
 our $ClassName = __PACKAGE__;
 our %StartedServers = ( );
@@ -48,22 +51,84 @@ sub setup_request
   
   if( ! $s->{parent} )
   {
-    return unless $cgi;
-    $cgi = $$cgi if ref($cgi) eq 'SCALAR';
-    return unless $cgi;
-    return if $s->{_is_setup}++;
+    $s->{_is_setup}++;
+    confess "No '\$cgi' argument passed" unless $cgi;
+#    return unless $cgi;
+#    $cgi = $$cgi if ref($cgi) eq 'SCALAR';
+#    return unless $cgi;
+#    return if $s->{_is_setup}++;
   }# end if()
   
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
-  unless( $s->{config} )
-  {
-    no warnings 'uninitialized';
-    $ENV{DOCUMENT_ROOT} ||= $requestrec->document_root;
-    $s->{config} = Apache2::ASP::ConfigLoader->load();
-  }# end unless()
+#  unless( $s->{config} )
+#  {
+#    no warnings 'uninitialized';
+#    $ENV{DOCUMENT_ROOT} ||= $requestrec->document_root;
+#    $s->{config} = Apache2::ASP::ConfigLoader->load();
+#  }# end unless()
 
+  $s->_setup_headers_out();
+  $s->_setup_headers_in();
+  
+  $s->{connection}  = $s->r->connection;
+  
+  $s->_load_class( $s->config->web->handler_resolver );
+  $s->{handler} = $s->config->web->handler_resolver->new()->resolve_request_handler( $s->r->uri );
+  
+  if( ! $s->{parent} )
+  {
+    $s->{response} = Apache2::ASP::Response->new();
+    $s->{request}  = Apache2::ASP::Request->new();
+    $s->{server}   = Apache2::ASP::Server->new();
+  
+    my $conns = $s->config->data_connections;
+    if( $s->do_disable_application_state )
+    {
+      $s->{application} = Apache2::ASP::ApplicationStateManager::NonPersisted->new();
+    }
+    else
+    {
+      my $app_manager = $conns->application->manager;
+      $s->_load_class( $app_manager );
+      $s->{application} = $app_manager->new();
+    }# end if()
+    
+    if( $s->do_disable_session_state )
+    {
+      $s->{session} = Apache2::ASP::SessionStateManager::NonPersisted->new();
+    }
+    else
+    {
+      my $session_manager = $conns->session->manager;
+      $s->_load_class( $session_manager );
+      $s->{session} = $session_manager->new();
+    }# end if()
+    
+    # Make the global Stash object:
+    $s->{stash} = { };
+    
+    $s->{global_asa} = $s->resolve_global_asa_class( );
+    $s->{global_asa}->init_asp_objects( $s ) unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
+  }# end if()
+  
+  return 1;
+}# end setup_request()
+
+
+#==============================================================================
+sub _setup_headers_out
+{
+  my ($s) = @_;
+  
   $s->{headers_out} = HTTP::Headers->new();
+}# end _setup_headers_out()
+
+
+#==============================================================================
+sub _setup_headers_in
+{
+  my ($s) = @_;
   
   my $h = $s->r->headers_in;
   if( UNIVERSAL::isa($h, 'HTTP::Headers') )
@@ -79,52 +144,7 @@ sub setup_request
     }# end while()
     $s->{headers_in} = $headers_in;
   }# end if()
-  
-  $s->{connection}  = $s->r->connection;
-
-  $s->{handler} = $s->resolve_request_handler( $s->r->uri );
-  $s->load_class( $s->{handler} );
-  
-  if( ! $s->{parent} )
-  {
-    $s->{response} = Apache2::ASP::Response->new();
-    $s->{request}  = Apache2::ASP::Request->new();
-    $s->{server}   = Apache2::ASP::Server->new();
-  
-    my $conns = $s->config->data_connections;
-    if( $s->do_disable_application_state )
-    {
-      require Apache2::ASP::ApplicationStateManager::NonPersisted;
-      $s->{application} = Apache2::ASP::ApplicationStateManager::NonPersisted->new();
-    }
-    else
-    {
-      my $app_manager = $conns->application->manager;
-      $s->load_class( $app_manager );
-      $s->{application} = $app_manager->new();
-    }# end if()
-    
-    if( $s->do_disable_session_state )
-    {
-      require Apache2::ASP::SessionStateManager::NonPersisted;
-      $s->{session}     = Apache2::ASP::SessionStateManager::NonPersisted->new();
-    }
-    else
-    {
-      my $session_manager = $conns->session->manager;
-      $s->load_class( $session_manager );
-      $s->{session} = $session_manager->new();
-    }# end if()
-    
-    # Make the global Stash object:
-    $s->{stash} = { };
-    
-    $s->{global_asa} = $s->resolve_global_asa_class( );
-    $s->{global_asa}->init_asp_objects( $s ) unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
-  }# end if()
-  
-  return 1;
-}# end setup_request()
+}# end _setup_headers_in()
 
 
 #==============================================================================
@@ -178,7 +198,7 @@ sub execute
   unless( $s->{parent} )
   {
     # Set up our @INC:
-    $s->setup_inc();
+    $s->_setup_inc();
     
     if( defined(my $res = $s->do_preinit) )
     {
@@ -186,9 +206,11 @@ sub execute
     }# end if()
     
     # Set up and execute any matching request filters:
-    foreach my $filter ( $s->resolve_request_filters() )
+    my $resolver = $s->config->web->filter_resolver;
+    $s->_load_class( $resolver );
+    foreach my $filter ( $resolver->new()->resolve_request_filters( $s->r->uri ) )
     {
-      $s->load_class( $filter->class );
+      $s->_load_class( $filter->class );
       $filter->class->init_asp_objects( $s );
       my $res = $s->handle_phase(sub{ $filter->class->new()->run( $s ) });
       if( defined($res) && $res != -1 )
@@ -201,9 +223,10 @@ sub execute
     return $res if defined( $res );
   }# end unless()
   
+  $s->_load_class( $s->config->web->handler_runner );
   eval {
-    $s->load_class( $s->handler );
-    $s->run_handler( $args );
+    $s->_load_class( $s->handler );
+    $s->config->web->handler_runner->new()->run_handler( $s->handler, $args );
   };
   if( $@ )
   {
@@ -227,23 +250,7 @@ sub execute
 
 
 #==============================================================================
-sub run_handler
-{
-  my ($s, $args) = @_;
-  
-  my $handler = $s->handler->new();
-  $handler->init_asp_objects( $s );
-  $handler->before_run( $s, $args );
-  if( ! $s->{did_end} )
-  {
-    $handler->run( $s, $args );
-    $handler->after_run( $s, $args );
-  }# end if()
-}# end run_handler()
-
-
-#==============================================================================
-sub setup_inc
+sub _setup_inc
 {
   my $s = shift;
 
@@ -251,26 +258,7 @@ sub setup_inc
   push @INC, $www_root unless grep { $_ eq $www_root } @INC;
   my %libs = map { $_ => 1 } @INC;
   push @INC, grep { ! $libs{$_} } $s->config->system->libs;
-}# end setup_inc()
-
-
-#==============================================================================
-sub resolve_request_filters
-{
-  my $s = shift;
-  
-  my ($uri) = split /\?/, $s->r->uri;
-  return grep {
-    if( my $pattern = $_->uri_match )
-    {
-      $uri =~ m/$pattern/
-    }
-    else
-    {
-      $uri eq $_->uri_equals;
-    }# end if()
-  } $s->config->web->request_filters;  
-}# end resolve_request_filter()
+}# end _setup_inc()
 
 
 #==============================================================================
@@ -285,7 +273,6 @@ sub do_preinit
   }# end unless()
   
   # Initialize the Server, Application and Session:
-#  unless( $s->application->{"__Server_Started$$"} )
   unless( $StartedServers{ $s->config->web->application_name } )
   {
     my $res = $s->handle_phase(
@@ -353,7 +340,7 @@ sub handle_error
   };
   warn "[Error: @{[ HTTP::Date::time2iso() ]}] $main\n";
   
-  $s->load_class( $s->config->errors->error_handler );
+  $s->_load_class( $s->config->errors->error_handler );
   my $error_handler = $s->config->errors->error_handler->new();
   $error_handler->init_asp_objects( $s );
   eval { $error_handler->run( $s ) };
@@ -397,6 +384,16 @@ sub get_prop
   $s->{parent} ? $s->{parent}->get_prop($prop) : $s->{$prop};
 }# end get_prop()
 
+
+#==============================================================================
+sub set_prop
+{
+  my ($s) = shift;
+  my $prop = shift;
+  
+  $s->{parent} ? $s->{parent}->set_prop($prop, @_) : $s->{$prop} = shift;
+}# end set_prop()
+
 sub config       { $_[0]->get_prop('config') }
 sub session      { $_[0]->get_prop('session')               }
 sub server       { $_[0]->get_prop('server')                }
@@ -421,31 +418,11 @@ sub send_headers
   return if $s->{_did_send_headers};
   
   my $headers = $s->get_prop('headers_out');
-  my $out = $s->get_prop('r')->headers_out;
   while( my ($k,$v) = each(%$headers) )
   {
-    $out->{$k} = $v;
+    $s->get_prop('r')->headers_out->{$k} = $v;
   }# end while()
   
-  my @sent = ();
-  if( $s->get_prop('r')->can('send_headers') )
-  {
-    foreach( keys(%$out) )
-    {
-      push @sent, { $_ => $out->{$_} };
-      $s->get_prop('r')->headers_out->{$_} = $out->{$_};
-    }# end foreach()
-    $s->get_prop('r')->send_headers;
-  }
-  else
-  {
-    foreach( keys(%$out) )
-    {
-      push @sent, { $_ => $out->{$_} };
-      $s->get_prop('r')->err_headers_out->add( $_ => $out->{$_} );
-      $s->get_prop('r')->headers_out->add( $_ => $out->{$_} );
-    }# end foreach()
-  }# end if()
   $s->{_did_send_headers}++;
 }# end send_headers()
 
@@ -462,28 +439,6 @@ sub did_send_headers { shift->get_prop('_did_send_headers') }
 
 
 #==============================================================================
-sub resolve_request_handler
-{
-  my ($s, $uri) = @_;
-  
-  ($uri) = split /\?/, $uri;
-  if( $uri =~ m/^\/handlers\// )
-  {
-    (my $handler = $uri) =~ s/^\/handlers\///;
-    $handler =~ s/[^a-z0-9_]/::/gi;
-    $s->load_class( $handler );
-    return $handler;
-  }
-  else #if( $uri =~ m/\.asp$/ )
-  {
-    my $handler = 'Apache2::ASP::ASPHandler';
-    $s->load_class( $handler );
-    return $handler;
-  }# end if()
-}# end resolve_request_handler()
-
-
-#==============================================================================
 sub resolve_global_asa_class
 {
   my $s = shift;
@@ -493,13 +448,13 @@ sub resolve_global_asa_class
   if( -f $file )
   {
     $class = $s->config->web->application_name . '::GlobalASA';
-    eval { require $file unless $INC{$file} };
+    eval { require $file };
     confess $@ if $@;
   }
   else
   {
     $class = 'Apache2::ASP::GlobalASA';
-    $s->load_class( $class );
+    $s->_load_class( $class );
   }# end if()
   
   return $class;
@@ -507,13 +462,24 @@ sub resolve_global_asa_class
 
 
 #==============================================================================
-sub load_class
+sub _load_class
 {
   my ($s, $class) = @_;
   
   (my $file = "$class.pm") =~ s/::/\//g;
-  eval { require $file unless $INC{$file}; 1 } or confess "Cannot load $class: $@";
-}# end load_class()
+  eval { require $file; 1 } or confess "Cannot load $class: $@";
+}# end _load_class()
+
+
+#==============================================================================
+sub AUTOLOAD
+{
+  my $s = shift;
+  
+  our $AUTOLOAD;
+  my ($key) = $AUTOLOAD =~ m/([^:]+)$/;
+  @_ ? $s->set_prop( $key, shift ) : $s->get_prop( $key );
+}# end AUTOLOAD()
 
 
 #==============================================================================

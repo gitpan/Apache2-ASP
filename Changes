@@ -1,5 +1,17 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.29  2009-02-15
+  - Added Apache2::ASP::SessionStateManager::Memcached
+  - Added Apache2::ASP::ApplicationStateManager::Memcached
+  - Both Memcached state managers require Cache::Memcached.
+  - Fixed a few outgoing HTTP header bugs which prevented Safari from handling
+    $Response->Redirect behaviors properly, and caused LWP::UserAgent to give
+    warnings about 'got EOF when chunk expected' and "x-client: died" errors.
+  - Added Apache2::ASP::HTTPContext::FilterResolver
+  - Added Apache2::ASP::HTTPContext::HandlerResolver
+  - Added Apache2::ASP::HTTPContext::HandlerRunner
+  - Major refactoring of Apache2::ASP::HTTPContext
+
 2.28  2009-02-12
   - Refactored a few things causing big slowdowns.  Devel::NYTProf++!
 

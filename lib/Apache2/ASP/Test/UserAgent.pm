@@ -84,8 +84,10 @@ sub upload
   $s->context->setup_request( $r, $cgi );
   
   require Apache2::ASP::UploadHook;
+  my $handler_resolver = $s->context->config->web->handler_resolver;
+  $s->context->config->load_class( $handler_resolver );
   my $hook_obj = Apache2::ASP::UploadHook->new(
-    handler_class => $s->context->resolve_request_handler( $uri ),
+    handler_class => $handler_resolver->new()->resolve_request_handler( $uri ),
   );
   my $hook_ref = sub { $hook_obj->hook( @_ ) };
   

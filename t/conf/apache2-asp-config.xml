@@ -52,6 +52,9 @@
     <media_manager_upload_root>@ServerRoot@/MEDIA</media_manager_upload_root>
     <www_root>@ServerRoot@/htdocs</www_root>
     <page_cache_root>@ServerRoot@/PAGE_CACHE</page_cache_root>
+    <handler_resolver>Apache2::ASP::HTTPContext::HandlerResolver</handler_resolver>
+    <handler_runner>Apache2::ASP::HTTPContext::HandlerRunner</handler_runner>
+    <filter_resolver>Apache2::ASP::HTTPContext::FilterResolver</filter_resolver>
     <request_filters>
 <!--
       <filter>
