@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.30  2009-02-19
+  - Apache2::ASP::ASPPage was misreporting line numbers.
+
 2.29  2009-02-15
   - Added Apache2::ASP::SessionStateManager::Memcached
   - Added Apache2::ASP::ApplicationStateManager::Memcached

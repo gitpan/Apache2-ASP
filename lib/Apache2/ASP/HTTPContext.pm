@@ -53,20 +53,10 @@ sub setup_request
   {
     $s->{_is_setup}++;
     confess "No '\$cgi' argument passed" unless $cgi;
-#    return unless $cgi;
-#    $cgi = $$cgi if ref($cgi) eq 'SCALAR';
-#    return unless $cgi;
-#    return if $s->{_is_setup}++;
   }# end if()
   
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
-#  unless( $s->{config} )
-#  {
-#    no warnings 'uninitialized';
-#    $ENV{DOCUMENT_ROOT} ||= $requestrec->document_root;
-#    $s->{config} = Apache2::ASP::ConfigLoader->load();
-#  }# end unless()
 
   $s->_setup_headers_out();
   $s->_setup_headers_in();
@@ -109,7 +99,8 @@ sub setup_request
     $s->{stash} = { };
     
     $s->{global_asa} = $s->resolve_global_asa_class( );
-    $s->{global_asa}->init_asp_objects( $s ) unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
+    $s->{global_asa}->init_asp_objects( $s )
+      unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
   }# end if()
   
   return 1;
@@ -467,7 +458,8 @@ sub _load_class
   my ($s, $class) = @_;
   
   (my $file = "$class.pm") =~ s/::/\//g;
-  eval { require $file; 1 } or confess "Cannot load $class: $@";
+  eval { require $file; 1 }
+    or confess "Cannot load $class: $@";
 }# end _load_class()
 
 

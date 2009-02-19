@@ -1,3 +1,4 @@
+<%@Page %>
 <%
   $Server->RegisterCleanup(sub {
     my @numbers = @{$_[0]};

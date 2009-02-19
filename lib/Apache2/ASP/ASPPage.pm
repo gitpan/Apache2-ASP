@@ -257,6 +257,7 @@ sub _build_dom
   my $doc = Apache2::ASP::ASPDOM::Document->new();
   
   # Do <asp:TagName>...</asp:TagName> tags:
+  my @lines = split /\r?\n/, ${ $s->file_contents };
   while(
     my ( $chunk, $tagName, $prefix, $tag, $attrs, $contents ) =
       $$ref =~ m{
@@ -304,16 +305,16 @@ sub _build_dom
       }# end while()
       
       # Find the line on which this tag occurs:
-      my @lines = split /\r?\n/, ${ $s->file_contents };
       my $line = 0;
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
+      $lines[$line] = '';
       
       # Remove the chunk of code:
       my $fixed_contents = '$Response->Write(q~' . $contents . '~);';
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
 my (\$__self, \$__context, \$__args) = \@_;
-#line @{[ $line + 1 ]}
+#line @{[ $line + 3 ]}
 $fixed_contents
 }
 CODE
@@ -324,10 +325,9 @@ CODE
     {
       # Unhandled tag:
       # Find the line on which this tag occurs:
-      my @lines = split /\r?\n/, ${ $s->file_contents };
       my $line = 0;
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
-      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
+      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line @{[ $line + 1 ]}\n";
     }# end if()
   }# end while()
 
@@ -351,10 +351,9 @@ CODE
     {
       # Unhandled tag:
       # Find the line on which this tag occurs:
-      my @lines = split /\r?\n/, ${ $s->file_contents };
       my $line = 0;
       $line++ until $lines[$line] =~ m/\<$tagName\s+/s;
-      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line $line\n";
+      confess "Unhandled tag '$tagName' in '@{[ $s->virtual_path ]}' line @{[ $line + 1 ]}\n";
     }# end if()
     
     # Remove the chunk of code

@@ -148,7 +148,7 @@ sub End
 #  my $sock = $s->context->connection->client_socket;
 #  $sock->close();
 #  eval { $sock->close() };
-  $s->context->{did_end} = 1;
+  $s->context->set_prop( did_end => 1 );
 }# end End()
 
 
