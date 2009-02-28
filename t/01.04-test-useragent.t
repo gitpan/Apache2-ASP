@@ -14,11 +14,23 @@ use_ok('Apache2::ASP::Test::UserAgent');
 my $ua = Apache2::ASP::Test::UserAgent->new(
   config => Apache2::ASP::ConfigLoader->load(),
 );
+my $res = $ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
+$ua->get('/index.asp?somevar=someval');
 
 for( 1...10 )
 {
   my $res = $ua->get('/index.asp?somevar=someval');
-  ok( $res->content );
+  ok( length( $res->content ) => "Length: '" . length($res->content) . "'" );
+
+#warn "Length: '" . length($res->content) . "'";
+
 #warn $res->content . "\n" if $_ == 1;
 }
 

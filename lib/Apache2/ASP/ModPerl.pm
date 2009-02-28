@@ -45,14 +45,18 @@ sub handler : method
       $hook_obj->hook( @_ );
     });
     $context->execute;
-    return 0;
+    return $r->status =~ m/^2/ ? 0 : $r->status;
   }
   else
   {
     my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
-    $context->setup_request( $r, $cgi );
-    $context->execute;
-    return 0;
+    eval {
+      $context->setup_request( $r, $cgi );
+      $context->execute;
+    };
+        
+    return 500 if $@;
+    return $r->status =~ m/^2/ ? 0 : $r->status;
   }# end if()
 }# end handler()
 

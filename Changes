@@ -1,5 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.31  2009-02-19
+  - Apache2::ASP::HTTPContext order of operations during setup_request was updated.
+  - Apache2::ASP::ModPerl returns proper error HTTP codes when errors occur.
+  - Requests for non-existent *.asp scripts returns a proper 404.
+  - Apache2::ASP::HTTPContext copes better with syntax errors in handlers.
+  - Missing handlers are coped with better now.
+
 2.30  2009-02-19
   - Apache2::ASP::ASPPage was misreporting line numbers.
 

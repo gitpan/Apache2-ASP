@@ -95,6 +95,7 @@ sub send_http_headers
   my $disposition = (lc($ext) eq 'pdf') ? 'attachment' : 'inline';
   $file =~ s/\s/_/g;
   $context->response->AddHeader( 'content-disposition' => "$disposition;filename=" . $file . ';yay=yay' );
+  $context->response->AddHeader( 'content-length' => -s $filename );
 }# end send_http_headers()
 
 

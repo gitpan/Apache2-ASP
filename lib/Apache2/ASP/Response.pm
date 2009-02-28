@@ -216,7 +216,7 @@ sub Include
   
   my $ctx = $s->context;
   no strict 'refs';
-  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
+  my $subcontext = local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
   
   my $root = $s->context->config->web->www_root;
   $path =~ s@^\Q$root\E@@;
@@ -233,6 +233,8 @@ sub Include
   {
     $s->Status( $res );
   }# end if()
+  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx;
+  undef( $subcontext );
 }# end Include()
 
 
@@ -261,6 +263,7 @@ sub TrapInclude
   $s->context->response->Flush;
   
   $IS_TRAPINCLUDE = 0;
+  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx;
   return $clone_r->{buffer};
 }# end TrapInclude()
 

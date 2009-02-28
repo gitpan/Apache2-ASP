@@ -73,6 +73,7 @@ PRE {
 <div class="clear"></div>
 <h2>Stacktrace follows below:</h2>
 <div id="code"><pre>@{[ $error->{stacktrace} ]}</pre></div>
+<div style="display: none;">
 </body>
 </html>
 ERROR

@@ -41,6 +41,8 @@ sub new
   
   no strict 'refs';
   ${"$ClassName\::instance"} = $s;
+#  weaken($s);
+  return $s;
 }# end new()
 
 
@@ -62,9 +64,6 @@ sub setup_request
   $s->_setup_headers_in();
   
   $s->{connection}  = $s->r->connection;
-  
-  $s->_load_class( $s->config->web->handler_resolver );
-  $s->{handler} = $s->config->web->handler_resolver->new()->resolve_request_handler( $s->r->uri );
   
   if( ! $s->{parent} )
   {
@@ -98,10 +97,21 @@ sub setup_request
     # Make the global Stash object:
     $s->{stash} = { };
     
-    $s->{global_asa} = $s->resolve_global_asa_class( );
-    $s->{global_asa}->init_asp_objects( $s )
-      unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
   }# end if()
+  
+  $s->_load_class( $s->config->web->handler_resolver );
+  eval {
+    $s->{handler} = $s->config->web->handler_resolver->new()->resolve_request_handler( $s->r->uri );
+  };
+  if( $@ )
+  {
+    $s->server->{LastError} = $@;
+    return $s->handle_error;
+  }# end if()
+
+  $s->{global_asa} = $s->resolve_global_asa_class( );
+  $s->{global_asa}->init_asp_objects( $s )
+    unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
   
   return 1;
 }# end setup_request()
@@ -256,7 +266,6 @@ sub _setup_inc
 sub do_preinit
 {
   my $s = shift;
-  
   
   unless( $s->_is_setup )
   {
@@ -478,6 +487,13 @@ sub AUTOLOAD
 sub DESTROY
 {
   my $s = shift;
+  
+  if( $s->{parent} )
+  {
+    no strict 'refs';
+    ${"$ClassName\::instance"} = delete($s->{parent});
+  }# end if()
+  
   undef(%$s);
 }# end DESTROY()
 
