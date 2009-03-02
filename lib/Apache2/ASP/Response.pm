@@ -72,6 +72,7 @@ sub Status
       if $s->{_did_send_headers};
     
     $s->{_status} = shift;
+    $s->context->r->status( $s->{_status} );
   }
   else
   {
@@ -153,7 +154,7 @@ sub End
 
 
 #==============================================================================
-sub Flush
+sub Flush___OLD
 {
   my ($s) = @_;
   
@@ -166,9 +167,8 @@ sub Flush
     }
     else
     {
-    no strict 'refs';
-    my $parent = $s->context->{parent};
-    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $s->context->{parent};
+      my $parent = $s->context->{parent};
+      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
       return $s->context->response->Flush;
     }# end if()
   }# end if()
@@ -184,27 +184,21 @@ sub Flush
 
 
 #==============================================================================
-our $WRITES = 0;
+sub Flush
+{
+  my $s = shift;
+  
+  $s->context->rflush;
+}# end Flush()
+
+
+#==============================================================================
 sub Write
 {
   my $s = shift;
-  my $ctx = $s->context;
-  return if $ctx->{did_end};
-  
-  if( $ctx->{parent} && ! $IS_TRAPINCLUDE )
-  {
-    no strict 'refs';
-    my $parent = $ctx->{parent};
-    local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx->{parent};
-    $ctx->response->Write( @_ );
-  }
-  else
-  {
-    no warnings 'uninitialized';
-    $s->{_buffer_length} += length($_[0]);
-    push @{$s->{_output_buffer}}, shift;
-    $s->Flush if (! $s->{_do_buffer}) || $s->{_buffer_length} >= $MAX_BUFFER_LENGTH;
-  }# end if()
+  return unless defined($_[0]);
+
+  $s->context->print( shift );
 }# end Write()
 
 
@@ -214,9 +208,10 @@ sub Include
   my ($s, $path, $args) = @_;
   return if $s->context->{did_end};
   
+  use Apache2::ASP::HTTPContext::SubContext;
+  
   my $ctx = $s->context;
-  no strict 'refs';
-  my $subcontext = local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
+  my $subcontext = Apache2::ASP::HTTPContext::SubContext->new( parent => $ctx );
   
   my $root = $s->context->config->web->www_root;
   $path =~ s@^\Q$root\E@@;
@@ -227,19 +222,53 @@ sub Include
   use Apache2::ASP::Mock::RequestRec;
   my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
   $clone_r->uri( $path );
-  $s->context->setup_request( $clone_r, $ctx->cgi );
-  my $res = $s->context->execute( $args );
+  $subcontext->setup_request( $clone_r, $ctx->cgi );
+  my $res = $subcontext->execute( $args );
+  $ctx->print( $subcontext->{r}->{buffer} );
+  $subcontext->DESTROY;
+
   if( $res > 200 )
   {
     $s->Status( $res );
   }# end if()
-  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx;
+
   undef( $subcontext );
 }# end Include()
 
 
 #==============================================================================
 sub TrapInclude
+{
+  my ($s, $path, $args) = @_;
+  return if $s->context->{did_end};
+  
+  use Apache2::ASP::HTTPContext::SubContext;
+  
+  my $ctx = $s->context;
+  my $subcontext = Apache2::ASP::HTTPContext::SubContext->new( parent => $ctx );
+  
+  my $root = $s->context->config->web->www_root;
+  $path =~ s@^\Q$root\E@@;
+  local $ENV{REQUEST_URI} = $path;
+  local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
+  local $ENV{SCRIPT_NAME} = $path;
+  
+  use Apache2::ASP::Mock::RequestRec;
+  my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
+  $clone_r->uri( $path );
+  $subcontext->setup_request( $clone_r, $ctx->cgi );
+  my $res = $subcontext->execute( $args );
+  my $result = $subcontext->{r}->{buffer};
+#  $ctx->print( $subcontext->{r}->{buffer} );
+  $subcontext->DESTROY;
+
+  undef( $subcontext );
+  return $result;
+}# end TrapInclude()
+
+
+#==============================================================================
+sub TrapInclude___OLD
 {
   my ($s, $path, $args) = @_;
   return if $s->context->{did_end};

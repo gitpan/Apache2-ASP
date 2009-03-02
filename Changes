@@ -1,5 +1,12 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.32  2009-03-01
+  - Added Apache2::ASP::HTTPContext::SubContext
+  - Added t/htdocs/subcontext/*.asp
+  - Added t/handlers/simple.pm
+  - Re-worked the way Response.Include and Response.TrapInclude work on the inside.
+  - No external changes were made.
+
 2.31  2009-02-19
   - Apache2::ASP::HTTPContext order of operations during setup_request was updated.
   - Apache2::ASP::ModPerl returns proper error HTTP codes when errors occur.

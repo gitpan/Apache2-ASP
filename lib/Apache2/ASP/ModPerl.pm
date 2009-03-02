@@ -20,14 +20,13 @@ sub handler : method
 {
   my ($class, $r) = @_;
   
-  my $context = $Apache2::ASP::HTTPContext::ClassName->new( );
+  my $context = Apache2::ASP::HTTPContext->new( );
   
   if( uc($ENV{REQUEST_METHOD}) eq 'POST' && lc($ENV{CONTENT_TYPE}) =~ m@multipart/form-data@ )
   {
     $context->_load_class( $context->config->web->handler_resolver );
     my $handler_class = $context->config->web->handler_resolver->new()->resolve_request_handler( $r->uri );
     $context->_load_class( $handler_class );
-#    my $handler_class = $context->resolve_request_handler( $r->uri );
     unless( $ENV{QUERY_STRING} =~ m/mode\=[a-z0-9_]+/ )
     {
       die "All UploadHandlers require a querystring parameter 'mode' to be specified when uploading!";
@@ -49,12 +48,13 @@ sub handler : method
   }
   else
   {
-    my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
     eval {
+      my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
       $context->setup_request( $r, $cgi );
       $context->execute;
     };
-        
+    warn $@ if $@;
+    
     return 500 if $@;
     return $r->status =~ m/^2/ ? 0 : $r->status;
   }# end if()

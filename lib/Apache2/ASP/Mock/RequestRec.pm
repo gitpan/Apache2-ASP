@@ -12,7 +12,7 @@ use Apache2::ASP::Mock::Pool;
 sub new
 {
   my ($class) = shift;
-  
+
   return bless {
     buffer            => '',
     uri               => '',
@@ -146,8 +146,6 @@ sub send_headers
 {
   my $s = shift;
   
-#  confess "Already sent headers"
-#    if $s->{"_sent_headers:$ENV{SCRIPT_FILENAME}"}++;
   my $buffer = delete($s->{buffer});
   $s->print( join "\n", map { "$_: $s->{headers_out}->{$_}" } keys(%{$s->{headers_out}}) );
   $s->{buffer} = $buffer;

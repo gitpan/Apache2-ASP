@@ -23,8 +23,7 @@ sub current
 {
   my $class = shift;
   
-  no strict 'refs';
-  return ${"$ClassName\::instance"};
+  return $instance;
 }# end current()
 
 
@@ -34,15 +33,11 @@ sub new
   my ($class, %args) = @_;
   
   my $s = bless {
-    %args,
-    config  => $args{parent} ? undef : Apache2::ASP::ConfigLoader->load(),
+    config  => Apache2::ASP::ConfigLoader->load(),
   }, $class;
   $s->config->_init_inc();
   
-  no strict 'refs';
-  ${"$ClassName\::instance"} = $s;
-#  weaken($s);
-  return $s;
+  return $instance = $s;
 }# end new()
 
 
@@ -198,9 +193,6 @@ sub execute
   
   unless( $s->{parent} )
   {
-    # Set up our @INC:
-    $s->_setup_inc();
-    
     if( defined(my $res = $s->do_preinit) )
     {
       return $res;
@@ -237,13 +229,13 @@ sub execute
   
   $s->response->Flush;
   my $res = $s->{parent} ? $s->response->Status : $s->end_request();
-  if( $s->page && $s->page->directives->{OutputCache} && defined($s->{_cache_buffer}) )
-  {
-    if( $res == 200 || $res == 0 )
-    {
-      $s->page->_write_cache( \$s->{_cache_buffer} );
-    }# end if()
-  }# end if()
+#  if( $s->page && $s->page->directives->{OutputCache} && defined($s->{_cache_buffer}) )
+#  {
+#    if( $res == 200 || $res == 0 )
+#    {
+#      $s->page->_write_cache( \$s->{_cache_buffer} );
+#    }# end if()
+#  }# end if()
   
   $res = 0 if $res =~ m/^200/;
   return $res;
@@ -410,7 +402,6 @@ sub handler      { $_[0]->{handler}               }
 sub connection   { $_[0]->{connection}            }
 sub page         { $_[0]->{page}                  }
 
-# Need to get this figured out:
 sub headers_in   { shift->get_prop('headers_in') }
 sub send_headers
 {
@@ -418,9 +409,10 @@ sub send_headers
   return if $s->{_did_send_headers};
   
   my $headers = $s->get_prop('headers_out');
+  my $r = $s->get_prop('r');
   while( my ($k,$v) = each(%$headers) )
   {
-    $s->get_prop('r')->headers_out->{$k} = $v;
+    $r->headers_out->{$k} = $v;
   }# end while()
   
   $s->{_did_send_headers}++;
@@ -428,13 +420,29 @@ sub send_headers
 
 sub headers_out  { shift->get_prop('headers_out') }
 sub content_type { shift->get_prop('r')->content_type( @_ ) }
+
+
 sub print
 {
   my ($s, $str) = @_;
-  $s->{_cache_buffer} .= $str;
-  $s->r->print( $str );
+  
+  return unless defined($str);
+  $s->{r}->print( $str );
 }# end print()
-sub rflush       { shift->{r}->rflush( @_ )       }
+
+
+
+#==============================================================================
+sub rflush
+{
+  my $s = shift;
+  
+  $s->send_headers
+    unless $s->did_send_headers;
+  
+  $s->{r}->rflush();
+}# end rflush()
+
 sub did_send_headers { shift->get_prop('_did_send_headers') }
 
 
@@ -487,12 +495,6 @@ sub AUTOLOAD
 sub DESTROY
 {
   my $s = shift;
-  
-  if( $s->{parent} )
-  {
-    no strict 'refs';
-    ${"$ClassName\::instance"} = delete($s->{parent});
-  }# end if()
   
   undef(%$s);
 }# end DESTROY()

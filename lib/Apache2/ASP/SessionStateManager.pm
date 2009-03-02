@@ -62,8 +62,13 @@ sub parse_session_id
   my ($s) = @_;
   
   my $cookiename = $s->context->config->data_connections->session->cookie_name;
+
   no warnings 'uninitialized';
   if( my ($id) = $ENV{HTTP_COOKIE} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
+  {
+    return $id;
+  }
+  elsif( ($id) = $s->context->r->headers_in->{Cookie} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
   {
     return $id;
   }

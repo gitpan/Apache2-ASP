@@ -28,6 +28,7 @@ lib/Apache2/ASP/HTTPContext.pm
 lib/Apache2/ASP/HTTPContext/FilterResolver.pm
 lib/Apache2/ASP/HTTPContext/HandlerResolver.pm
 lib/Apache2/ASP/HTTPContext/HandlerRunner.pm
+lib/Apache2/ASP/HTTPContext/SubContext.pm
 lib/Apache2/ASP/SessionStateManager/MySQL.pm
 lib/Apache2/ASP/SessionStateManager/SQLite.pm
 lib/Apache2/ASP/SessionStateManager/NonPersisted.pm
@@ -63,6 +64,7 @@ lib/Apache2/ASP/SessionStateManager.pm
 lib/Apache2/ASP.pm
 t/sessiontest
 t/00.00-setup.t
+t/00.01-subcontext.t
 t/01.00-a-memory-leak.t
 t/01.01-load.t
 t/01.01-master-recursive.t
@@ -99,9 +101,19 @@ t/htdocs/inc.asp
 t/htdocs/masters/main.asp
 t/htdocs/masters/root.asp
 t/htdocs/masters/nested-master.asp
+t/htdocs/subcontext/inc1-1.asp
+t/htdocs/subcontext/inc1.asp
+t/htdocs/subcontext/trapinclude.asp
+t/htdocs/subcontext/normal.asp
+t/htdocs/subcontext/inc2b.asp
+t/htdocs/subcontext/trapped.asp
+t/htdocs/subcontext/include-2-levels-deep.asp
+t/htdocs/subcontext/include-1-level-deep.asp
+t/htdocs/subcontext/inc2a.asp
 t/htdocs/include-at-end.asp
 t/htdocs/cleanup-register.asp
 t/handlers/upload01.pm
+t/handlers/simple.pm
 t/lib/My/ErrorHandler.pm
 t/lib/My/MemberFilter.pm
 t/lib/My/MemberFilter2.pm

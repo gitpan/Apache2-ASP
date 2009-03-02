@@ -178,7 +178,7 @@ sub get
   $r->args( $cgi->{querystring} );
   $r->{headers_in}->{Cookie} = $ENV{HTTP_COOKIE};
   
-  $s->context->setup_request( $r, $cgi );
+  $s->context->setup_request( $r, $cgi );  
   
   return $s->_setup_response( $s->context->execute() );
 }# end get()
