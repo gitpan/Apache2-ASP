@@ -6,6 +6,7 @@ use warnings 'all';
 use Carp 'confess';
 use Apache2::ASP::Mock::Connection;
 use Apache2::ASP::Mock::Pool;
+use HTTP::Headers;
 
 
 #==============================================================================
@@ -13,10 +14,10 @@ sub new
 {
   my ($class) = shift;
 
-  return bless {
+  my $s = bless {
     buffer            => '',
     uri               => '',
-    headers_out       => { },
+    headers_out       => HTTP::Headers->new,
     headers_in        => { },
     pnotes            => { },
     status            => 200,
@@ -24,6 +25,8 @@ sub new
     pool              => Apache2::ASP::Mock::Pool->new(),
     connection        => Apache2::ASP::Mock::Connection->new(),
   }, $class;
+  $s->{err_headers_out} = $s->{headers_out};
+  return $s;
 }# end new()
 
 

@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.33  2009-03-03
+  - HTTP headers out were having issues.
+
 2.32  2009-03-01
   - Added Apache2::ASP::HTTPContext::SubContext
   - Added t/htdocs/subcontext/*.asp

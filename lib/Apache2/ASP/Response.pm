@@ -328,7 +328,16 @@ sub AddHeader
   
   return unless defined($name) && defined($val);
   
-  $s->context->headers_out->push_header( $name => $val );
+  return $s->context->headers_out->{ $name } = $val;
+  
+  if( $s->context->headers_out->can('header') )
+  {
+    $s->context->headers_out->header( $name => $val );
+  }
+  else
+  {
+    $s->context->r->headers_out->add( $name => $val );
+  }# end if()
 }# end AddHeader()
 
 

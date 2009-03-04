@@ -412,7 +412,7 @@ sub send_headers
   my $r = $s->get_prop('r');
   while( my ($k,$v) = each(%$headers) )
   {
-    $r->headers_out->{$k} = $v;
+    $r->err_headers_out->{$k} = $v;
   }# end while()
   
   $s->{_did_send_headers}++;
