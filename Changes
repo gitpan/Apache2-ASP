@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.34  2009-03-03
+  - Was setting content-length header twice in MediaManager.
+
 2.33  2009-03-03
   - HTTP headers out were having issues.
 

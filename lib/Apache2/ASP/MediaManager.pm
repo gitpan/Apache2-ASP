@@ -89,17 +89,13 @@ sub send_http_headers
   my ($s, $context, $filename, $file, $ext) = @_;
   
   # Send the 'content-length' header:
-  $context->response->AddHeader( 'Content-Length' => -s $filename );
+  $context->r->err_headers_out->{'Content-Length'} = (stat($filename))[7];
   
   # PDF files should force the "Save file as..." dialog:
   my $disposition = (lc($ext) eq 'pdf') ? 'attachment' : 'inline';
   $file =~ s/\s/_/g;
   
   $context->r->err_headers_out->{'content-disposition'} = "$disposition;filename=" . $file . ';yay=yay';
-  $context->r->err_headers_out->{'content-length'} = -s $filename;
-  
-#  $context->response->AddHeader( 'content-disposition' => "$disposition;filename=" . $file . ';yay=yay' );
-#  $context->response->AddHeader( 'content-length' => -s $filename );
 }# end send_http_headers()
 
 
