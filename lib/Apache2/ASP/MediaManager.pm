@@ -68,9 +68,18 @@ sub run
   $s->send_http_headers($context, $filename, $file, $ext);
   
   # Print the file out:
-  while( my $line = <$ifh> )
+  if( (stat($ifh))[7] < 1024 ** 2 )
   {
-    $context->response->Write( $line );
+    # File is < 1M, so just slurp and print:
+    local $/;
+    $context->response->Write( scalar(<$ifh>) );
+  }
+  else
+  {
+    while( my $line = <$ifh> )
+    {
+      $context->response->Write( $line );
+    }# end while()
   }# end while()
   $context->response->Flush;
   

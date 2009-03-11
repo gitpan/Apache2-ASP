@@ -39,11 +39,14 @@ sub handler : method
     # Magickally pass in a reference to the $cgi object before it exists.
     # Yes, this is Perl.
     our ( $R, $CGI ) = ($r, undef);
-    my $cgi = $CGI = Apache2::ASP::ModPerl2CGI->new( $r, sub {
-      $context->setup_request( $r, \$CGI) unless $context->_is_setup;
-      $hook_obj->hook( @_ );
-    });
-    $context->execute;
+    eval {
+      my $cgi = $CGI = Apache2::ASP::ModPerl2CGI->new( $r, sub {
+        $context->setup_request( $r, \$CGI) unless $context->_is_setup;
+        $hook_obj->hook( @_ );
+      });
+      $context->execute;
+    };
+    warn $@ if $@;
     return $r->status =~ m/^2/ ? 0 : $r->status;
   }
   else

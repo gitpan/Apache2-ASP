@@ -18,11 +18,6 @@ sub new
   
   $class = ref($class) || $class;
   my $s = bless \%args, $class;
-#  my $ref = '';
-#  open my $ofh, '>', \$ref
-#    or die "Cannot open in-memory filehandle: $!";
-#  $s->{out_fh} = $ofh;
-#  $s->{out_ref} = \$ref;
   
   $Apache2::ASP::HTTPContext::instance = $s;
   return $s;
@@ -51,7 +46,7 @@ sub setup_request
 sub execute
 {
   my ($s, $args) = @_;
-  local $SIG{__DIE__} = \&Carp::confess;
+#  local $SIG{__DIE__} = \&Carp::confess;
   
   $s->_load_class( $s->config->web->handler_runner );
   eval {

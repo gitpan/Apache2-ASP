@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Apache2-ASP
-version:            2.34
+version:            2.35
 abstract:           ASP for Perl, reloaded.
 author:
     - John Drago <jdrago_999@yahoo.com>

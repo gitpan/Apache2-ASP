@@ -3,6 +3,7 @@ package Apache2::ASP::HTTPContext::HandlerResolver;
 
 use strict;
 use warnings 'all';
+my %HandlerCache = ( );
 
 
 #==============================================================================
@@ -24,18 +25,19 @@ sub resolve_request_handler
   my ($s, $uri) = @_;
   
   ($uri) = split /\?/, $uri;
+  return $HandlerCache{$uri} if $HandlerCache{$uri};
   if( $uri =~ m/^\/handlers\// )
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
     $handler =~ s/[^a-z0-9_]/::/gi;
     $s->context->_load_class( $handler );
-    return $handler;
+    return $HandlerCache{$uri} = $handler;
   }
   else
   {
     my $handler = 'Apache2::ASP::ASPHandler';
     $s->context->_load_class( $handler );
-    return $handler;
+    return $HandlerCache{$uri} = $handler;
   }# end if()
 }# end resolve_request_handler()
 

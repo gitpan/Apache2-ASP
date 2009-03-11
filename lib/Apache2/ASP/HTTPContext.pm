@@ -189,32 +189,29 @@ sub do_disable_application_state
 sub execute
 {
   my ($s, $args) = @_;
-  local $SIG{__DIE__} = \&Carp::confess;
+#  local $SIG{__DIE__} = \&Carp::confess;
   
-  unless( $s->{parent} )
+  if( defined(my $preinit_res = $s->do_preinit) )
   {
-    if( defined(my $res = $s->do_preinit) )
+    return $preinit_res;
+  }# end if()
+  
+  # Set up and execute any matching request filters:
+  my $resolver = $s->config->web->filter_resolver;
+  $s->_load_class( $resolver );
+  foreach my $filter ( $resolver->new()->resolve_request_filters( $s->r->uri ) )
+  {
+    $s->_load_class( $filter->class );
+    $filter->class->init_asp_objects( $s );
+    my $res = $s->handle_phase(sub{ $filter->class->new()->run( $s ) });
+    if( defined($res) && $res != -1 )
     {
       return $res;
     }# end if()
-    
-    # Set up and execute any matching request filters:
-    my $resolver = $s->config->web->filter_resolver;
-    $s->_load_class( $resolver );
-    foreach my $filter ( $resolver->new()->resolve_request_filters( $s->r->uri ) )
-    {
-      $s->_load_class( $filter->class );
-      $filter->class->init_asp_objects( $s );
-      my $res = $s->handle_phase(sub{ $filter->class->new()->run( $s ) });
-      if( defined($res) && $res != -1 )
-      {
-        return $res;
-      }# end if()
-    }# end foreach()
-    
-    my $res = $s->handle_phase( $s->global_asa->can('Script_OnStart') );
-    return $res if defined( $res );
-  }# end unless()
+  }# end foreach()
+  
+  my $start_res = $s->handle_phase( $s->global_asa->can('Script_OnStart') );
+  return $start_res if defined( $start_res );
   
   $s->_load_class( $s->config->web->handler_runner );
   eval {
