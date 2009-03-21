@@ -29,7 +29,7 @@ sub AUTOLOAD
     $_->{name} eq $name
   } @{ $s->{setting} };
   
-  defined($val) or return;
+#  defined($val) or return;
   return $val->{value};
 }# end AUTOLOAD()
 

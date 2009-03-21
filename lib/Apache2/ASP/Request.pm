@@ -39,25 +39,31 @@ sub Form
   my $s = shift;
   
   local $SIG{__DIE__} = \&Carp::confess;
-  my $cgi = $s->context->cgi;
-  my $form = { };
-  foreach my $param ( $cgi->param )
+  if( my $cgi = $s->context->cgi )
   {
-    if( exists($form->{$param}) )
+    my $form = { };
+    foreach my $param ( $cgi->param )
     {
-      # We've already seen this param:
-      my $data = delete($form->{$param});
-      # Make it into an arrayref unless it already is:
-      $data = [ $data ] unless ref($data) eq 'ARRAY';
-      push @$data, $cgi->param($param);
-      $form->{$param} = $data;
-    }
-    else
-    {
-      $form->{$param} = $cgi->param($param);
-    }# end if()
-  }# end foreach()
-  return $s->{_form} = $form;
+      if( exists($form->{$param}) )
+      {
+        # We've already seen this param:
+        my $data = delete($form->{$param});
+        # Make it into an arrayref unless it already is:
+        $data = [ $data ] unless ref($data) eq 'ARRAY';
+        push @$data, $cgi->param($param);
+        $form->{$param} = $data;
+      }
+      else
+      {
+        $form->{$param} = $cgi->param($param);
+      }# end if()
+    }# end foreach()
+    return $s->{_form} = $form;
+  }
+  else
+  {
+#    return $s->{_form} || { };
+  }# end if()
 }# end Form()
 
 
@@ -87,6 +93,7 @@ sub Cookies
   @_ ? $out{$_[0]} : \%out;
 }# end Cookies()
 
+=pod
 
 #==============================================================================
 sub FileUpload
@@ -143,6 +150,8 @@ sub FileUpload
   }# end if()
 
 }# end FileUpload()
+
+=cut
 
 
 #==============================================================================

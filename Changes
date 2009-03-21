@@ -1,5 +1,15 @@
 Revision history for Perl extension Apache2::ASP.
 
+
+2.36  2009-03-21
+  - MediaManager updates.  pnotes has proven unstable.
+  - Upgraded to Module::Install.
+  - Restructured tests into numerically sequential folders.
+  - Added several tests to improve code-coverage.
+  - Removed some unused code from Response.
+  - Server.URLDecode now does the Right Thing for utf-8 characters.
+  - Added 'encoding' from 'Encode' as a prerequisite.
+
 2.35  2009-03-11
   - Minor updates here and there.
 

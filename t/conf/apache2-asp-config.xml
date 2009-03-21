@@ -56,11 +56,11 @@
     <handler_runner>Apache2::ASP::HTTPContext::HandlerRunner</handler_runner>
     <filter_resolver>Apache2::ASP::HTTPContext::FilterResolver</filter_resolver>
     <request_filters>
-<!--
       <filter>
         <uri_match>/.*</uri_match>
         <class>My::MemberFilter</class>
       </filter>
+<!--
       <filter>
         <uri_equals>/index.asp</uri_equals>
         <class>My::MemberFilter2</class>

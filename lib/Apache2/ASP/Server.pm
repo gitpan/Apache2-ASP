@@ -4,6 +4,7 @@ package Apache2::ASP::Server;
 use strict;
 use warnings 'all';
 use Mail::Sendmail;
+use encoding 'utf8';
 
 
 #==============================================================================
@@ -51,7 +52,7 @@ sub URLDecode
   return unless defined($todecode);
   $todecode =~ tr/+/ /;       # pluses become spaces
   $todecode =~ s/%(?:([0-9a-fA-F]{2})|u([0-9a-fA-F]{4}))/
-  defined($1)? chr hex($1) : utf8_chr(hex($2))/ge;
+  defined($1)? chr hex($1) : _utf8_chr(hex($2))/ge;
   return $todecode;
 }# end URLDecode()
 
@@ -114,6 +115,17 @@ sub RegisterCleanup
   # This works both in "testing" mode and within a live mod_perl environment.
   $s->context->get_prop('r')->pool->cleanup_register( $sub, \@args );
 }# end RegisterCleanup()
+
+
+#==============================================================================
+sub _utf8_chr
+{
+  my ($c) = @_;
+  require utf8;
+  my $u = chr($c);
+  utf8::encode($u); # drop utf8 flag
+  return $u;
+}# end _utf8_chr()
 
 
 #==============================================================================

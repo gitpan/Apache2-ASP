@@ -13,6 +13,10 @@ sub run
   my ($s, $context) = @_;
   
   $Response->Write( $Stash->{error}->{stacktrace} );
+  
+  eval {
+    $s->SUPER::run( $context );
+  };
 }# end run()
 
 1;# return true:

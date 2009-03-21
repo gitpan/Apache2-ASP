@@ -37,20 +37,16 @@ DESCRIPTION
 
     This rewrite had a few major goals:
 
-    *   Master Pages
-
+    * Master Pages
         Like ASP.Net has, including nested Master Pages.
 
-    *   Partial-page caching
-
+    * Partial-page caching
         Like ASP.Net has.
 
-    *   Better configuration
-
+    * Better configuration
         The original config format was unsatisfactory.
 
-    *   Handle multiple VirtualHosts better.
-
+    * Handle multiple VirtualHosts better.
         Configuration was the root of this problem.
 
         NOTE: If you use an ORM, make sure your ORM doesn't have any
@@ -60,8 +56,7 @@ DESCRIPTION
         configuration overlap problems which arise when you have 2 tables
         with the same name in 2 different databases.
 
-    *   Better performance
-
+    * Better performance
         Server resources were being wasted on unnecessary activities like
         storing session state even when it had not changed, etc.
 

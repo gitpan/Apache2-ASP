@@ -1,5 +1,5 @@
 
-package My::MemberFilter;
+package My::FailFilter;
 
 use strict;
 use warnings 'all';
@@ -10,7 +10,7 @@ sub run
 {
   my ($s, $context) = @_;
   
-  return $Response->Declined;
+  return $Response->Redirect('/no-way-jose/');
 }# end run()
 
 1;# return true:

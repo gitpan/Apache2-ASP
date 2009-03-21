@@ -46,11 +46,7 @@ sub setup_request
 {
   my ($s, $requestrec, $cgi) = @_;
   
-  if( ! $s->{parent} )
-  {
-    $s->{_is_setup}++;
-    confess "No '\$cgi' argument passed" unless $cgi;
-  }# end if()
+  $s->{_is_setup}++;
   
   $s->{r} = $requestrec;
   $s->{cgi} = $cgi;
@@ -60,39 +56,42 @@ sub setup_request
   
   $s->{connection}  = $s->r->connection;
   
-  if( ! $s->{parent} )
+  $s->{response} = Apache2::ASP::Response->new();
+  $s->{request}  = Apache2::ASP::Request->new();
+  $s->{server}   = Apache2::ASP::Server->new();
+
+  my $conns = $s->config->data_connections;
+  if( $s->do_disable_application_state )
   {
-    $s->{response} = Apache2::ASP::Response->new();
-    $s->{request}  = Apache2::ASP::Request->new();
-    $s->{server}   = Apache2::ASP::Server->new();
-  
-    my $conns = $s->config->data_connections;
-    if( $s->do_disable_application_state )
-    {
-      $s->{application} = Apache2::ASP::ApplicationStateManager::NonPersisted->new();
-    }
-    else
-    {
-      my $app_manager = $conns->application->manager;
-      $s->_load_class( $app_manager );
-      $s->{application} = $app_manager->new();
-    }# end if()
-    
-    if( $s->do_disable_session_state )
-    {
-      $s->{session} = Apache2::ASP::SessionStateManager::NonPersisted->new();
-    }
-    else
-    {
-      my $session_manager = $conns->session->manager;
-      $s->_load_class( $session_manager );
-      $s->{session} = $session_manager->new();
-    }# end if()
-    
-    # Make the global Stash object:
-    $s->{stash} = { };
-    
+    $s->{application} = Apache2::ASP::ApplicationStateManager::NonPersisted->new();
+  }
+  else
+  {
+    my $app_manager = $conns->application->manager;
+    $s->_load_class( $app_manager );
+    $s->{application} = $app_manager->new();
   }# end if()
+  
+  if( $s->do_disable_session_state )
+  {
+    $s->{session} = Apache2::ASP::SessionStateManager::NonPersisted->new();
+  }
+  else
+  {
+    my $session_manager = $conns->session->manager;
+    $s->_load_class( $session_manager );
+    $s->{session} = $session_manager->new();
+  }# end if()
+  
+  # Make the global Stash object:
+  $s->{stash} = { };
+    
+  $s->{global_asa} = $s->resolve_global_asa_class( );
+  {
+    no warnings 'uninitialized';
+    $s->{global_asa}->init_asp_objects( $s )
+      unless $s->r->headers_in->{'content-type'} =~ m/multipart/;
+  }
   
   $s->_load_class( $s->config->web->handler_resolver );
   eval {
@@ -103,10 +102,6 @@ sub setup_request
     $s->server->{LastError} = $@;
     return $s->handle_error;
   }# end if()
-
-  $s->{global_asa} = $s->resolve_global_asa_class( );
-  $s->{global_asa}->init_asp_objects( $s )
-    unless $s->{handler}->isa('Apache2::ASP::UploadHandler');
   
   return 1;
 }# end setup_request()
@@ -189,6 +184,7 @@ sub do_disable_application_state
 sub execute
 {
   my ($s, $args) = @_;
+
 #  local $SIG{__DIE__} = \&Carp::confess;
   
   if( defined(my $preinit_res = $s->do_preinit) )
@@ -225,7 +221,7 @@ sub execute
   }# end if()
   
   $s->response->Flush;
-  my $res = $s->{parent} ? $s->response->Status : $s->end_request();
+  my $res = $s->end_request();
 #  if( $s->page && $s->page->directives->{OutputCache} && defined($s->{_cache_buffer}) )
 #  {
 #    if( $res == 200 || $res == 0 )
@@ -240,15 +236,15 @@ sub execute
 
 
 #==============================================================================
-sub _setup_inc
-{
-  my $s = shift;
-
-  my $www_root = $s->config->web->www_root;
-  push @INC, $www_root unless grep { $_ eq $www_root } @INC;
-  my %libs = map { $_ => 1 } @INC;
-  push @INC, grep { ! $libs{$_} } $s->config->system->libs;
-}# end _setup_inc()
+#sub _setup_inc
+#{
+#  my $s = shift;
+#
+#  my $www_root = $s->config->web->www_root;
+#  push @INC, $www_root unless grep { $_ eq $www_root } @INC;
+#  my %libs = map { $_ => 1 } @INC;
+#  push @INC, grep { ! $libs{$_} } $s->config->system->libs;
+#}# end _setup_inc()
 
 
 #==============================================================================
@@ -394,7 +390,14 @@ sub global_asa   { $_[0]->get_prop('global_asa')            }
 sub _is_setup    { $_[0]->get_prop('_is_setup')            }
 
 sub r            { $_[0]->{r}                     }
-sub cgi          { $_[0]->{cgi}                   }
+sub cgi
+{
+  my $s = shift;
+  $s->{cgi} ||= Apache2::ASP::SimpleCGI->new(
+    querystring => $s->r->args
+  );
+  return $s->{cgi};
+}
 sub handler      { $_[0]->{handler}               }
 sub connection   { $_[0]->{connection}            }
 sub page         { $_[0]->{page}                  }

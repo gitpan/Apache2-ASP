@@ -47,21 +47,20 @@ sub init_server_root
 {
   my ($s, $root) = @_;
   
+  no warnings 'uninitialized';
   foreach( @{ $s->{system}->{libs}->{lib} } )
   {
     $_ =~ s/\@ServerRoot\@/$root/;
   }# end foreach()
   
-  foreach( %{ $s->{web}->{settings} } )
+  foreach( @{ $s->{system}->{settings}->{setting} } )
   {
-    next unless exists(($s->{web}->{settings}->{$_})) && defined($s->{web}->{settings}->{$_});
-    $s->{web}->{settings}->{$_} =~ s/\@ServerRoot\@/$root/;
+    $_->{value} =~ s/\@ServerRoot\@/$root/;
   }# end foreach()
   
   foreach my $key (qw/ application handler media_manager_upload www page_cache /)
   {
-    $s->{web}->{"$key\_root"} =~ s/\@ServerRoot\@/$root/
-      if $s->{web}->{"$key\_root"};
+    $s->{web}->{"$key\_root"} =~ s/\@ServerRoot\@/$root/;
   }# end foreach()
 }# end init_server_root()
 
@@ -72,7 +71,8 @@ sub load_class
   my ($s, $class) = @_;
   
   (my $file = "$class.pm") =~ s/::/\//g;
-  eval { require $file unless $INC{$file}; 1 } or confess "Cannot load $class: $@";
+  eval { require $file unless $INC{$file}; 1 }
+    or confess "Cannot load $class: $@";
 }# end load_class()
 
 

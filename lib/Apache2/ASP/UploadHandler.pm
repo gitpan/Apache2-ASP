@@ -18,7 +18,7 @@ sub upload_start
   $LastPercent = $Upload->{percent_complete} || 0;
   my $uploadID = $s->_args('uploadID');
   $context->session->{"upload$uploadID$_"} = $Upload->{$_}
-    foreach keys(%$Upload);
+    foreach grep { $_ !~ m/data/ } keys(%$Upload);
   $context->session->save;
 }# end upload_start()
 
@@ -47,12 +47,10 @@ sub upload_hook
   if( $Diff >= 1 || $PercentDiff >= 5 )
   {
     my $uploadID = $s->_args('uploadID') || '';
-#warn "uploadID: '" . $uploadID . "'";
-#warn "SAVING SESSION!: $Diff $Upload->{percent_complete}%";
     # Store everything in the session except for the data 
     # (since that could be too large to serialize quickly):
     $context->session->{"upload$uploadID$_"} = $Upload->{$_}
-      foreach grep { $_ ne 'data' } keys(%$Upload);
+      foreach grep { $_ !~ m/data/ } keys(%$Upload);
     $context->session->save;
     $LastUpdate = time();
     $LastPercent = $Upload->{percent_complete};

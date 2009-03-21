@@ -5,9 +5,8 @@ use strict;
 use warnings 'all';
 use HTTP::Date qw( time2iso str2time time2str );
 use Carp qw( croak confess );
-use HTTP::Headers;
-#use Scalar::Util 'weaken';
 use Apache2::ASP::Mock::RequestRec;
+use Apache2::ASP::HTTPContext::SubContext;
 
 our $MAX_BUFFER_LENGTH = 1024 ** 2;
 
@@ -20,18 +19,14 @@ sub new
   my ($class, %args) = @_;
   
   delete($args{context});
-  # Just guessing:
   my $s = bless {
-#    %args,
     _status           => 200,
     _output_buffer    => [ ],
     _do_buffer        => 1,
     _buffer_length    => 0,
-    _did_send_headers => 0,
   }, $class;
-  $s->ContentType('text/html');
-  
-  $s->Expires( $args{_expires} || 0 );
+  $s->ContentType('text/html'); 
+  $s->Expires( 0 );
   return $s;
 }# end new()
 
@@ -51,7 +46,7 @@ sub ContentType
   if( @_ )
   {
     confess "Response.ContentType cannot be changed after headers have been sent"
-      if $s->{_did_send_headers};
+      if $s->context->{_did_send_headers};
     $s->context->content_type( shift );
   }
   else
@@ -69,7 +64,7 @@ sub Status
   if( @_ )
   {
     confess "Response.Status cannot be changed after headers have been sent"
-      if $s->{_did_send_headers};
+      if $s->context->{_did_send_headers};
     
     $s->{_status} = shift;
     $s->context->r->status( $s->{_status} );
@@ -108,7 +103,6 @@ sub ExpiresAbsolute
   {
     $s->DeleteHeader('expires');
     $s->{_expires_absolute} = $when;
-#    $s->AddHeader( expires => shift );
   }
   else
   {
@@ -130,12 +124,13 @@ sub Redirect
   my ($s, $url) = @_;
   
   confess "Response.Redirect cannot be called after headers have been sent"
-    if $s->{_did_send_headers};
+    if $s->context->{_did_send_headers};
   
   $s->Clear;
   $s->AddHeader( location => $url );
   $s->Status( 302 );
   $s->End;
+  return 302; # New behavior - used to return '1':
 }# end Redirect()
 
 
@@ -145,42 +140,8 @@ sub End
   my $s = shift;
   
   $s->Flush;
-  # Cancel execution and force the server to stop processing this request.
-#  my $sock = $s->context->connection->client_socket;
-#  $sock->close();
-#  eval { $sock->close() };
   $s->context->set_prop( did_end => 1 );
 }# end End()
-
-
-#==============================================================================
-sub Flush___OLD
-{
-  my ($s) = @_;
-  
-  if( $s->context->{parent} )
-  {
-    if( $IS_TRAPINCLUDE )
-    {
-      # Do nothing:
-      # We are not flushing - we are doing a Response.TrapInclude(...)
-    }
-    else
-    {
-      my $parent = $s->context->{parent};
-      local $Apache2::ASP::HTTPContext::instance = $s->context->{parent};
-      return $s->context->response->Flush;
-    }# end if()
-  }# end if()
-  return unless $s->IsClientConnected;
-  $s->_send_headers unless $s->context->did_send_headers;
-  
-  no warnings 'uninitialized';
-  $s->context->print( join '', @{delete($s->{_output_buffer})} );
-  $s->context->rflush;
-  $s->{_output_buffer} = [ ];
-  $s->{_buffer_length} = 0;
-}# end Flush()
 
 
 #==============================================================================
@@ -207,8 +168,6 @@ sub Include
 {
   my ($s, $path, $args) = @_;
   return if $s->context->{did_end};
-  
-  use Apache2::ASP::HTTPContext::SubContext;
   
   my $ctx = $s->context;
   my $subcontext = Apache2::ASP::HTTPContext::SubContext->new( parent => $ctx );
@@ -259,41 +218,10 @@ sub TrapInclude
   $subcontext->setup_request( $clone_r, $ctx->cgi );
   my $res = $subcontext->execute( $args );
   my $result = $subcontext->{r}->{buffer};
-#  $ctx->print( $subcontext->{r}->{buffer} );
   $subcontext->DESTROY;
 
   undef( $subcontext );
   return $result;
-}# end TrapInclude()
-
-
-#==============================================================================
-sub TrapInclude___OLD
-{
-  my ($s, $path, $args) = @_;
-  return if $s->context->{did_end};
-  
-  my $ctx = $s->context;
-  no strict 'refs';
-  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $Apache2::ASP::HTTPContext::ClassName->new( parent => $ctx );
-  
-  my $root = $s->context->config->web->www_root;
-  $path =~ s@^\Q$root\E@@;
-  local $ENV{REQUEST_URI} = $path;
-  local $ENV{SCRIPT_FILENAME} = $ctx->server->MapPath( $path );
-  local $ENV{SCRIPT_NAME} = $path;
-  
-  my $clone_r = Apache2::ASP::Mock::RequestRec->new( );
-  $clone_r->uri( $path );
-  $s->context->setup_request( $clone_r, $ctx->cgi );
-
-  $IS_TRAPINCLUDE = 1;
-  $s->context->execute( $args );
-  $s->context->response->Flush;
-  
-  $IS_TRAPINCLUDE = 0;
-  local ${"$Apache2::ASP::HTTPContext::ClassName\::instance"} = $ctx;
-  return $clone_r->{buffer};
 }# end TrapInclude()
 
 
@@ -329,15 +257,6 @@ sub AddHeader
   return unless defined($name) && defined($val);
   
   return $s->context->headers_out->{ $name } = $val;
-  
-  if( $s->context->headers_out->can('header') )
-  {
-    $s->context->headers_out->header( $name => $val );
-  }
-  else
-  {
-    $s->context->r->headers_out->add( $name => $val );
-  }# end if()
 }# end AddHeader()
 
 
@@ -368,22 +287,7 @@ sub Clear
 sub IsClientConnected
 {
   return ! shift->context->get_prop('did_end');
-#  return ! $_[0]->context->connection->aborted;
 }# end IsClientConnected()
-
-
-#==============================================================================
-sub _send_headers
-{
-  my $s = shift;
-  
-  my ($status) = $s->{_status} =~ m/^(\d+)/;
-  
-  $s->context->r->status( $status );
-  $s->context->content_type('text/html') unless $s->context->content_type;
-  $s->context->headers_out->push_header( Expires => $s->{_expires_absolute} );
-  $s->context->send_headers;
-}# end _send_headers()
 
 
 #==============================================================================

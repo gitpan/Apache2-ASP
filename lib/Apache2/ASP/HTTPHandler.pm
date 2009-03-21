@@ -39,7 +39,7 @@ sub init_asp_objects
   my ($s, $context) = @_;
   
   no strict 'refs';
-  my $selfclass = ref($s) || $s;
+  my $selfclass = ref($s) ? ref($s) : $s;
   
   # Get each of this classes' superclasses, and theirs as well, recursively:
   my %c = map { $_ => 1 } (

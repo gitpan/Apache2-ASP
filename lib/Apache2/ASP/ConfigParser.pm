@@ -51,7 +51,7 @@ sub parse
         unless ref($doc->{system}->{env_vars}->{var}) eq 'ARRAY';
       my $ref = delete($doc->{system}->{env_vars}->{var});
       $doc->{system}->{env_vars}->{var} = [ ];
-      foreach my $item ( @$ref )
+      foreach my $item ( grep { $_->{name} } @$ref )
       {
         push @{$doc->{system}->{env_vars}->{var}}, { $item->{name} => $item->{value} };
       }# end foreach()
@@ -75,23 +75,6 @@ sub parse
   };
   
   WEB: {
-    $doc->{web}->{settings} ||= { };
-    if( $doc->{web}->{settings}->{setting} )
-    {
-      $doc->{web}->{settings}->{setting} = [ delete($doc->{web}->{settings}->{setting}) ]
-        unless ref($doc->{web}->{settings}->{setting}) eq 'ARRAY';
-      my $ref = delete($doc->{web}->{settings}->{setting});
-      $doc->{web}->{settings}->{setting} = [ ];
-      foreach my $item ( @$ref )
-      {
-        push @{$doc->{web}->{settings}->{setting}}, { $item->{name} => $item->{value} };
-      }# end foreach()
-    }
-    else
-    {
-      $doc->{web}->{settings}->{setting} = [ ];
-    }# end if()
-    
     $doc->{web}->{request_filters} ||= { };
     if( $doc->{web}->{request_filters}->{filter} )
     {

@@ -13,7 +13,7 @@ sub new
   my $class = shift;
   
   my $s = $class->SUPER::new( @_ );
-  $s->{settings} = Apache2::ASP::ConfigNode::System::Settings->new( $s->{settings} );
+  $s->{settings} = Apache2::ASP::ConfigNode::System::Settings->new( $s->{settings} || { setting => [ ] } );
   
   return $s;
 }# end new()

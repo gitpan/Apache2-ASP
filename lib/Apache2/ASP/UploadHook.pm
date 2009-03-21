@@ -70,10 +70,10 @@ sub hook
   );
   
   # Init the upload:
-  my $did_init = $context->r->pnotes('did_init');
+  my $did_init = $ENV{did_init};
   if( ! $did_init )
   {
-    $context->r->pnotes( did_init => 1 );
+    $ENV{did_init} = 1;
 
     $s->{handler_class}->upload_start( $context, $Upload )
       or return;
@@ -82,7 +82,7 @@ sub hook
     my $uploadID = $s->_args('uploadID');
     $context->r->push_handlers(PerlCleanupHandler => sub {
       delete($context->session->{"upload$uploadID$_"})
-        foreach keys(%$Upload);
+        foreach grep { $_ !~ m/data/i } keys(%$Upload);
       $context->session->save;
     });
   }# end if()

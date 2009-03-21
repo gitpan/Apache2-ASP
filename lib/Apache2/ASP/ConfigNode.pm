@@ -51,8 +51,8 @@ sub AUTOLOAD
   
   confess "Unknown method or property '$name'" unless exists($s->{$name});
   
-  # Setter/Getter:
-  @_ ? $s->{$name} = shift : $s->{$name};
+  # Read-only:
+  $s->{$name};
 }# end AUTOLOAD()
 
 

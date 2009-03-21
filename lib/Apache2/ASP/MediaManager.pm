@@ -29,8 +29,7 @@ sub run
   {
     # Find its MIME type and set our 'ContentType' value:
     ($ext) = $file =~ m/.*?\.([^\.]+)$/;
-    $ext ||= 'txt';
-    my $type = $mimetypes->mimeTypeOf( $ext ) || 'application/octet-stream';
+    my $type = $ext ? $mimetypes->mimeTypeOf( $ext ) || 'application/octet-stream' : 'application/octet-stream';
     $context->response->ContentType( $type );
   }# end unless()
   
@@ -85,7 +84,6 @@ sub run
   
   # Done!
   $ifh->close;
-#  close($ifh);
   
   # Call our after- hook:
   $s->after_download( $context, $filename );
@@ -130,7 +128,7 @@ sub open_file_for_writing
   $ofh->open($filename, '>' )
     or die "Cannot open file '$filename' for writing: $!";
   $ofh->binmode;
-#  binmode($ofh);
+  $ofh->autoflush(1);
   
   return $ofh;
 }# end open_file_for_writing()
@@ -146,7 +144,6 @@ sub open_file_for_reading
   $ifh->open($filename, '<' )
     or die "Cannot open file '$filename' for reading: $!";
   $ifh->binmode;
-#  binmode($ifh);
   
   return $ifh;
 }# end open_file_for_reading()
@@ -162,7 +159,7 @@ sub open_file_for_appending
   $ofh->open($filename, '>>' )
     or die "Cannot open file '$filename' for appending: $!";
   $ofh->binmode;
-#  binmode($ofh);
+  $ofh->autoflush(1);
   
   return $ofh;
 }# end open_file_for_appending()
@@ -232,6 +229,20 @@ sub upload_start
 
   my $filename = $s->compose_upload_file_name( @_ );
   
+  # Make sure we can open the file for writing:
+  my $target_file = $s->compose_upload_file_path( $context, $Upload, $filename);
+  
+  # Open the file for writing:
+  my $ofh = $s->open_file_for_writing($context, $target_file);
+  print $ofh delete($Upload->{data});
+  
+  # Done with the filehandle:
+  $ofh->close;
+  
+  # Store some information for later:
+  $ENV{filename} = $target_file;
+  $ENV{download_file} = $filename;
+  
   # Depending on the 'mode' parameter, we do different things:
   local $_ = $s->_args('mode');
   if( /^create$/ )
@@ -248,20 +259,6 @@ sub upload_start
   {
     die "Unknown mode: '$_'";
   }# end if()
-  
-  # Make sure we can open the file for writing:
-  my $target_file = $s->compose_upload_file_path( $context, $Upload, $filename);
-  
-  # Open the file for writing:
-  my $ofh = $s->open_file_for_writing($context, $target_file);
-  
-  # Done with the filehandle:
-  $ofh->close;
-#  close($ofh);
-  
-  # Store some information for later:
-  $context->r->pnotes( filename => $target_file );
-  $context->r->pnotes( download_file => $filename );
 }# end upload_start()
 
 
@@ -274,15 +271,14 @@ sub upload_hook
   $s->SUPER::upload_hook( @_ );
   
   my $filename = eval {
-    my $name = $context->r->pnotes( 'filename' );
+    my $name = $ENV{filename}; # $context->r->pnotes( 'filename' );
     $name;
   } or return;
   
   my $ofh = $s->open_file_for_appending($context, $filename);
   no warnings 'uninitialized';
-  print $ofh $Upload->{data};
+  print $ofh delete($Upload->{data});
   $ofh->close;
-#  close($ofh);
 }# end upload_hook()
 
 
@@ -296,9 +292,9 @@ sub upload_end
   
   # Return information about what we just did:
   my $info = {
-    new_file      => $context->r->pnotes( 'filename' ),
-    filename_only => $context->r->pnotes( 'download_file' ),
-    link_to_file  => "/media/" . $context->r->pnotes( 'download_file' ),
+    new_file      => $ENV{filename},
+    filename_only => $ENV{download_file},
+    link_to_file  => "/media/" . $ENV{download_file},
   };
   $Upload->{$_} = $info->{$_} foreach keys(%$info);
   

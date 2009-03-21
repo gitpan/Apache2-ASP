@@ -13,6 +13,7 @@ sub new
   
   my %params = ();
   my %upload_data = ();
+  no warnings 'uninitialized';
   if( length($args{querystring}) )
   {
     foreach my $part ( split /&/, $args{querystring} )
