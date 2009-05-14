@@ -195,10 +195,11 @@ sub compose_upload_file_name
 {
   my ($s, $context, $Upload) = @_;
   
-  my ($filename) = $Upload->{upload}->upload_filename =~ m/.*[\\\/]([^\/\\]+)$/;
+#  my $filename = $Upload;
+  my ($filename) = $Upload->{upload}->{upload_filename} =~ m/.*[\\\/]([^\/\\]+)$/;
   if( ! $filename )
   {
-    $filename = $Upload->{upload}->upload_filename;
+    $filename = $Upload->{upload}->{upload_filename};
   }# end if()
   
   return $filename;
@@ -299,12 +300,14 @@ sub upload_end
   $Upload->{$_} = $info->{$_} foreach keys(%$info);
   
   # Depending on the 'mode' parameter, we do different things:
-  local $_ = $context->request->Form->{mode};
-  if( /^create$/ )
+#  local $_ = $context->request->Form->{mode};
+  my $form = $context->request->Form;
+  $form = $context->request->Form;
+  if( $form->{mode} =~ /^create$/ )
   {
     $s->after_create($context, $Upload);
   }
-  elsif( /^edit$/ )
+  elsif(  $form->{mode} =~ /^edit$/ )
   {
     $s->after_update($context, $Upload);
   }

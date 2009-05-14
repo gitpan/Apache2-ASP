@@ -415,6 +415,7 @@ sub send_headers
     $r->err_headers_out->{$k} = $v;
   }# end while()
   
+  $r->rflush();
   $s->{_did_send_headers}++;
 }# end send_headers()
 

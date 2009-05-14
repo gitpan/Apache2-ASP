@@ -1,6 +1,10 @@
 Revision history for Perl extension Apache2::ASP.
 
 
+2.37_01 2009-05-13
+  - Working on removing the dependency on libapreq2.  It is just too much pain.
+  - Several minor fixes and performance tweaks.
+
 2.36  2009-03-21
   - MediaManager updates.  pnotes has proven unstable.
   - Upgraded to Module::Install.

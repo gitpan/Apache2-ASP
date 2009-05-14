@@ -10,17 +10,18 @@ use Apache2::RequestIO ();
 use Apache2::Connection ();
 use Apache2::RequestUtil ();
 use Apache2::ASP::HTTPContext ();
-use Apache2::ASP::ModPerl2CGI ();
+use CGI();
 use Apache2::ASP::UploadHook;
 
 local $Apache2::ASP::HTTPContext::ClassName = 'Apache2::ASP::HTTPContext';
+
 
 #==============================================================================
 sub handler : method
 {
   my ($class, $r) = @_;
   
-  my $context = Apache2::ASP::HTTPContext->new( );
+  my $context = Apache2::ASP::HTTPContext->new();
   
   if( uc($ENV{REQUEST_METHOD}) eq 'POST' && lc($ENV{CONTENT_TYPE}) =~ m@multipart/form-data@ )
   {
@@ -31,19 +32,44 @@ sub handler : method
     {
       die "All UploadHandlers require a querystring parameter 'mode' to be specified when uploading!";
     }# end unless()
-    my $hook_obj = Apache2::ASP::UploadHook->new(
-      handler_class => $handler_class,
-    );
-    $r->pnotes( content_length => $ENV{CONTENT_LENGTH} );
     
-    # Magickally pass in a reference to the $cgi object before it exists.
-    # Yes, this is Perl.
-    our ( $R, $CGI ) = ($r, undef);
     eval {
-      my $cgi = $CGI = Apache2::ASP::ModPerl2CGI->new( $r, sub {
-        $context->setup_request( $r, \$CGI) unless $context->_is_setup;
-        $hook_obj->hook( @_ );
-      });
+      my $cgi = CGI->new( $r );
+      my %args = map { my ($k,$v) = split /\=/, $_; ( $k => $v ) } split /&/, $ENV{QUERY_STRING};
+      map { $cgi->param($_ => $args{$_}) } keys %args;
+      $context->setup_request( $r, $cgi);
+      $handler_class->init_asp_objects( $context );
+      
+      foreach my $field ( $cgi->param )
+      {
+        my $ifh = $cgi->param($field);
+        next unless my $info = $cgi->uploadInfo( $ifh );
+        my ($filename) = $info->{'Content-Disposition'} =~ m/filename\="?(.*?)"?$/;
+
+        $info->{filename_only} = $filename;
+        my $tmpfile = '/tmp/' . rand();
+        open my $ofh, '>', $tmpfile
+          or die "Cannot open '$tmpfile' for writing: $!";
+        my $buffer;
+        while( my $bytesread = read( $ifh , $buffer , 1024 ) )
+        {
+          print $ofh $buffer;
+        }# end while()
+
+        $ENV{filename} = $tmpfile;
+        $ENV{download_file} = $filename;
+        my $Upload = Apache2::ASP::UploadHookArgs->new(
+          upload              => $info,
+          percent_complete    => 100,
+          elapsed_time        => 1,
+          total_expected_time => 1,
+          time_remaining      => 0,
+          length_received     => $ENV{CONTENT_LENGTH},
+          data                => undef,
+          %$info,
+        );
+        $handler_class->upload_end( $context, $Upload );
+      }# end foreach()
       $context->execute;
     };
     warn $@ if $@;
@@ -52,7 +78,7 @@ sub handler : method
   else
   {
     eval {
-      my $cgi = Apache2::ASP::ModPerl2CGI->new( $r );
+      my $cgi = CGI->new( $r );
       $context->setup_request( $r, $cgi );
       $context->execute;
     };

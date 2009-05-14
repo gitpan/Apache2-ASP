@@ -135,6 +135,8 @@ sub submit_form
   
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
+
+  my $temp_referrer = $ENV{HTTP_REFERER};
   my $req = $form->click;
   
   {
@@ -144,6 +146,7 @@ sub submit_form
   $ENV{REQUEST_METHOD} = uc( $req->method );
   my $cgi = $s->_setup_cgi( $req );
   $ENV{CONTENT_TYPE} = $form->enctype ? $form->enctype : 'application/x-www-form-urlencoded';
+  $ENV{HTTP_REFERER} = $temp_referrer;
   
   my $r = Apache2::ASP::Mock::RequestRec->new();
   $r->uri( $req->uri );
