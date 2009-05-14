@@ -55,6 +55,7 @@ sub handler : method
         {
           print $ofh $buffer;
         }# end while()
+        close($ofh);
 
         $ENV{filename} = $tmpfile;
         $ENV{download_file} = $filename;

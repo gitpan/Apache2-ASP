@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.37_02 2009-05-14
+  - Uploads' filehandle was not closed, causing problems where the last few bytes
+    were not flushed to disk.
 
 2.37_01 2009-05-13
   - Working on removing the dependency on libapreq2.  It is just too much pain.
