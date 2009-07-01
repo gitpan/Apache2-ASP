@@ -1,5 +1,14 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.37    2009-06-10
+  - API change: Upload hooks are deprecated and all but disabled.
+  - Bugfix: The upload_start event was not getting called for UploadHandler or its subclasses.
+
+2.37_03 2009-05-19
+  - Bugfix: On Apache2 under Gentoo (perhaps others as well) HTTPContext->send_headers
+    was not always called before content was written to the client.  This caused
+    cookies and other headers to not get written to the client.
+
 2.37_02 2009-05-14
   - Uploads' filehandle was not closed, causing problems where the last few bytes
     were not flushed to disk.

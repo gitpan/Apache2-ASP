@@ -406,7 +406,7 @@ sub headers_in   { shift->get_prop('headers_in') }
 sub send_headers
 {
   my $s = shift;
-  return if $s->{_did_send_headers};
+  return if $s->get_prop('_did_send_headers');
   
   my $headers = $s->get_prop('headers_out');
   my $r = $s->get_prop('r');
@@ -414,9 +414,9 @@ sub send_headers
   {
     $r->err_headers_out->{$k} = $v;
   }# end while()
-  
-  $r->rflush();
-  $s->{_did_send_headers}++;
+
+  $r->rflush;  
+  $s->set_prop(_did_send_headers => 1);
 }# end send_headers()
 
 sub headers_out  { shift->get_prop('headers_out') }
@@ -427,6 +427,7 @@ sub print
 {
   my ($s, $str) = @_;
   
+  $s->send_headers unless $s->get_prop('_did_send_headers');
   return unless defined($str);
   $s->{r}->print( $str );
 }# end print()

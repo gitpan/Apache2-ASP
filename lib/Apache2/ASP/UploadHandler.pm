@@ -12,6 +12,7 @@ sub upload_start
 {
   my ($s, $context, $Upload) = @_;
   
+  return;
   return unless $Upload;
   # Store the upload information in the Session for external retrieval:
   $LastUpdate = time();
@@ -39,6 +40,7 @@ sub upload_hook
 {
   my ($s, $context, $Upload) = @_;
   
+  return;
   # Since this method may be called several times per second, we only
   # want to save the Session state once per second:
   my $Diff = time() - $LastUpdate;

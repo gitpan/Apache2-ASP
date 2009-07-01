@@ -69,6 +69,8 @@ sub handler : method
           data                => undef,
           %$info,
         );
+        my $start_result = $handler_class->upload_start( $context, $Upload )
+          or last;
         $handler_class->upload_end( $context, $Upload );
       }# end foreach()
       $context->execute;

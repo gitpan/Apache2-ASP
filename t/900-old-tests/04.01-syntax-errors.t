@@ -27,9 +27,12 @@ my $s = __PACKAGE__->SUPER::new();
   local $SIG{__WARN__} = sub { 0 };
   my $res = eval { $s->ua->get("/coverage/includes-syntax-error.asp") };
   
-  ok( ! $res->is_success, "unsuccessful" );
-  ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
-
+  ok( (! $res) || ( ! $res->is_success ), 'request failed' );
+  if( $res )
+  {
+    ok( ! $res->is_success, "unsuccessful" );
+    ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
+  }# end if()
   ok(
     $s->ua->context->server->GetLastError,
     "Error says something about a syntax error"
@@ -42,9 +45,12 @@ my $s = __PACKAGE__->SUPER::new();
   local $SIG{__WARN__} = sub { 0 };
   my $res = eval { $s->ua->get("/coverage/syntax-error-master.asp") };
 
-  ok( ! $res->is_success, "unsuccessful" );
-  ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
-
+  ok( (! $res) || ( ! $res->is_success ), 'request failed' );
+  if( $res )
+  {
+    ok( ! $res->is_success, "unsuccessful" );
+    ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
+  }# end if()
   ok(
     $s->ua->context->server->GetLastError,
     "Error says something about a syntax error"
@@ -57,8 +63,12 @@ my $s = __PACKAGE__->SUPER::new();
   local $SIG{__WARN__} = sub { 0 };
   my $res = eval { $s->ua->get("/coverage/page-using-syntax-error-masterpage.asp") };
 
-  ok( ! $res->is_success, "unsuccessful" );
-  ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
+  ok( (! $res) || ( ! $res->is_success ), 'request failed' );
+  if( $res )
+  {
+    ok( ! $res->is_success, "unsuccessful" );
+    ok( $res->status_line =~ m/500\s+/, "status code of 500: '" . $res->status_line . "'" );
+  }# end if()
 
   ok(
     $s->ua->context->server->GetLastError,
@@ -71,8 +81,12 @@ my $s = __PACKAGE__->SUPER::new();
 {
   my $res = eval { $s->ua->get("/non-existent-page.asp") };
 
-  ok( ! $res->is_success, "unsuccessful" );
-  ok( $res->status_line =~ m/404\s+/, "status code of 404: '" . $res->status_line . "'" );
+  ok( (! $res) || ( ! $res->is_success ), 'request failed' );
+  if( $res )
+  {
+    ok( ! $res->is_success, "unsuccessful" );
+    ok( $res->status_line =~ m/404\s+/, "status code of 404: '" . $res->status_line . "'" );
+  }# end if()
 
   ok(
     ! $s->ua->context->server->GetLastError,

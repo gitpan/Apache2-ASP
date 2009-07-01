@@ -64,11 +64,11 @@ sub parse_session_id
   my $cookiename = $s->context->config->data_connections->session->cookie_name;
 
   no warnings 'uninitialized';
-  if( my ($id) = $ENV{HTTP_COOKIE} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
+  if( my ($id) = $ENV{HTTP_COOKIE} =~ m/$cookiename\=([a-f0-9]+)/ )
   {
     return $id;
   }
-  elsif( ($id) = $s->context->r->headers_in->{Cookie} =~ m/\b$cookiename\=([a-f0-9]+)\b/ )
+  elsif( ($id) = $s->context->r->headers_in->{Cookie} =~ m/$cookiename\=([a-f0-9]+)/ )
   {
     return $id;
   }
@@ -249,9 +249,10 @@ sub write_session_cookie
   
   my $state = $s->context->config->data_connections->session;
   my $cookiename = $state->cookie_name;
-  $s->context->response->AddHeader(
-    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/;" #; domain=" . $state->cookie_domain
-  );
+#  $s->context->response->AddHeader(
+#    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/;" #; domain=" . $state->cookie_domain
+#  );
+  $s->context->r->err_headers_out->{ 'Set-Cookie' } = "$cookiename=$s->{SessionID}; path=/;";
   
   # If we weren't given an HTTP cookie value, set it here.
   # This prevents subsequent calls to 'parse_session_id()' to fail:

@@ -45,7 +45,7 @@ sub run
     }
     elsif( defined(my $handler = $s->modes( $mode )) )
     {
-      return $handler->( @_ );
+      return $handler->( $s, $context );
     }# end if()
   }# end if()
   
@@ -241,20 +241,18 @@ sub upload_start
   $ofh->close;
   
   # Store some information for later:
-  $ENV{filename} = $target_file;
-  $ENV{download_file} = $filename;
+  $ENV{filename} ||= $target_file;
+  $ENV{download_file} ||= $filename;
   
   # Depending on the 'mode' parameter, we do different things:
   local $_ = $s->_args('mode');
   if( /^create$/ )
   {
-    $s->before_create($context, $Upload)
-      or return;
+    $s->before_create($context, $Upload);
   }
   elsif( /^edit$/ )
   {
-    $s->before_update($context, $Upload)
-      or return;
+    $s->before_update($context, $Upload);
   }
   else
   {
