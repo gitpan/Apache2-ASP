@@ -314,6 +314,8 @@ sub _build_dom
       my $code_chunk = <<"CODE";
 sub @{[ $attrs->{PlaceHolderID} ]} {
 my (\$__self, \$__context, \$__args) = \@_;
+\$__self->init_asp_objects( \$__context )
+  unless \$__self->{__did_init}++;
 #line @{[ $line + 3 ]}
 $fixed_contents
 }

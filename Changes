@@ -1,5 +1,14 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.39    2009-08-23
+  - Bugfix:  Deeply-nexted MasterPage setups sometimes did not initialize the
+    intrinsic ASP objects in the root-most MasterPage ($Response, $Session, etc).
+
+2.38    2009-08-09
+  - Bugfix: $Response->Redirect in a handler after $Response->TrapInclude gave
+    errors "Response.Status cannot be changed after headers have been sent" (this
+    is now fixed).
+
 2.37    2009-06-10
   - API change: Upload hooks are deprecated and all but disabled.
   - Bugfix: The upload_start event was not getting called for UploadHandler or its subclasses.

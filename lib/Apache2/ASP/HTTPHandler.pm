@@ -66,7 +66,7 @@ sub init_asp_objects
     $context->request->Form,
     $context->stash
   );
-  
+
   foreach my $class ( @classes )
   {
     ${"$class\::Request"}     = $request;

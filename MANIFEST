@@ -131,6 +131,7 @@ t/htdocs/include-at-end.asp
 t/htdocs/cleanup-register.asp
 t/handlers/upload01.pm
 t/handlers/simple.pm
+t/handlers/redirect_after_trapinclude.pm
 t/lib/My/ErrorHandler.pm
 t/lib/My/MemberFilter.pm
 t/lib/My/MemberFilter2.pm
