@@ -40,6 +40,7 @@ sub handler : method
       $context->setup_request( $r, $cgi);
       $handler_class->init_asp_objects( $context );
       
+      my $called_upload_end = 0;
       foreach my $field ( $cgi->param )
       {
         my $ifh = $cgi->param($field);
@@ -72,7 +73,10 @@ sub handler : method
         my $start_result = $handler_class->upload_start( $context, $Upload )
           or last;
         $handler_class->upload_end( $context, $Upload );
+        $called_upload_end++;
       }# end foreach()
+      $handler_class->upload_end( $context, { } )
+        unless $called_upload_end;
       $context->execute;
     };
     warn $@ if $@;

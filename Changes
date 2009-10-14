@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.40    2009-10-14
+  - Enhancement: multipart/form-data posts to MediaManagers no longer require
+    actual files to be uploaded.  Useful for forms that have an optional file upload field.
+
 2.39    2009-08-23
   - Bugfix:  Deeply-nexted MasterPage setups sometimes did not initialize the
     intrinsic ASP objects in the root-most MasterPage ($Response, $Session, etc).
