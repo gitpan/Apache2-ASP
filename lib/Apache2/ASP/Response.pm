@@ -45,7 +45,8 @@ sub ContentType
   
   if( @_ )
   {
-    confess "Response.ContentType cannot be changed after headers have been sent"
+#    confess "Response.ContentType cannot be changed after headers have been sent"
+    return
       if $s->context->{_did_send_headers};
     $s->context->content_type( shift );
   }
@@ -63,7 +64,8 @@ sub Status
   
   if( @_ )
   {
-    confess "Response.Status cannot be changed after headers have been sent"
+#    confess "Response.Status cannot be changed after headers have been sent"
+    return
       if $s->context->{_did_send_headers};
     
     $s->{_status} = shift;

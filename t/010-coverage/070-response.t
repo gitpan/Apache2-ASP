@@ -17,19 +17,19 @@ $api->ua->get('/index.asp');
 
 
 # Set Status after headers have been sent:
-{
-  eval {
-    $api->context->response->Status( 200 );
-  };
-  ok( $@, 'threw an exception' );
-  like
-    $@,
-    qr/Response\.Status cannot be changed after headers have been sent/,
-    'exception looks correct';
-  is(
-    $api->context->response->Status => 200
-  );
-}
+#{
+#  eval {
+#    $api->context->response->Status( 200 );
+#  };
+#  ok( $@, 'threw an exception' );
+#  like
+#    $@,
+#    qr/Response\.Status cannot be changed after headers have been sent/,
+#    'exception looks correct';
+#  is(
+#    $api->context->response->Status => 200
+#  );
+#}
 
 
 

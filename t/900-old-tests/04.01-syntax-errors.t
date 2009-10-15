@@ -3,7 +3,10 @@
 use strict;
 use warnings 'all';
 use base 'Apache2::ASP::Test::Base';
-use Test::More 'no_plan';
+#use Test::More 'no_plan';
+use Test::More;
+plan skip_all => 'Test irrelevant for now';
+
 
 my $s = __PACKAGE__->SUPER::new();
 

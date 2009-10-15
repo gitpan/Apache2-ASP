@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.41    2009-10-14
+  - Bugfix: Errors will now appear on-screen, rather than the default Apache error.
+
 2.40    2009-10-14
   - Enhancement: multipart/form-data posts to MediaManagers no longer require
     actual files to be uploaded.  Useful for forms that have an optional file upload field.
