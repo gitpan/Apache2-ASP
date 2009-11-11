@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.42    2009-11-11
+  - You can now test multiple websites at the same time (eg: Public and Admin websites)
+    from within the same test script.  Example given in POD for Apache2::ASP::API
+
 2.41    2009-10-14
   - Bugfix: Errors will now appear on-screen, rather than the default Apache error.
 

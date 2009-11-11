@@ -130,6 +130,46 @@ Then your uploader script could just do this:
     filename => [ $_ ]
   ]) foreach @ARGV;
 
+=head1 INTEGRATION TESTING
+
+I often develop websites that have both "public" and an "administrative" interfaces
+that are completely different websites.
+
+For instances in which users of the public website are allowed to submit records
+that an administrator would manage through the administrative interface, this presents
+a problem:
+
+=head2 How to Test Multiple Websites at the Same Time
+
+My tests look something like this:
+
+  #!/usr/bin/perl -w
+
+  use strict;
+  use warnings 'all';
+  use Apache2::ASP::API;
+  use HTML::Form;
+  use Test::More 'no_plan';
+  use Cwd 'cwd';
+
+  # We can inspect the data from both the public site and the Admin dashboard:
+  my ($admin, $public); BEGIN {
+    $public = Apache2::ASP::API->new( 'cwd' => cwd() );
+    chdir("../admin-website");
+    $admin = Apache2::ASP::API->new( 'cwd' => cwd() );
+    chdir("../public-website");
+  }
+
+  # Now load up our modules:
+  use_ok('My::Foo');
+  use_ok('My::Bar');
+
+  # Do stuff on the public website:
+  ok( $public->ua->get('/page.asp')->is_success, "yay public" );
+
+  # Do stuff on the admin website:
+  ok( $admin->ua->get('/admin-page.asp')->is_success, "yay admin" );
+
 =head1 PUBLIC METHODS
 
 Apache2::ASP::API is a subclass of L<Apache2::ASP::Test::Base> and inherits

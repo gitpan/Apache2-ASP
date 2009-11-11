@@ -13,6 +13,7 @@ use Apache2::ASP::Mock::RequestRec;
 use Carp 'confess';
 use IO::File;
 use Scalar::Util 'weaken';
+use Cwd 'cwd';
 
 our $ContextClass = 'Apache2::ASP::HTTPContext';
 
@@ -23,13 +24,19 @@ sub new
   my ($class, %args) = @_;
   
   return bless {
+    cwd => cwd(),
     %args,
   }, $class;
 }# end new()
 
 
 #==============================================================================
-sub context { Apache2::ASP::HTTPContext->current || $Apache2::ASP::HTTPContext::ClassName->new }
+sub context
+{
+  my $s = shift;
+  chdir( $s->{cwd} );
+  return Apache2::ASP::HTTPContext->current || $Apache2::ASP::HTTPContext::ClassName->new;
+}# end context()
 
 
 #==============================================================================
@@ -37,6 +44,7 @@ sub post
 {
   my ($s, $uri, $args) = @_;
   
+  chdir( $s->{cwd} );
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
   $args ||= [ ];
@@ -64,6 +72,7 @@ sub upload
 {
   my ($s, $uri, $args) = @_;
   
+  chdir( $s->{cwd} );
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
   {
@@ -133,6 +142,7 @@ sub submit_form
 {
   my ($s, $form) = @_;
   
+  chdir( $s->{cwd} );
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
 
@@ -164,6 +174,7 @@ sub get
 {
   my ($s, $uri) = @_;
   
+  chdir( $s->{cwd} );
   no strict 'refs';
   undef(${"$ContextClass\::instance"});
   
