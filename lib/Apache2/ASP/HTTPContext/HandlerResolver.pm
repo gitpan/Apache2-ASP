@@ -30,8 +30,17 @@ sub resolve_request_handler
   {
     (my $handler = $uri) =~ s/^\/handlers\///;
     $handler =~ s/[^a-z0-9_]/::/gi;
-    $s->context->_load_class( $handler );
-    return $HandlerCache{$uri} = $handler;
+    (my $path = "$handler.pm") =~ s/::/\//g;
+    my $filepath = $s->context->config->web->handler_root . "/$path";
+    if( -f $filepath )
+    {
+      $s->context->_load_class( $handler );
+      return $HandlerCache{$uri} = $handler;
+    }
+    else
+    {
+      return;
+    }# end if()
   }
   else
   {

@@ -186,6 +186,8 @@ sub execute
   my ($s, $args) = @_;
 
 #  local $SIG{__DIE__} = \&Carp::confess;
+
+  return 404 unless $s->handler;
   
   if( defined(my $preinit_res = $s->do_preinit) )
   {

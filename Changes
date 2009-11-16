@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.43    2009-11-16
+  - Requests to handlers that don't exist will now result in a 404 error, not a 500 error.
+
 2.42    2009-11-11
   - You can now test multiple websites at the same time (eg: Public and Admin websites)
     from within the same test script.  Example given in POD for Apache2::ASP::API

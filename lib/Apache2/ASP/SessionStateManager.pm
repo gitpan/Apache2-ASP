@@ -158,7 +158,9 @@ sub retrieve
   $data = thaw($data) || { SessionID => $id };
   $sth->finish();
 
-  if( time() - str2time($modified_on) >= ( $s->context->config->data_connections->session->session_timeout * 59 ) )
+  my $seconds_since_last_modified = time() - str2time($modified_on);
+  my $timeout_seconds = $s->context->config->data_connections->session->session_timeout * 60;
+  if( $seconds_since_last_modified < $timeout_seconds )
   {
     local $s->db_Main->{AutoCommit} = 1;
     my $sth = $s->db_Main->prepare_cached(<<"");
