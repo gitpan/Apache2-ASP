@@ -1,5 +1,8 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.44    2009-11-17
+  - Got rid of annoying "Software caused connection abort" errors.
+
 2.43    2009-11-16
   - Requests to handlers that don't exist will now result in a 404 error, not a 500 error.
 

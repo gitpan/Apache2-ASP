@@ -433,7 +433,9 @@ sub print
   
   $s->send_headers unless $s->get_prop('_did_send_headers');
   return unless defined($str);
-  $s->{r}->print( $str );
+  eval {
+    $s->{r}->print( $str );
+  };
 }# end print()
 
 
@@ -445,8 +447,9 @@ sub rflush
   
   $s->send_headers
     unless $s->did_send_headers;
-  
-  $s->{r}->rflush();
+  eval {
+    $s->{r}->rflush();
+  };
 }# end rflush()
 
 sub did_send_headers { shift->get_prop('_did_send_headers') }
