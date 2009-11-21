@@ -457,6 +457,7 @@ no warnings 'redefine';
 our \$TIMESTAMP = @{[ time() ]};
 
 sub _initialize_page {
+  eval { \$_[0]->SUPER::_initialize_page };
   \$_[0]->init_asp_objects( \$_[0]->context );
   \$_[0] = $dump;
   \$_[0]->{masterpage} = \$_[0]->{masterpage}->new( virtual_path => '$virtual_path' ) if \$_[0]->{masterpage};

@@ -1,5 +1,11 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.45    2009-11-20
+  - Fixed* a bug that caused deeeeeeeeply nested Master/Child page scenarios to cause
+    the MasterPage's ASP objects ($Response, $Request, etc) to not get initialized.
+    This fixes the dreaded "Cannot call 'Write' on an undefined value - line 1" error.
+    * Involves deleting your page cache before the udpate will take full effect!
+
 2.44    2009-11-17
   - Got rid of annoying "Software caused connection abort" errors.
 
