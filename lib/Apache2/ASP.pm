@@ -5,7 +5,7 @@ use strict;
 use warnings 'all';
 use vars '$VERSION';
 
-$VERSION = '2.45';
+$VERSION = '2.46';
 
 1;# return true:
 
@@ -15,9 +15,11 @@ __END__
 
 =head1 NAME
 
-Apache2::ASP - ASP for Perl, reloaded.
+Apache2::ASP - ASP for Perl, reloaded. (DEPRECATED use ASP4 instead)
 
 =head1 SYNOPSIS
+
+B<DEPRECATED:> Use L<ASP4> instead.
 
 =head2 Hello World
 

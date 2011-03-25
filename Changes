@@ -1,5 +1,13 @@
 Revision history for Perl extension Apache2::ASP.
 
+2.46    2011-03-25
+  - !!DEPRECATED!! in favor of ASP4.
+  - Please don't use Apache2::ASP for any new development.
+  - Use ASP4 instead; it is much better, faster and maintained.
+  - Upgrading from Apache2::ASP to ASP4 is quite easy - just convert your
+    apache2-asp-config.xml to asp4-config.json, update/remove your GlobalASA.pm
+    and update your httpd.conf.
+
 2.45    2009-11-20
   - Fixed* a bug that caused deeeeeeeeply nested Master/Child page scenarios to cause
     the MasterPage's ASP objects ($Response, $Request, etc) to not get initialized.

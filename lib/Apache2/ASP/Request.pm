@@ -85,7 +85,7 @@ sub Cookies
 #==============================================================================
 sub FileUpload
 {
-  my ($s, $field, $arg) = @_;
+  my ($s, $field) = @_;
   
   confess "Request.FileUpload called without arguments"
     unless defined($field);
@@ -99,43 +99,33 @@ sub FileUpload
   if( $cgi->isa('Apache2::ASP::SimpleCGI') )
   {
     no warnings 'uninitialized';
+    my $up = $cgi->upload_info( $field, 'mime' )
+      or return;
     %info = (
-      ContentType           => $cgi->upload_info( $field, 'mime' ),
+      ContentType           => $up,
       FileHandle            => $ifh,
-      BrowserFile           => $s->Form->{ $field } . "",
-      'Content-Disposition' => 'attachment',
-      'Mime-Header'         => $cgi->upload_info( $field, 'mime' ),
+      FileName           => $s->Form->{ $field } . "",
+      'ContentDisposition' => 'attachment',
+# Mime-Header is deprecated as of v2.46
+#      'Mime-Header'         => $cgi->upload_info( $field, 'mime' ),
     );
   }
   else
   {
-    $upInfo = $cgi->uploadInfo( $ifh );
+    $upInfo = $cgi->uploadInfo( $ifh )
+      or return;
     no warnings 'uninitialized';
     %info = (
       ContentType           => $upInfo->{'Content-Type'},
       FileHandle            => $ifh,
-      BrowserFile           => $s->Form->{ $field } . "",
-      'Content-Disposition' => $upInfo->{'Content-Disposition'},
-      'Mime-Header'         => $upInfo->{type},
+      FileName              => $s->Form->{ $field } . "",
+      'ContentDisposition' => $upInfo->{'Content-Disposition'},
+# Mime-Header is deprecated as of v2.46
+#      'Mime-Header'         => $upInfo->{type},
     );
   }# end if()
   
-  if( wantarray )
-  {
-    return %info;
-  }
-  else
-  {
-    if( $arg )
-    {
-      return $info{ $arg };
-    }
-    else
-    {
-      return $ifh;
-    }# end if()
-  }# end if()
-
+  return wantarray ? %info : \%info;
 }# end FileUpload()
 
 

@@ -23,69 +23,53 @@ sub handler : method
   
   my $context = Apache2::ASP::HTTPContext->new();
   
-  if( uc($ENV{REQUEST_METHOD}) eq 'POST' && lc($ENV{CONTENT_TYPE}) =~ m@multipart/form-data@ )
+  if( uc($r->method) eq 'POST' && $r->headers_in->{'content-type'} =~ m/multipart\/form\-data/ )
   {
-    $context->_load_class( $context->config->web->handler_resolver );
-    my $handler_class = $context->config->web->handler_resolver->new()->resolve_request_handler( $r->uri );
-    $context->_load_class( $handler_class );
-    unless( $ENV{QUERY_STRING} =~ m/mode\=[a-z0-9_]+/ )
+    $context->{r} = $r;
+    eval {
+      $context->_load_class( $context->config->web->handler_resolver );
+    };
+    if( $@ )
     {
-      die "All UploadHandlers require a querystring parameter 'mode' to be specified when uploading!";
-    }# end unless()
+      warn $@;
+      $r->status( 500 );
+      return $r->status;
+    }# end if()
+    
+    my $handler_class = eval {
+      $context->config->web->handler_resolver->new()->resolve_request_handler( $r->uri )
+    };
+    if( $@ )
+    {
+      warn $@;
+      $r->status( 500 );
+      return $r->status;
+    }# end if()
+    
+    return 404 unless $handler_class;
     
     eval {
+      $context->_load_class( $handler_class );
+      
       my $cgi = CGI->new( $r );
       my %args = map { my ($k,$v) = split /\=/, $_; ( $k => $v ) } split /&/, $ENV{QUERY_STRING};
       map { $cgi->param($_ => $args{$_}) } keys %args;
       $context->setup_request( $r, $cgi);
       $handler_class->init_asp_objects( $context );
       
-      my $called_upload_end = 0;
-      foreach my $field ( $cgi->param )
-      {
-        my $ifh = $cgi->param($field);
-        next unless my $info = $cgi->uploadInfo( $ifh );
-        my ($filename) = $info->{'Content-Disposition'} =~ m/filename\="?(.*?)"?$/;
-
-        $info->{filename_only} = $filename;
-        my $tmpfile = '/tmp/' . rand();
-        open my $ofh, '>', $tmpfile
-          or die "Cannot open '$tmpfile' for writing: $!";
-        my $buffer;
-        while( my $bytesread = read( $ifh , $buffer , 1024 ) )
-        {
-          print $ofh $buffer;
-        }# end while()
-        close($ofh);
-
-        $ENV{filename} = $tmpfile;
-        $ENV{download_file} = $filename;
-        my $Upload = Apache2::ASP::UploadHookArgs->new(
-          upload              => $info,
-          percent_complete    => 100,
-          elapsed_time        => 1,
-          total_expected_time => 1,
-          time_remaining      => 0,
-          length_received     => $ENV{CONTENT_LENGTH},
-          data                => undef,
-          %$info,
-        );
-        my $start_result = $handler_class->upload_start( $context, $Upload )
-          or last;
-        $handler_class->upload_end( $context, $Upload );
-        $called_upload_end++;
-      }# end foreach()
-      $handler_class->upload_end( $context, { } )
-        unless $called_upload_end;
       $context->execute;
     };
-    warn $@ if $@;
+    if( $@ )
+    {
+      warn $@;
+      $r->status( 500 );
+    }# end if()
     return $r->status =~ m/^2/ ? 0 : $r->status;
   }
   else
   {
+    my $cgi = CGI->new( $r );
     eval {
-      my $cgi = CGI->new( $r );
       $context->setup_request( $r, $cgi );
       $context->execute;
     };
@@ -94,6 +78,7 @@ sub handler : method
     return 500 if $@;
     return $r->status =~ m/^2/ ? 0 : $r->status;
   }# end if()
+  
 }# end handler()
 
 1;# return true:

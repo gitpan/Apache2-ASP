@@ -160,7 +160,7 @@ sub retrieve
 
   my $seconds_since_last_modified = time() - str2time($modified_on);
   my $timeout_seconds = $s->context->config->data_connections->session->session_timeout * 60;
-  if( $seconds_since_last_modified < $timeout_seconds )
+  if( $seconds_since_last_modified >= 1 && $seconds_since_last_modified < $timeout_seconds )
   {
     local $s->db_Main->{AutoCommit} = 1;
     my $sth = $s->db_Main->prepare_cached(<<"");
@@ -248,13 +248,10 @@ sub new_session_id
 sub write_session_cookie
 {
   my $s = shift;
-  
   my $state = $s->context->config->data_connections->session;
   my $cookiename = $state->cookie_name;
-#  $s->context->response->AddHeader(
-#    'Set-Cookie' =>  "$cookiename=$s->{SessionID}; path=/;" #; domain=" . $state->cookie_domain
-#  );
-  $s->context->r->err_headers_out->{ 'Set-Cookie' } = "$cookiename=$s->{SessionID}; path=/;";
+  my $domain = eval { $state->cookie_domain } ? " domain=" . $state->cookie_domain . ";" : "";
+  $s->context->r->err_headers_out->{'Set-Cookie'} = "$cookiename=$s->{SessionID}; path=/; $domain";
   
   # If we weren't given an HTTP cookie value, set it here.
   # This prevents subsequent calls to 'parse_session_id()' to fail:
@@ -307,14 +304,14 @@ Within your ASP script:
 
 =head1 DESCRIPTION
 
-The global C<$Session> object is an instance of a subclass of C<Apache2::ASP::SessionStateManager>
+The global C<$Session> object is an instance of C<Apache2::ASP::SessionStateManager>
 or one of its subclasses.
 
-It is a blessed hash that is persisted within a database.  Use it to share information across all requests for
-all users.
+It is a blessed hash that is persisted to a database.  Use it to share information across all requests for
+one user.
 
 B<NOTE:> - do not store database connections or filehandles within the C<$Session> object because they cannot be shared across
-different processes/threads at this time.
+different processes or threads.
 
 =head1 METHODS
 
@@ -336,6 +333,7 @@ The file C<apache2-asp-config.xml> should contain a section like the following:
       <session>
         <manager>Apache2::ASP::SessionStateManager::MySQL</manager>
         <cookie_name>session-id</cookie_name>
+        <cookie_domain>.example.com</cookie_domain>
         <dsn>DBI:mysql:dbname:localhost</dsn>
         <username>sa</username>
         <password>s3cr3t!</password>

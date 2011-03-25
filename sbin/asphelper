@@ -36,11 +36,14 @@ warn "Creating database tables...\n";
 eval {
   my $dbh = DBI->connect( $args->{session_dsn}, $args->{session_user}, $args->{session_pass} );
   $dbh->do(q~
+  DROP TABLE IF EXISTS asp_sessions
+  ~);
+  $dbh->do(q~
   CREATE TABLE `asp_sessions` (
-    `session_id` char(32) NOT NULL,
+    `session_id`   char(32) NOT NULL,
     `session_data` blob,
-    `created_on` datetime default NULL,
-    `modified_on` datetime default NULL,
+    `created_on`   datetime default NULL,
+    `modified_on`  datetime default NULL,
     PRIMARY KEY  (`session_id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1
   ~);
@@ -50,8 +53,11 @@ eval {
 eval {
   my $dbh = DBI->connect( $args->{app_dsn}, $args->{app_user}, $args->{app_pass} );
   $dbh->do(q~
+  DROP TABLE IF EXISTS asp_applications
+  ~);
+  $dbh->do(q~
   CREATE TABLE `asp_applications` (
-    `application_id` varchar(100) NOT NULL,
+    `application_id`   varchar(100) NOT NULL,
     `application_data` blob,
     PRIMARY KEY  (`application_id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1
@@ -169,8 +175,6 @@ close($ofh);
 open my $conf_ofh, '>', "$args->{domain}/conf/httpd.conf";
 print $conf_ofh <<"CONF";
 
-# Needed for CGI::Apache2::Wrapper to work properly:
-LoadModule apreq_module    modules/mod_apreq2.so
 
 # Load up some important modules:
 PerlModule DBI
@@ -223,7 +227,6 @@ use vars __PACKAGE__->VARS;
 # sub Session_OnStart;
 # sub Script_OnStart;
 # sub Script_OnEnd;
-# sub Script_OnError;
 
 1;# return true:
 
